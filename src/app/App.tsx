@@ -227,35 +227,45 @@ export default function App() {
   }, [session]);
 
   // Sincronização em Nuvem (Multi-computadores) via Firebase Firestore
+  // A nuvem é a fonte da verdade: tudo o que chega dos listeners substitui o estado local,
+  // inclusive listas vazias (exclusões feitas em outro computador).
   useEffect(() => {
     let isSubscribed = true;
+
+    const markSynced = () => {
+      if (!isSubscribed) return;
+      setCloudSyncStatus('synced');
+      setLastCloudSyncTime(new Date());
+    };
+
+    const markOffline = () => {
+      if (!isSubscribed) return;
+      setCloudSyncStatus('offline');
+    };
 
     async function initCloudSync() {
       try {
         setCloudSyncStatus('connecting');
         const isOnline = await testConnection();
         if (!isOnline) {
-          if (isSubscribed) setCloudSyncStatus('offline');
+          markOffline();
           return;
         }
 
-        // Garante que o banco em nuvem possua os dados iniciais se estiver vazio
+        // Semeia o banco em nuvem somente na primeira vez (nuvem completamente vazia)
         await seedCloudDatabaseIfEmpty({
-          books,
-          loans,
-          students,
-          suggestions,
-          adminUsers,
-          auditLogs,
+          books: INITIAL_BOOKS,
+          loans: INITIAL_LOANS,
+          students: INITIAL_STUDENTS,
+          suggestions: INITIAL_SUGGESTIONS,
+          adminUsers: INITIAL_ADMIN_USERS,
+          auditLogs: INITIAL_AUDIT_LOGS,
         });
 
-        if (isSubscribed) {
-          setCloudSyncStatus('synced');
-          setLastCloudSyncTime(new Date());
-        }
+        markSynced();
       } catch (err) {
         console.error('Erro na inicialização da sincronização em nuvem:', err);
-        if (isSubscribed) setCloudSyncStatus('offline');
+        markOffline();
       }
     }
 
@@ -263,62 +273,64 @@ export default function App() {
 
     // Listeners em tempo real para sincronização contínua com outros computadores na web
     const unsubBooks = subscribeToBooks((cloudBooks) => {
-      if (cloudBooks && cloudBooks.length > 0) {
-        setBooks((prev) => {
-          const sorted = [...cloudBooks].sort((a, b) =>
-            a.title.localeCompare(b.title, 'pt-BR', { sensitivity: 'base' })
-          );
-          return sorted;
-        });
-        setCloudSyncStatus('synced');
-        setLastCloudSyncTime(new Date());
-      }
-    });
+      if (!isSubscribed || !cloudBooks) return;
+      const sorted = [...cloudBooks].sort((a, b) =>
+        a.title.localeCompare(b.title, 'pt-BR', { sensitivity: 'base' })
+      );
+      setBooks(sorted);
+      markSynced();
+    }, markOffline);
 
     const unsubLoans = subscribeToLoans((cloudLoans) => {
-      if (cloudLoans) {
-        setLoans(cloudLoans);
-        setCloudSyncStatus('synced');
-        setLastCloudSyncTime(new Date());
-      }
-    });
+      if (!isSubscribed || !cloudLoans) return;
+      setLoans(cloudLoans);
+      markSynced();
+    }, markOffline);
 
     const unsubStudents = subscribeToStudents((cloudStudents) => {
-      if (cloudStudents && cloudStudents.length > 0) {
-        setStudents((prev) => {
-          const sorted = [...cloudStudents].sort((a, b) =>
-            a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
-          );
-          return sorted;
-        });
-        setCloudSyncStatus('synced');
-        setLastCloudSyncTime(new Date());
-      }
-    });
+      if (!isSubscribed || !cloudStudents) return;
+      const sorted = [...cloudStudents].sort((a, b) =>
+        a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
+      );
+      setStudents(sorted);
+      markSynced();
+    }, markOffline);
 
     const unsubSuggestions = subscribeToSuggestions((cloudSuggestions) => {
-      if (cloudSuggestions) {
-        setSuggestions(cloudSuggestions);
-        setCloudSyncStatus('synced');
-      }
-    });
+      if (!isSubscribed || !cloudSuggestions) return;
+      setSuggestions(cloudSuggestions);
+      markSynced();
+    }, markOffline);
 
     const unsubAdmins = subscribeToAdminUsers((cloudAdmins) => {
-      if (cloudAdmins && cloudAdmins.length > 0) {
-        setAdminUsers(cloudAdmins);
-        setCloudSyncStatus('synced');
-      }
-    });
+      if (!isSubscribed || !cloudAdmins) return;
+      // Mantém ao menos um administrador local caso a nuvem ainda não tenha nenhum
+      if (cloudAdmins.length === 0) return;
+      setAdminUsers(cloudAdmins);
+      markSynced();
+    }, markOffline);
 
     const unsubLogs = subscribeToAuditLogs((cloudLogs) => {
-      if (cloudLogs && cloudLogs.length > 0) {
-        setAuditLogs(cloudLogs);
-        setCloudSyncStatus('synced');
+      if (!isSubscribed || !cloudLogs) return;
+      setAuditLogs(cloudLogs);
+      markSynced();
+    }, markOffline);
+
+    // Reconsulta ao voltar para a aba/janela, garantindo dados atualizados
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        testConnection()
+          .then((ok) => (ok ? markSynced() : markOffline()))
+          .catch(markOffline);
       }
-    });
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('online', handleVisibility);
 
     return () => {
       isSubscribed = false;
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('online', handleVisibility);
       unsubBooks();
       unsubLoans();
       unsubStudents();
