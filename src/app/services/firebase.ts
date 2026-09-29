@@ -354,9 +354,19 @@ export async function seedCloudDatabaseIfEmpty(initialData: {
   auditLogs: AuditLog[];
 }): Promise<boolean> {
   try {
+    // Marcador na nuvem: garante que a carga inicial aconteça UMA única vez.
+    // Sem isso, um computador com dados antigos no navegador poderia recriar
+    // livros/alunos já excluídos por outro computador.
+    const seedRef = doc(db, 'meta', 'seed');
+    const seedSnap = await getDocFromServer(seedRef);
+    if (seedSnap.exists()) {
+      return false;
+    }
+
     const booksSnap = await getDocs(collection(db, 'books'));
     if (!booksSnap.empty) {
       // O banco na nuvem já possui livros sincronizados
+      await setDoc(seedRef, { seededAt: new Date().toISOString() }, { merge: true });
       return false;
     }
 
