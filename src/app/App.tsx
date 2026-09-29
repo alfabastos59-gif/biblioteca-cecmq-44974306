@@ -253,13 +253,14 @@ export default function App() {
         }
 
         // Semeia o banco em nuvem somente na primeira vez (nuvem completamente vazia)
+        // Primeira vez: leva os dados salvos neste computador para a nuvem
         await seedCloudDatabaseIfEmpty({
-          books: INITIAL_BOOKS,
-          loans: INITIAL_LOANS,
-          students: INITIAL_STUDENTS,
-          suggestions: INITIAL_SUGGESTIONS,
-          adminUsers: INITIAL_ADMIN_USERS,
-          auditLogs: INITIAL_AUDIT_LOGS,
+          books: books.length ? books : INITIAL_BOOKS,
+          loans: loans.length ? loans : INITIAL_LOANS,
+          students: students.length ? students : INITIAL_STUDENTS,
+          suggestions: suggestions.length ? suggestions : INITIAL_SUGGESTIONS,
+          adminUsers: adminUsers.length ? adminUsers : INITIAL_ADMIN_USERS,
+          auditLogs: auditLogs.length ? auditLogs : INITIAL_AUDIT_LOGS,
         });
 
         markSynced();
