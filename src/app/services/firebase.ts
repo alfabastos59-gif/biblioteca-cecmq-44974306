@@ -28,9 +28,15 @@ export async function testConnection(): Promise<boolean> {
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
     return true;
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
+  } catch (error: any) {
+    const code = error?.code || '';
+    const message = error instanceof Error ? error.message : '';
+    if (message.includes('the client is offline') || code === 'unavailable') {
       console.warn('Firestore offline ou não acessível temporariamente.');
+      return false;
+    }
+    if (code === 'permission-denied' || code === 'not-found') {
+      console.error('Acesso ao banco na nuvem negado ou banco inexistente:', code);
       return false;
     }
     // Erro de documento não existente é esperado e confirma que o servidor foi contactado
