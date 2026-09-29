@@ -381,6 +381,7 @@ export async function seedCloudDatabaseIfEmpty(initialData: {
     initialData.auditLogs.forEach((log) => ops.push({ ref: doc(db, 'auditLogs', log.id), data: log }));
 
     await commitInBatches(ops);
+    await setDoc(doc(db, 'meta', 'seed'), { seededAt: new Date().toISOString() }, { merge: true });
     console.log('Banco de dados na nuvem populado com sucesso para acesso multi-computadores!');
     return true;
   } catch (error) {
