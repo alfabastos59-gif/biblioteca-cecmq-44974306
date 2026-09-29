@@ -9,7 +9,7 @@ export const DEFAULT_AUTHORS: AuthorItem[] = [
     period: '1916 – 2014',
     role: 'Poeta Pantaneiro • Prêmio Jabuti',
     tag: 'Poesia Brasileira',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/29/Manoel_Ramos_de_Barros.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/pt/7/75/Manoel_de_Barros.jpg',
     featuredQuote: 'Sentia mais prazer de brincar com as palavras do que de pensar com elas',
     quoteSource: 'Poeminha em língua de brincar',
     referenceUrl: 'https://www.companhiadasletras.com.br/BlogPost/6532/18-frases-de-manoel-de-barros-para-celebrar-sua-poesia?srsltid=AU7gw4UupGvCbGIrq1HeKDaFSmj_ntsDV3eWEO75ln8KliHmSh-qPnO7',
@@ -23,7 +23,7 @@ export const DEFAULT_AUTHORS: AuthorItem[] = [
     period: '1839 – 1908',
     role: 'Fundador da Academia Brasileira de Letras',
     tag: 'Clássico Imortal',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/0/05/Machado_de_Assis_real.jpg',
+    photoUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ef/Machado_de_Assis_by_Marc_Ferrez.jpg/500px-Machado_de_Assis_by_Marc_Ferrez.jpg',
     featuredQuote: 'A melhor definição do amor não vale um beijo de moça namorada.',
     quoteSource: 'Memórias Póstumas de Brás Cubas',
     additionalQuotes: [
@@ -40,7 +40,7 @@ export const DEFAULT_AUTHORS: AuthorItem[] = [
     period: '1920 – 1977',
     role: 'Romancista e Contista',
     tag: 'Vanguarda Literária',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/90/Clarice_Lispector.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/7/7c/%281920-1977%29_Clarice_Lispector_6zxkp_please_credit%28palette.fm%29_%28cropped%29.png',
     featuredQuote: 'Renda-se, como eu me rendi. Mergulhe no que você não conhece. Não se preocupe em entender: viver ultrapassa qualquer entendimento.',
     quoteSource: 'A Paixão Segundo G.H.',
     additionalQuotes: [
@@ -57,7 +57,7 @@ export const DEFAULT_AUTHORS: AuthorItem[] = [
     period: '1946 – presente',
     role: 'Mestra da Escrevivência • Prêmio Jabuti',
     tag: 'Literatura Negra Contemporânea',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Concei%C3%A7%C3%A3o_Evaristo_em_2019.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Concei%C3%A7%C3%A3o_Evaristo%2C_September_2024.jpg',
     featuredQuote: 'A nossa escrevivência não é para adormecer os da casa grande, e sim para acordá-los dos seus sonos injustos.',
     quoteSource: 'Becos da Memória',
     additionalQuotes: [
@@ -74,7 +74,7 @@ export const DEFAULT_AUTHORS: AuthorItem[] = [
     period: '1908 – 1967',
     role: 'Escritor e Diplomata',
     tag: 'Mestre do Sertão',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/b2/Jo%C3%A3o_Guimar%C3%A3es_Rosa_%281967%29.jpg',
+    photoUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/99/Guimar%C3%A3es_Rosa%2C_anos_1960.jpg/500px-Guimar%C3%A3es_Rosa%2C_anos_1960.jpg',
     featuredQuote: 'O correr da vida embrulha tudo. A vida esquenta e esfria, aperta e daí afrouxa. O que ela quer da gente é coragem.',
     quoteSource: 'Grande Sertão: Veredas',
     additionalQuotes: [
@@ -91,7 +91,7 @@ export const DEFAULT_AUTHORS: AuthorItem[] = [
     period: '1914 – 1977',
     role: 'Escritora, Diarista e Compositora • Sacramento (MG)',
     tag: 'Voz da Cidadania & Realidade',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/1/1d/Carolina_Maria_de_Jesus_1960.jpg',
+    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/53/Carolina_Maria_de_Jesus%2C_1960_cr.jpg',
     featuredQuote: 'O livro é a melhor invenção do homem. O mundo seria horrível sem a leitura.',
     quoteSource: 'Quarto de Despejo: Diário de uma Favelada',
     referenceUrl: 'https://www.casaum.org/20-escritores-e-escritoras-negras-para-ler-hoje-e-sempre/',
@@ -228,7 +228,7 @@ export const DEFAULT_AUTHORS: AuthorItem[] = [
     period: '1991 – presente',
     role: 'Cordelista, Contista e Poeta • Vencedora do Prêmio APCA de Literatura',
     tag: 'Cordel Nordestino & Prosa Feminista',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/PREMIO_APCA_DE_LITERATURA_2019_CATEGORIA_CONTOS_-_CR%C3%94NICAS_%22Redemoinho_em_dia_quente_-_Jarid_Arraes%22.png/640px-PREMIO_APCA_DE_LITERATURA_2019_CATEGORIA_CONTOS_-_CR%C3%94NICAS_%22Redemoinho_em_dia_quente_-_Jarid_Arraes%22.png',
+    photoUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1d/PREMIO_APCA_DE_LITERATURA_2019_CATEGORIA_CONTOS_-_CR%C3%94NICAS_%22Redemoinho_em_dia_quente_-_Jarid_Arraes%22.png/500px-PREMIO_APCA_DE_LITERATURA_2019_CATEGORIA_CONTOS_-_CR%C3%94NICAS_%22Redemoinho_em_dia_quente_-_Jarid_Arraes%22.png',
     featuredQuote: 'A literatura de cordel é a voz viva do sertão: uma arte de encantar e libertar consciências.',
     quoteSource: 'Redemoinho em Dia Quente',
     referenceUrl: 'https://www.casaum.org/20-escritores-e-escritoras-negras-para-ler-hoje-e-sempre/',
@@ -347,7 +347,7 @@ export const DEFAULT_AUTHORS: AuthorItem[] = [
     period: '1988 – presente',
     role: 'Poeta, Slammer, Comunicadora • Campeã Internacional do Rio Poetry Slam',
     tag: 'Spoken Word & Poesia Marginal',
-    photoUrl: 'https://upload.wikimedia.org/wikipedia/commons/6/69/Mel_Duarte_arquivo_pessoal.jpg',
+    photoUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Mel_Duarte_arquivo_pessoal.jpg/500px-Mel_Duarte_arquivo_pessoal.jpg',
     featuredQuote: 'Não me calo, não me curvo, não aceito o papel que tentaram me reservar. Eu sou a minha própria voz.',
     quoteSource: 'Negra, Nua e Crua',
     referenceUrl: 'https://www.casaum.org/20-escritores-e-escritoras-negras-para-ler-hoje-e-sempre/',
@@ -460,6 +460,8 @@ export const DEFAULT_AUTHORS: AuthorItem[] = [
   }
 ];
 
+const BROKEN_PHOTO_URLS = new Set<string>(["https://upload.wikimedia.org/wikipedia/commons/1/1d/Carolina_Maria_de_Jesus_1960.jpg", "https://upload.wikimedia.org/wikipedia/commons/9/90/Clarice_Lispector.jpg", "https://upload.wikimedia.org/wikipedia/commons/e/e0/Concei%C3%A7%C3%A3o_Evaristo_em_2019.jpg", "https://upload.wikimedia.org/wikipedia/commons/b/b2/Jo%C3%A3o_Guimar%C3%A3es_Rosa_%281967%29.jpg", "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/PREMIO_APCA_DE_LITERATURA_2019_CATEGORIA_CONTOS_-_CR%C3%94NICAS_%22Redemoinho_em_dia_quente_-_Jarid_Arraes%22.png/640px-PREMIO_APCA_DE_LITERATURA_2019_CATEGORIA_CONTOS_-_CR%C3%94NICAS_%22Redemoinho_em_dia_quente_-_Jarid_Arraes%22.png", "https://upload.wikimedia.org/wikipedia/commons/0/05/Machado_de_Assis_real.jpg", "https://upload.wikimedia.org/wikipedia/commons/2/29/Manoel_Ramos_de_Barros.jpg", "https://upload.wikimedia.org/wikipedia/commons/0/07/Maria_firmina_%28detailed%29.jpg", "https://upload.wikimedia.org/wikipedia/commons/6/69/Mel_Duarte_arquivo_pessoal.jpg"]);
+
 const STORAGE_KEY = 'cecmq_featured_authors';
 const PINNED_STORAGE_KEY = 'cecmq_pinned_author_id';
 const CUSTOM_EVENT_NAME = 'cecmq_authors_updated';
@@ -539,7 +541,7 @@ export function getStoredAuthors(): AuthorItem[] {
         }
         // Migração de fotos do Wikimedia para links diretos funcionais (sem thumb que dá erro 400)
         const def = DEFAULT_AUTHORS.find((x) => x.id === a.id);
-        if (def && a.photoUrl && a.photoUrl.includes('/thumb/') && a.photoUrl.includes('wikimedia.org')) {
+        if (def && a.photoUrl && a.photoUrl !== def.photoUrl && BROKEN_PHOTO_URLS.has(a.photoUrl)) {
           return {
             ...a,
             photoUrl: def.photoUrl
