@@ -42,32 +42,22 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       <div
         className={`relative pt-8 pb-14 lg:pt-12 lg:pb-16 border-b transition-colors duration-200 ${
           isEmerald
-            ? 'bg-[#021726] border-[#072d42]'
+            ? 'border-[#072d42]'
             : isPurple
-            ? 'bg-[#13072b] border-[#3e196e]'
+            ? 'border-[#3e196e]'
             : isKinetic
-            ? 'bg-[#0c1014] border-[#2a313a]'
+            ? 'border-[#2a313a]'
             : isDark
-            ? 'bg-[#001424] border-[#163650]/60'
+            ? 'border-[#163650]/60'
             : 'bg-gradient-to-b from-slate-100 via-white to-slate-50 border-slate-200'
         }`}
       >
-        {/* Ambient background with clean lighting/gradients (sem animação) */}
-        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none">
-          <div
-            className={`absolute inset-0 ${
-              isEmerald
-                ? 'bg-gradient-to-t from-[#021726] via-[#021726]/90 to-[#021726]/60'
-                : isPurple
-                ? 'bg-gradient-to-t from-[#13072b] via-[#13072b]/90 to-[#13072b]/60'
-                : isKinetic
-                ? 'bg-gradient-to-t from-[#0c1014] via-[#0c1014]/90 to-[#0c1014]/60'
-                : isDark
-                ? 'bg-gradient-to-t from-[#001424] via-[#001424]/90 to-[#001424]/60'
-                : 'bg-gradient-to-t from-slate-100 via-white/90 to-white/60'
-            }`}
-          />
-        </div>
+        {/* Ambient background (apenas no tema claro; nos temas escuros o fundo da página já dá o tom) */}
+        {!isEmerald && !isPurple && !isKinetic && !isDark && (
+          <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none">
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-100 via-white/90 to-white/60" />
+          </div>
+        )}
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Top Row: Left Content (Title, Subtitle, Search) + Right Magic Illustration */}
