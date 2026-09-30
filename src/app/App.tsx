@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect } from 'react';
+import logoMariaQuiteria from '../assets/logo-maria-quiteria.png.asset.json';
 import { Header } from './components/Header';
 import { HeroBanner } from './components/HeroBanner';
 import { BookCatalog } from './components/BookCatalog';
@@ -959,6 +960,18 @@ export default function App() {
           : 'bg-[#00101c] text-slate-100 selection:bg-emerald-500 selection:text-slate-950'
       }`}
     >
+
+      {/* Marca d'água de fundo com a logo do colégio */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center overflow-hidden"
+      >
+        <img
+          src={logoMariaQuiteria.url}
+          alt=""
+          className="h-[85vmin] w-[85vmin] max-h-[900px] max-w-[900px] rounded-full object-contain opacity-[0.22]"
+        />
+      </div>
 
       {/* Global Header */}
       <Header
