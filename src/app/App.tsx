@@ -969,7 +969,7 @@ export default function App() {
         <img
           src={logoMariaQuiteria.url}
           alt=""
-          className="h-[85vmin] w-[85vmin] max-h-[900px] max-w-[900px] rounded-full object-contain opacity-[0.13]"
+          className="h-[85vmin] w-[85vmin] max-h-[900px] max-w-[900px] rounded-full object-contain opacity-[0.22]"
         />
       </div>
 
