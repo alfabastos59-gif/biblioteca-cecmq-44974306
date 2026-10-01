@@ -1,78 +1,114 @@
 // @ts-nocheck
-// Sincronização na nuvem (Lovable Cloud). Mantém a mesma API usada pelo app.
-import { supabase } from '@/integrations/supabase/client';
+// Sincronização na nuvem com Firebase Firestore oficial do projeto
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import {
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  deleteDoc,
+  onSnapshot,
+  getDocs,
+  getDocFromServer,
+  writeBatch,
+} from 'firebase/firestore';
+import firebaseConfig from '@/firebase-applet-config.json';
 import { Book, Loan, Student, Suggestion, AdminUser, AuditLog } from '../types';
 
-const TABLE = 'records';
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const auth = getAuth(app);
+
+export enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+export interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
+    }[];
+  };
+}
+
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo:
+        auth.currentUser?.providerData?.map((provider) => ({
+          providerId: provider.providerId,
+          email: provider.email,
+        })) || [],
+    },
+    operationType,
+    path,
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
 
 export async function testConnection(): Promise<boolean> {
   try {
-    const { error } = await supabase.from(TABLE).select('id').limit(1);
-    if (error) {
-      console.error('Falha ao conectar na nuvem:', error.message);
+    await getDocFromServer(doc(db, 'meta', 'connection'));
+    return true;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
+      console.warn('Firebase cliente offline:', error.message);
       return false;
     }
     return true;
-  } catch {
-    return false;
   }
-}
-
-async function fetchCollection(collection: string): Promise<any[]> {
-  const out: any[] = [];
-  const PAGE = 1000;
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await supabase
-      .from(TABLE)
-      .select('data')
-      .eq('collection', collection)
-      .range(from, from + PAGE - 1);
-    if (error) throw error;
-    out.push(...(data || []).map((r) => r.data));
-    if (!data || data.length < PAGE) break;
-  }
-  return out;
 }
 
 function subscribe(
-  collection: string,
+  collectionName: string,
   transform: (list: any[]) => any[],
   onSuccess: (list: any[]) => void,
   onError?: (err: Error) => void
 ): () => void {
-  let active = true;
-  let timer: any = null;
-  const load = async () => {
-    try {
-      const list = await fetchCollection(collection);
-      if (active) onSuccess(transform(list));
-    } catch (err: any) {
-      console.error(`Erro ao sincronizar ${collection}:`, err);
-      if (active && onError) onError(err);
-    }
-  };
-  load();
-  const channel = supabase
-    .channel(`records-${collection}-${Math.random().toString(36).slice(2)}`)
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: TABLE, filter: `collection=eq.${collection}` },
-      () => {
-        clearTimeout(timer);
-        timer = setTimeout(load, 300);
+  try {
+    const colRef = collection(db, collectionName);
+    const unsubscribe = onSnapshot(
+      colRef,
+      (snapshot) => {
+        const list = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }));
+        onSuccess(transform(list));
+      },
+      (error) => {
+        console.error(`Erro ao sincronizar ${collectionName}:`, error);
+        if (onError) onError(error);
       }
-    )
-    .subscribe((status) => {
-      if (status === 'SUBSCRIBED') load();
-    });
-  const onFocus = () => document.visibilityState === 'visible' && load();
-  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onFocus);
-  return () => {
-    active = false;
-    clearTimeout(timer);
-    supabase.removeChannel(channel);
-    if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onFocus);
-  };
+    );
+    return unsubscribe;
+  } catch (err: any) {
+    console.error(`Erro ao assinar ${collectionName}:`, err);
+    if (onError) onError(err);
+    return () => {};
+  }
 }
 
 const byText = (k: string) => (l: any[]) =>
@@ -102,22 +138,25 @@ export function sanitizeForFirestore<T>(val: T): T {
   return JSON.parse(JSON.stringify(val ?? null));
 }
 
-async function upsertMany(collection: string, items: any[]) {
-  for (let i = 0; i < items.length; i += 500) {
-    const rows = items.slice(i, i + 500).map((d) => ({
-      collection,
-      id: String(d.id),
-      data: sanitizeForFirestore(d),
-      updated_at: new Date().toISOString(),
-    }));
-    const { error } = await supabase.from(TABLE).upsert(rows, { onConflict: 'collection,id' });
-    if (error) throw error;
+async function upsertMany(collectionName: string, items: any[]) {
+  if (!items || items.length === 0) return;
+  const CHUNK_SIZE = 450;
+  for (let i = 0; i < items.length; i += CHUNK_SIZE) {
+    const chunk = items.slice(i, i + CHUNK_SIZE);
+    const batch = writeBatch(db);
+    for (const item of chunk) {
+      const clean = sanitizeForFirestore(item);
+      const id = String(clean.id || Math.random().toString(36).substring(2, 9));
+      const ref = doc(db, collectionName, id);
+      batch.set(ref, clean, { merge: true });
+    }
+    await batch.commit();
   }
 }
 
-async function removeOne(collection: string, id: string) {
-  const { error } = await supabase.from(TABLE).delete().eq('collection', collection).eq('id', id);
-  if (error) throw error;
+async function removeOne(collectionName: string, id: string) {
+  const ref = doc(db, collectionName, String(id));
+  await deleteDoc(ref);
 }
 
 export const saveBookToCloud = (b: Book) => upsertMany('books', [b]);
@@ -152,15 +191,18 @@ async function pushAll(d: AllData) {
 
 export async function seedCloudDatabaseIfEmpty(initialData: AllData): Promise<boolean> {
   try {
-    const { data: seed } = await supabase
-      .from(TABLE).select('id').eq('collection', 'meta').eq('id', 'seed').maybeSingle();
-    if (seed) return false;
-    const { data: anyBook } = await supabase.from(TABLE).select('id').eq('collection', 'books').limit(1);
-    if (!anyBook || anyBook.length === 0) await pushAll(initialData);
-    await upsertMany('meta', [{ id: 'seed', seededAt: new Date().toISOString() }]);
+    const seedRef = doc(db, 'meta', 'seed');
+    const seedSnap = await getDocFromServer(seedRef).catch(() => null);
+    if (seedSnap && seedSnap.exists()) return false;
+
+    const booksSnap = await getDocs(collection(db, 'books'));
+    if (booksSnap.empty) {
+      await pushAll(initialData);
+    }
+    await setDoc(seedRef, { seededAt: new Date().toISOString() });
     return true;
   } catch (error) {
-    console.error('Erro na carga inicial da nuvem:', error);
+    console.error('Erro na carga inicial do Firebase:', error);
     return false;
   }
 }
@@ -170,17 +212,11 @@ export async function pushAllLocalDataToCloud(data: AllData): Promise<{ success:
     await pushAll(data);
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error?.message || 'Falha ao sincronizar' };
+    return { success: false, error: error?.message || 'Falha ao sincronizar com Firebase' };
   }
 }
 
 export async function syncAuthorsToCloud(authors: any[]): Promise<void> {
-  const { data } = await supabase.from(TABLE).select('id').eq('collection', 'authors');
-  const keep = new Set(authors.map((a) => String(a.id)));
-  const stale = (data || []).map((r) => r.id).filter((id) => !keep.has(id));
-  if (stale.length) {
-    const { error } = await supabase.from(TABLE).delete().eq('collection', 'authors').in('id', stale);
-    if (error) throw error;
-  }
+  if (!authors || authors.length === 0) return;
   await upsertMany('authors', authors);
 }

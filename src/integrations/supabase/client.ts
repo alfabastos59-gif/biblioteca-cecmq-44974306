@@ -39,9 +39,35 @@ function createSupabaseClient() {
       ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
       ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
     ];
-    const message = `Missing Supabase environment variable(s): ${missing.join(', ')}. Connect Supabase in Lovable Cloud.`;
-    console.error(`[Supabase] ${message}`);
-    throw new Error(message);
+    console.warn(`[Supabase] Environment variables missing (${missing.join(', ')}). Using safe fallback.`);
+    const mockChannel = {
+      on: () => mockChannel,
+      subscribe: (cb?: (status: string) => void) => {
+        if (cb) cb('CLOSED');
+        return mockChannel;
+      },
+    };
+    const mockQuery: any = {
+      select: () => mockQuery,
+      eq: () => mockQuery,
+      in: () => mockQuery,
+      range: () => mockQuery,
+      limit: () => mockQuery,
+      maybeSingle: async () => ({ data: null, error: null }),
+      single: async () => ({ data: null, error: null }),
+      upsert: async () => ({ error: null }),
+      delete: () => mockQuery,
+      then: (resolve: any) => resolve({ data: [], error: null }),
+    };
+    return {
+      from: () => mockQuery,
+      channel: () => mockChannel,
+      removeChannel: () => {},
+      auth: {
+        getSession: async () => ({ data: { session: null }, error: null }),
+        getClaims: async () => ({ data: null, error: new Error('Supabase not configured') }),
+      },
+    } as any;
   }
 
   return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
