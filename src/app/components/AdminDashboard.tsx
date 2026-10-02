@@ -169,6 +169,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     createdAt: '15/02/2026',
   };
 
+  // Navega para a página de empréstimos já filtrada pelo aluno escolhido
+  const openStudentLoans = (studentName: string, studentCode?: string) => {
+    setLoanSearchQuery(studentCode || studentName);
+    setLoanStatusFilter('all');
+    setAdminSection('emprestimos');
+  };
+
   // Helper date parser
   const parseLoanDate = (dateStr: string): Date | null => {
     if (!dateStr) return null;
@@ -901,7 +908,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <img
                           src={loan.studentAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80'}
                           alt={loan.studentName}
-                          className={`w-8 h-8 rounded-full object-cover border student-avatar-zoom transition-transform duration-300 ease-out hover:scale-150 cursor-pointer hover:shadow-2xl hover:z-40 relative ${
+                          title="Ver empréstimos deste aluno"
+                          aria-label={`Ver empréstimos de ${loan.studentName}`}
+                          role="button"
+                          onClick={() => openStudentLoans(loan.studentName, loan.studentCode)}
+                          className={`w-8 h-8 rounded-full object-cover border student-avatar-zoom transition-transform duration-300 ease-out hover:scale-150 cursor-pointer hover:shadow-2xl hover:z-40 relative hover:ring-2 hover:ring-emerald-400 ${
                             isDark ? 'border-[#163650]' : 'border-slate-300'
                           }`}
                         />
@@ -1205,7 +1216,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 <img
                                   src={student.avatar}
                                   alt={student.name}
-                                  className={`w-9 h-9 rounded-full object-cover border flex-shrink-0 student-avatar-zoom transition-transform duration-300 ease-out hover:scale-150 cursor-pointer hover:shadow-2xl hover:z-40 relative ${
+                                  title="Ver empréstimos deste aluno"
+                                  aria-label={`Ver empréstimos de ${student.name}`}
+                                  role="button"
+                                  onClick={() => openStudentLoans(student.name, student.studentCode)}
+                                  className={`w-9 h-9 rounded-full object-cover border flex-shrink-0 student-avatar-zoom transition-transform duration-300 ease-out hover:scale-150 cursor-pointer hover:shadow-2xl hover:z-40 relative hover:ring-2 hover:ring-emerald-400 ${
                                     isDark ? 'border-[#163e5e] bg-[#092032]' : 'border-slate-200 bg-white'
                                   }`}
                                 />
