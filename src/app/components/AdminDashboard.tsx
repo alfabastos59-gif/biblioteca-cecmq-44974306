@@ -908,7 +908,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <img
                           src={loan.studentAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80'}
                           alt={loan.studentName}
-                          className={`w-8 h-8 rounded-full object-cover border student-avatar-zoom transition-transform duration-300 ease-out hover:scale-150 cursor-pointer hover:shadow-2xl hover:z-40 relative ${
+                          title="Ver empréstimos deste aluno"
+                          aria-label={`Ver empréstimos de ${loan.studentName}`}
+                          role="button"
+                          onClick={() => openStudentLoans(loan.studentName, loan.studentCode)}
+                          className={`w-8 h-8 rounded-full object-cover border student-avatar-zoom transition-transform duration-300 ease-out hover:scale-150 cursor-pointer hover:shadow-2xl hover:z-40 relative hover:ring-2 hover:ring-emerald-400 ${
                             isDark ? 'border-[#163650]' : 'border-slate-300'
                           }`}
                         />
