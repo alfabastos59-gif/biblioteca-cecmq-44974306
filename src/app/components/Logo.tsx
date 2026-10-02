@@ -137,8 +137,8 @@ export const Logo: React.FC<LogoProps> = ({
       {/* Typography: Title + Subtitle */}
       <div className="flex flex-col justify-center">
         <span
-          className={`${titleSizes[size]} text-white font-serif tracking-tight leading-tight drop-shadow-sm ${titleClassName}`}
-          style={{ fontFamily: "'Playfair Display', 'Merriweather', Georgia, serif" }}
+          className={`${titleSizes[size]} text-white tracking-normal leading-tight drop-shadow-sm ${titleClassName}`}
+          style={{ fontFamily: "'Fredoka', 'Arial Rounded MT Bold', sans-serif", fontWeight: 700 }}
         >
           Biblioteca Maria Quitéria
         </span>
