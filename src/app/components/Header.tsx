@@ -18,7 +18,8 @@ import {
   BookOpen,
   Info,
   Lightbulb,
-  Film
+  Film,
+  ExternalLink
 } from 'lucide-react';
 import { ActiveTab, UserSession, Book, Loan, Student, Suggestion, AdminUser, AuditLog } from '../types';
 import { Logo } from './Logo';
@@ -313,6 +314,29 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* User Session & Header Actions */}
           <div className="hidden lg:flex items-center gap-2.5">
+            {/* ATALHO PARA LIVROS DO MEC */}
+            <a
+              href="https://meclivros.mec.gov.br/"
+              target="_blank"
+              rel="noopener noreferrer"
+              id="btn-header-livros-mec"
+              title="Abrir o site Livros do MEC em uma nova aba"
+              className={`px-3 py-1.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95 ${
+                isEmerald
+                  ? 'bg-[#042135] hover:bg-[#072c47] text-emerald-300 border-[#0b3d5b]'
+                  : isPurple
+                  ? 'bg-[#2e105e] hover:bg-[#3e147e] text-purple-200 border-[#a855f7]/50'
+                  : isKinetic
+                  ? 'bg-[#1a1c1e] hover:bg-[#2a313a] text-emerald-400 border-[#2a313a]'
+                  : isDark
+                  ? 'bg-[#092032] hover:bg-[#133e4a] text-emerald-300 border-[#163650]'
+                  : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200'
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden xl:inline text-[11px]">Livros do MEC</span>
+            </a>
+
             {/* BOTÃO ASSISTIR VÍDEO DE ABERTURA DO APLICATIVO */}
             {onOpenOpeningVideo && (
               <button
@@ -594,6 +618,20 @@ export const Header: React.FC<HeaderProps> = ({
             >
               Sugestões
             </button>
+            <a
+              href="https://meclivros.mec.gov.br/"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`p-2.5 rounded-xl text-sm font-semibold text-left flex items-center gap-2 ${
+                isDark
+                  ? 'bg-[#092032] text-emerald-300 border border-emerald-500/30'
+                  : 'bg-emerald-50 border border-emerald-200 text-emerald-900'
+              }`}
+            >
+              <ExternalLink className="w-4 h-4 text-emerald-400" />
+              <span>Livros do MEC</span>
+            </a>
             {onOpenOpeningVideo && (
               <button
                 onClick={() => {
