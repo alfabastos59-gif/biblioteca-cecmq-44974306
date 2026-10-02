@@ -65,7 +65,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const handleStudentLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
-    const inputCode = studentCodeInput.trim().toUpperCase().replace(/^ALU-/, '');
+    const inputCode = studentCodeInput.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
 
     if (!inputCode) {
       setErrorMessage('Por favor, digite seu código de aluno para acessar.');
@@ -73,7 +73,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
 
     const found = students.find((s) => {
-      const code = (s.studentCode || '').toUpperCase().replace(/^ALU-/, '');
+      const code = (s.studentCode || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
       return code === inputCode;
     });
 

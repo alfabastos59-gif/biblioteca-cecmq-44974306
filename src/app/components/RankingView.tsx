@@ -71,9 +71,9 @@ export const RankingView: React.FC<RankingViewProps> = ({
     const list = Object.values(scoresMap)
       .filter((s) => s.score > 0 || (s.correctAnswers && s.correctAnswers > 0) || (s.totalAnswered && s.totalAnswered > 0))
       .map((item) => {
-        const cleanCode = (item.studentCode || item.studentId || '').toLowerCase().replace(/^alu-/, '');
+        const cleanCode = (item.studentCode || item.studentId || '').toLowerCase().replace(/[^a-z0-9]/g, '');
         const matchedStudent = students.find((s) => {
-          const sCleanCode = (s.studentCode || '').toLowerCase().replace(/^alu-/, '');
+          const sCleanCode = (s.studentCode || '').toLowerCase().replace(/[^a-z0-9]/g, '');
           return sCleanCode === cleanCode || s.name.toLowerCase() === item.studentName.toLowerCase();
         });
 
@@ -86,11 +86,9 @@ export const RankingView: React.FC<RankingViewProps> = ({
 
         return {
           id: item.studentId,
-          code: matchedStudent?.studentCode
-            ? `ALU-${matchedStudent.studentCode.replace(/^ALU-/, '')}`
-            : item.studentCode
-            ? (item.studentCode.startsWith('ALU-') ? item.studentCode : `ALU-${item.studentCode}`)
-            : `ALU-${(item.studentId || item.studentName || '001').toUpperCase()}`,
+          code: (matchedStudent?.studentCode || item.studentCode || `ALU${item.studentId || item.studentName || '001'}`)
+            .replace(/[^a-zA-Z0-9]/g, '')
+            .toUpperCase(),
           name: matchedStudent?.name || item.studentName,
           className: matchedStudent?.class || 'Ensino Fundamental/Médio',
           avatar:
@@ -142,7 +140,7 @@ export const RankingView: React.FC<RankingViewProps> = ({
         const totalCount = Math.max(calculatedCount, student.totalLoansCount || 0);
 
         // Find Missão Quitério points
-        const cleanCode = (student.studentCode || '').toLowerCase().replace(/^alu-/, '');
+        const cleanCode = (student.studentCode || '').toLowerCase().replace(/[^a-z0-9]/g, '');
         const scoreData =
           scoresMap[cleanCode] ||
           scoresMap[student.name.toLowerCase()] ||

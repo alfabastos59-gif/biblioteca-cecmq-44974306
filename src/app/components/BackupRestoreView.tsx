@@ -101,7 +101,7 @@ export const BackupRestoreView: React.FC<BackupRestoreViewProps> = ({
           turma: s.class,
           matricula: null,
           telefone: s.phone || null,
-          codigo_aluno: s.studentCode || `ALU-${s.id.slice(0, 4)}`,
+          codigo_aluno: s.studentCode || `ALU${s.id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4)}`,
           created_at: s.joinedDate || new Date().toISOString(),
           avatar: s.avatar,
         })),

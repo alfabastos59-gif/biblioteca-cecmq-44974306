@@ -91,7 +91,9 @@ export function normalizeBook(raw: any, index: number = 0): Book {
  */
 export function normalizeStudent(raw: any, index: number = 0): Student {
   const name = raw.nome || raw.name || 'Estudante';
-  const studentCode = raw.codigo_aluno || raw.matricula || raw.studentCode || `ALU-${String(index + 1).padStart(4, '0')}`;
+  const studentCode = String(raw.codigo_aluno || raw.matricula || raw.studentCode || `ALU${String(index + 1).padStart(4, '0')}`)
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toUpperCase();
   const studentClass = raw.turma || raw.class || '1º Ano';
   const phone = raw.telefone || raw.phone || '';
   const email = raw.email || `${name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '.')}@escola.ba.gov.br`;
@@ -127,7 +129,9 @@ export function normalizeLoan(
 
   const studentName = raw.aluno_nome || raw.studentName || matchedStudent?.name || 'Estudante';
   const studentClass = raw.aluno_turma || raw.studentClass || matchedStudent?.class || 'Ensino Médio';
-  const studentCode = raw.codigo_aluno || raw.studentCode || matchedStudent?.studentCode || '';
+  const studentCode = String(raw.codigo_aluno || raw.studentCode || matchedStudent?.studentCode || '')
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toUpperCase();
   const studentEmail = raw.studentEmail || matchedStudent?.email || `${studentName.toLowerCase().replace(/\s+/g, '.')}@escola.ba.gov.br`;
   const studentAvatar = normalizeAvatarUrl(raw.studentAvatar || matchedStudent?.avatar, studentName);
 

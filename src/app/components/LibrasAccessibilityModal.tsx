@@ -106,7 +106,7 @@ const COMMUNICATION_CARDS: CommunicationCard[] = [
     title: 'Qual é o meu código de aluno?',
     librasDica: 'Sinal de [NÚMERO / CÓDIGO] + [ESTUDANTE]',
     icon: '🪪',
-    fullMessage: 'Esqueci meu código de estudante (ALU-...). Você poderia consultar pelo meu nome completo?',
+    fullMessage: 'Esqueci meu código de estudante (somente letras e números). Você poderia consultar pelo meu nome completo?',
   },
   {
     id: 'card-10',

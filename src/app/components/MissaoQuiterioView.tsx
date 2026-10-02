@@ -123,8 +123,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
   const studentLoans = useMemo(() => {
     if (!activeStudent) return [];
     return loans.filter((l) => {
-      const studentCodeNormalized = (activeStudent.studentCode || '').trim().toLowerCase().replace(/^alu-/, '');
-      const loanCodeNormalized = (l.studentCode || '').trim().toLowerCase().replace(/^alu-/, '');
+      const studentCodeNormalized = (activeStudent.studentCode || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      const loanCodeNormalized = (l.studentCode || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
       const codeMatch =
         Boolean(studentCodeNormalized && loanCodeNormalized && studentCodeNormalized === loanCodeNormalized);
 
@@ -489,11 +489,11 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
       return;
     }
 
-    const cleanInput = rawInput.toLowerCase().replace(/^alu-/, '');
+    const cleanInput = rawInput.toLowerCase().replace(/[^a-z0-9]/g, '');
 
     const foundStudent = students.find((s) => {
-      const sCode = (s.studentCode || '').trim().toLowerCase().replace(/^alu-/, '');
-      const sId = (s.id || '').trim().toLowerCase().replace(/^alu-/, '');
+      const sCode = (s.studentCode || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      const sId = (s.id || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
       const sName = (s.name || '').trim().toLowerCase();
       return (
         sCode === cleanInput ||
@@ -1673,7 +1673,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                     value={studentCodeInput}
                     onChange={(e) => setStudentCodeInput(e.target.value)}
                     autoFocus
-                    placeholder="Ex: ALU-001 ou código do aluno"
+                    placeholder="Ex: ALU001 ou código do aluno"
                     className={`w-full px-4 py-3 rounded-2xl border text-sm font-semibold text-center focus:outline-none focus:ring-2 ${
                       isDark
                         ? 'bg-[#071828] border-[#163e5e] text-white focus:border-amber-400 focus:ring-amber-400/20'

@@ -97,8 +97,8 @@ export const StudentModal: React.FC<StudentModalProps> = ({
     const initials = (cleanName.substring(0, 3) || 'EST').toUpperCase();
     const paddedNum = String((existingCount || 0) + 1).padStart(4, '0');
     const generatedCode = studentToEdit?.studentCode
-      ? studentToEdit.studentCode.replace(/^ALU-/, '')
-      : `${initials}-${paddedNum}`;
+      ? studentToEdit.studentCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
+      : `${initials}${paddedNum}`;
 
     const studentData: Student = {
       id: studentToEdit?.id || `stu_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,

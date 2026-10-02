@@ -95,7 +95,7 @@ export default function App() {
     const parsed: Loan[] = JSON.parse(saved);
     return parsed.map((l) => ({
       ...l,
-      studentCode: l.studentCode ? l.studentCode.replace(/^ALU-/, '') : undefined,
+      studentCode: l.studentCode ? l.studentCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() : undefined,
     }));
   });
 
@@ -111,7 +111,7 @@ export default function App() {
     return parsed
       .map((s) => ({
         ...s,
-        studentCode: s.studentCode ? s.studentCode.replace(/^ALU-/, '') : s.studentCode,
+        studentCode: s.studentCode ? s.studentCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() : s.studentCode,
       }))
       .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
   });
@@ -285,13 +285,19 @@ export default function App() {
 
     const unsubLoans = subscribeToLoans((cloudLoans) => {
       if (!isSubscribed || !cloudLoans) return;
-      setLoans(cloudLoans);
+      setLoans(cloudLoans.map((loan) => ({
+        ...loan,
+        studentCode: loan.studentCode?.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(),
+      })));
       markSynced();
     }, markOffline);
 
     const unsubStudents = subscribeToStudents((cloudStudents) => {
       if (!isSubscribed || !cloudStudents) return;
-      const sorted = [...cloudStudents].sort((a, b) =>
+      const sorted = cloudStudents.map((student) => ({
+        ...student,
+        studentCode: student.studentCode?.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(),
+      })).sort((a, b) =>
         a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
       );
       setStudents(sorted);
