@@ -123,8 +123,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
   const studentLoans = useMemo(() => {
     if (!activeStudent) return [];
     return loans.filter((l) => {
-      const studentCodeNormalized = (activeStudent.studentCode || '').trim().toLowerCase().replace(/^alu-/, '');
-      const loanCodeNormalized = (l.studentCode || '').trim().toLowerCase().replace(/^alu-/, '');
+      const studentCodeNormalized = (activeStudent.studentCode || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      const loanCodeNormalized = (l.studentCode || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
       const codeMatch =
         Boolean(studentCodeNormalized && loanCodeNormalized && studentCodeNormalized === loanCodeNormalized);
 

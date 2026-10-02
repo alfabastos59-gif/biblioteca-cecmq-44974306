@@ -140,7 +140,7 @@ export const RankingView: React.FC<RankingViewProps> = ({
         const totalCount = Math.max(calculatedCount, student.totalLoansCount || 0);
 
         // Find Missão Quitério points
-        const cleanCode = (student.studentCode || '').toLowerCase().replace(/^alu-/, '');
+        const cleanCode = (student.studentCode || '').toLowerCase().replace(/[^a-z0-9]/g, '');
         const scoreData =
           scoresMap[cleanCode] ||
           scoresMap[student.name.toLowerCase()] ||
