@@ -967,17 +967,19 @@ export default function App() {
       }`}
     >
 
-      {/* Marca d'água de fundo com a logo do colégio */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center overflow-hidden"
-      >
-        <img
-          src={logoMariaQuiteria.url}
-          alt=""
-          className="h-[85vmin] w-[85vmin] max-h-[900px] max-w-[900px] rounded-full object-contain opacity-[0.22]"
-        />
-      </div>
+      {/* Marca d'água de fundo com a logo do colégio (oculta no painel ADM) */}
+      {!(activeTab === 'admin' && session.role === 'admin') && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center overflow-hidden"
+        >
+          <img
+            src={logoMariaQuiteria.url}
+            alt=""
+            className="h-[85vmin] w-[85vmin] max-h-[900px] max-w-[900px] rounded-full object-contain opacity-[0.22]"
+          />
+        </div>
+      )}
 
       {/* Global Header */}
       <Header
