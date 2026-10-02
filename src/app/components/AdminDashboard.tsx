@@ -1212,7 +1212,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 <img
                                   src={student.avatar}
                                   alt={student.name}
-                                  className={`w-9 h-9 rounded-full object-cover border flex-shrink-0 student-avatar-zoom transition-transform duration-300 ease-out hover:scale-150 cursor-pointer hover:shadow-2xl hover:z-40 relative ${
+                                  title="Ver empréstimos deste aluno"
+                                  aria-label={`Ver empréstimos de ${student.name}`}
+                                  role="button"
+                                  onClick={() => openStudentLoans(student.name, student.studentCode)}
+                                  className={`w-9 h-9 rounded-full object-cover border flex-shrink-0 student-avatar-zoom transition-transform duration-300 ease-out hover:scale-150 cursor-pointer hover:shadow-2xl hover:z-40 relative hover:ring-2 hover:ring-emerald-400 ${
                                     isDark ? 'border-[#163e5e] bg-[#092032]' : 'border-slate-200 bg-white'
                                   }`}
                                 />
