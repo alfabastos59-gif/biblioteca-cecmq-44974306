@@ -13,20 +13,20 @@ export interface BarcodeResult {
 
 export function formatStudentRegistration(student: Student): string {
   if (student.studentCode) {
-    const raw = student.studentCode.replace(/^alu-/i, '').replace(/\D/g, '');
+    const raw = student.studentCode.replace(/\D/g, '');
     if (raw.length >= 6) {
       return `${raw.slice(0, 4)}.${raw.slice(4)}`;
     }
-    return student.studentCode.toUpperCase();
+    return student.studentCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
   }
   return student.id ? student.id.slice(0, 8).toUpperCase() : '0000.00';
 }
 
 export function getStudentBarcodeCode(student: Student): string {
   if (student.studentCode) {
-    return student.studentCode.toUpperCase();
+    return student.studentCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
   }
-  return `ALU-${(student.id || '000000').slice(0, 6).toUpperCase()}`;
+  return `ALU${(student.id || '000000').replace(/[^a-zA-Z0-9]/g, '').slice(0, 6).toUpperCase()}`;
 }
 
 /**
