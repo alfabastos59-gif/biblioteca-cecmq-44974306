@@ -1,6 +1,6 @@
 // @ts-nocheck
 // Sincronização na nuvem (Lovable Cloud). Mantém a mesma API usada pelo app.
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from './cloudClient';
 import { Book, Loan, Student, Suggestion, AdminUser, AuditLog } from '../types';
 
 const TABLE = 'records';
