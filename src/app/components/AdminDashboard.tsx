@@ -169,6 +169,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     createdAt: '15/02/2026',
   };
 
+  // Navega para a página de empréstimos já filtrada pelo aluno escolhido
+  const openStudentLoans = (studentName: string, studentCode?: string) => {
+    setLoanSearchQuery(studentCode || studentName);
+    setLoanStatusFilter('all');
+    setAdminSection('emprestimos');
+  };
+
   // Helper date parser
   const parseLoanDate = (dateStr: string): Date | null => {
     if (!dateStr) return null;
