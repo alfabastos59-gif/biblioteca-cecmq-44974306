@@ -4,7 +4,7 @@ import logoMariaQuiteria from '../assets/logo-maria-quiteria.png.asset.json';
 import { Header } from './components/Header';
 import { HeroBanner } from './components/HeroBanner';
 import { BookCatalog } from './components/BookCatalog';
-import { BookDetailModal } from './components/BookDetailModal';
+import { BookDetailModal } from './components/BookDetailModal';\nimport { BookRecommendationModal } from './components/BookRecommendationModal';
 import { AdminDashboard } from './components/AdminDashboard';
 import { ReportsView } from './components/ReportsView';
 import { MobileSimulator } from './components/MobileSimulator';
@@ -180,7 +180,7 @@ export default function App() {
   // UI state
   const [activeTab, setActiveTab] = useState<ActiveTab>('inicio');
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-  const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
+  const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);\n  const [isRecommendationsOpen, setIsRecommendationsOpen] = useState(false);
   const [isManageBooksOpen, setIsManageBooksOpen] = useState(false);
   const [isRegisterBookOpen, setIsRegisterBookOpen] = useState(false);
   const [isDesignSystemOpen, setIsDesignSystemOpen] = useState(false);
@@ -1040,7 +1040,7 @@ export default function App() {
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             onOpenRegisterBook={() => setIsRegisterBookOpen(true)}
-            onOpenSuggestions={() => setActiveTab('sugestoes')}
+            onOpenSuggestions={() => setActiveTab('sugestoes')}\n            onOpenRecommendations={() => setIsRecommendationsOpen(true)}
           />
         )}
 
@@ -1195,6 +1195,13 @@ export default function App() {
         onSaveBook={handleSaveBook}
         onCreateBook={handleCreateBook}
         onDeleteBook={handleDeleteBook}
+      />
+
+      <BookRecommendationModal
+        isOpen={isRecommendationsOpen}
+        onClose={() => setIsRecommendationsOpen(false)}
+        books={books}
+        onSelectBook={handleSelectBook}
       />
 
       {/* Book Detail Modal */}
