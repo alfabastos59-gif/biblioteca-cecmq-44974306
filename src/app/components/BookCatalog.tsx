@@ -11,7 +11,8 @@ interface BookCatalogProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   onOpenRegisterBook?: () => void;
-  onOpenSuggestions?: () => void;\n  onOpenRecommendations?: () => void;
+  onOpenSuggestions?: () => void;
+  onOpenRecommendations?: () => void;
 }
 
 export const BookCatalog: React.FC<BookCatalogProps> = ({
@@ -21,6 +22,7 @@ export const BookCatalog: React.FC<BookCatalogProps> = ({
   setSearchQuery,
   onOpenRegisterBook,
   onOpenSuggestions,
+  onOpenRecommendations,
 }) => {
   const { isDark } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState('Todos');
