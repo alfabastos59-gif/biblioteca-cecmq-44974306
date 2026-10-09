@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { HeroBanner } from './components/HeroBanner';
 import { BookCatalog } from './components/BookCatalog';
 import { BookDetailModal } from './components/BookDetailModal';
+import { BookRecommendationModal } from './components/BookRecommendationModal';
 import { AdminDashboard } from './components/AdminDashboard';
 import { ReportsView } from './components/ReportsView';
 import { MobileSimulator } from './components/MobileSimulator';
@@ -181,6 +182,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('inicio');
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
+  const [isRecommendationsOpen, setIsRecommendationsOpen] = useState(false);
   const [isManageBooksOpen, setIsManageBooksOpen] = useState(false);
   const [isRegisterBookOpen, setIsRegisterBookOpen] = useState(false);
   const [isDesignSystemOpen, setIsDesignSystemOpen] = useState(false);
@@ -995,6 +997,7 @@ export default function App() {
         setActiveTab={handleNavigateTab}
         onOpenDesignSystem={() => setIsDesignSystemOpen(true)}
         onOpenRegisterBook={() => setIsRegisterBookOpen(true)}
+        onOpenRecommendations={() => setIsRecommendationsOpen(true)}
         onOpenAccessibility={() => setIsAccessibilityModalOpen(true)}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -1041,6 +1044,7 @@ export default function App() {
             setSearchQuery={setSearchQuery}
             onOpenRegisterBook={() => setIsRegisterBookOpen(true)}
             onOpenSuggestions={() => setActiveTab('sugestoes')}
+            onOpenRecommendations={() => setIsRecommendationsOpen(true)}
           />
         )}
 
@@ -1195,6 +1199,13 @@ export default function App() {
         onSaveBook={handleSaveBook}
         onCreateBook={handleCreateBook}
         onDeleteBook={handleDeleteBook}
+      />
+
+      <BookRecommendationModal
+        isOpen={isRecommendationsOpen}
+        onClose={() => setIsRecommendationsOpen(false)}
+        books={books}
+        onSelectBook={handleSelectBook}
       />
 
       {/* Book Detail Modal */}

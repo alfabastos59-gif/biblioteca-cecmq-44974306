@@ -12,6 +12,7 @@ interface BookCatalogProps {
   setSearchQuery: (query: string) => void;
   onOpenRegisterBook?: () => void;
   onOpenSuggestions?: () => void;
+  onOpenRecommendations?: () => void;
 }
 
 export const BookCatalog: React.FC<BookCatalogProps> = ({
@@ -21,6 +22,7 @@ export const BookCatalog: React.FC<BookCatalogProps> = ({
   setSearchQuery,
   onOpenRegisterBook,
   onOpenSuggestions,
+  onOpenRecommendations,
 }) => {
   const { isDark } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState('Todos');
@@ -101,6 +103,17 @@ export const BookCatalog: React.FC<BookCatalogProps> = ({
           <p className={`text-sm sm:text-base mt-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
             Explore todos os títulos e novidades da Biblioteca Maria Quitéria
           </p>
+
+          {onOpenRecommendations && (
+            <button
+              id="btn-quiteria-recommendations"
+              onClick={onOpenRecommendations}
+              className="mt-4 inline-flex items-center gap-2 rounded-xl border border-amber-300 bg-gradient-to-r from-amber-300 to-yellow-400 px-4 py-2.5 text-sm font-extrabold text-slate-950 shadow-lg shadow-amber-500/20 transition hover:-translate-y-0.5 hover:from-amber-200 hover:to-yellow-300 active:translate-y-0"
+            >
+              <Sparkles className="h-4 w-4" />
+              O que ler hoje? — Dica da Quitéria
+            </button>
+          )}
         </div>
 
 
