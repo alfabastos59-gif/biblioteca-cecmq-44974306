@@ -11,6 +11,11 @@ import type { Book } from "../types";
 import { toast } from "sonner";
 import { Upload, Loader2, Camera, X, RefreshCw } from "lucide-react";
 
+// Janela com fundo azul claro: campos brancos e texto escuro para ficar legível.
+const FIELD = "bg-white text-slate-900 border-slate-300 placeholder:text-slate-400 focus-visible:ring-sky-500";
+const LABEL = "text-slate-700";
+const SOLID = "bg-sky-600 text-white hover:bg-sky-700";
+const SOFT = "border-slate-300 bg-white text-slate-800 hover:bg-sky-50";
 
 export function CadastroLivroDialog({ isOpen, onClose, onRegisterBook, existingBooks = [] }: {
   isOpen: boolean; onClose: () => void; onRegisterBook: (b: Book) => void; existingBooks?: Book[];
@@ -151,10 +156,10 @@ export function CadastroLivroDialog({ isOpen, onClose, onRegisterBook, existingB
 
   return (
     <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setAuthed(false); setSenha(""); } }}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-sky-100 border-sky-300 text-slate-900">
         <DialogHeader>
-          <DialogTitle className="font-display text-2xl">Cadastrar novo livro</DialogTitle>
-          <DialogDescription>Compartilhe um livro com a biblioteca da escola.</DialogDescription>
+          <DialogTitle className="font-display text-2xl text-slate-900">Cadastrar novo livro</DialogTitle>
+          <DialogDescription className="text-sky-800">Compartilhe um livro com a biblioteca da escola.</DialogDescription>
         </DialogHeader>
 
         {!authed ? (
@@ -167,7 +172,7 @@ export function CadastroLivroDialog({ isOpen, onClose, onRegisterBook, existingB
             className="space-y-4"
           >
             <div>
-              <Label htmlFor="senha">Senha de acesso</Label>
+              <Label htmlFor="senha" className={LABEL}>Senha de acesso</Label>
               <Input
                 id="senha"
                 type="password"
@@ -175,28 +180,29 @@ export function CadastroLivroDialog({ isOpen, onClose, onRegisterBook, existingB
                 onChange={(e) => setSenha(e.target.value)}
                 autoFocus
                 required
+                className={FIELD}
               />
             </div>
-            <Button type="submit" className="w-full" size="lg">Entrar</Button>
+            <Button type="submit" className={`w-full ${SOLID}`} size="lg">Entrar</Button>
           </form>
         ) : (
           <form onSubmit={submit} className="space-y-4">
             <div>
-              <Label>Capa do livro</Label>
+              <Label className={LABEL}>Capa do livro</Label>
               <div
                 onClick={() => fileRef.current?.click()}
-                className="mt-1.5 border-2 border-dashed border-border rounded-xl p-4 flex items-center gap-3 cursor-pointer hover:border-primary transition-colors"
+                className="mt-1.5 border-2 border-dashed border-slate-300 rounded-xl p-4 flex items-center gap-3 cursor-pointer bg-white/60 hover:border-sky-500 transition-colors"
               >
                 {preview ? (
                   <img src={preview} alt="prévia" className="h-20 w-14 object-cover rounded-md" />
                 ) : (
-                  <div className="h-20 w-14 rounded-md bg-secondary flex items-center justify-center">
-                    <Upload className="h-6 w-6 text-muted-foreground" />
+                  <div className="h-20 w-14 rounded-md bg-sky-200 flex items-center justify-center">
+                    <Upload className="h-6 w-6 text-slate-600" />
                   </div>
                 )}
                 <div className="text-sm">
-                  <p className="font-medium">{capaFile ? capaFile.name : "Clique para enviar a imagem"}</p>
-                  <p className="text-xs text-muted-foreground">PNG ou JPG, até 5MB</p>
+                  <p className="font-medium text-slate-900">{capaFile ? capaFile.name : "Clique para enviar a imagem"}</p>
+                  <p className="text-xs text-slate-500">PNG ou JPG, até 5MB</p>
                 </div>
                 <input
                   ref={fileRef}
@@ -211,7 +217,7 @@ export function CadastroLivroDialog({ isOpen, onClose, onRegisterBook, existingB
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="gap-2 flex-1"
+                  className={`gap-2 flex-1 ${SOFT}`}
                   onClick={() => setCamOpen(true)}
                 >
                   <Camera className="h-4 w-4" /> Tirar foto da capa
@@ -219,39 +225,39 @@ export function CadastroLivroDialog({ isOpen, onClose, onRegisterBook, existingB
               </div>
             </div>
             <div>
-              <Label htmlFor="titulo">Título *</Label>
-              <Input id="titulo" value={titulo} onChange={(e) => setTitulo(e.target.value)} maxLength={200} required />
+              <Label htmlFor="titulo" className={LABEL}>Título *</Label>
+              <Input id="titulo" value={titulo} onChange={(e) => setTitulo(e.target.value)} maxLength={200} required className={FIELD} />
             </div>
             <div>
-              <Label htmlFor="autor">Autor *</Label>
-              <Input id="autor" value={autor} onChange={(e) => setAutor(e.target.value)} maxLength={150} required />
+              <Label htmlFor="autor" className={LABEL}>Autor *</Label>
+              <Input id="autor" value={autor} onChange={(e) => setAutor(e.target.value)} maxLength={150} required className={FIELD} />
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <Label htmlFor="isbn">ISBN</Label>
-                <Input id="isbn" value={isbn} onChange={(e) => setIsbn(e.target.value)} maxLength={20} placeholder="978-..." />
+                <Label htmlFor="isbn" className={LABEL}>ISBN</Label>
+                <Input id="isbn" value={isbn} onChange={(e) => setIsbn(e.target.value)} maxLength={20} placeholder="978-..." className={FIELD} />
               </div>
               <div>
-                <Label htmlFor="ano">Ano</Label>
-                <Input id="ano" type="number" min={1000} max={2100} value={ano} onChange={(e) => setAno(e.target.value)} placeholder="2024" />
+                <Label htmlFor="ano" className={LABEL}>Ano</Label>
+                <Input id="ano" type="number" min={1000} max={2100} value={ano} onChange={(e) => setAno(e.target.value)} placeholder="2024" className={FIELD} />
               </div>
               <div>
-                <Label htmlFor="qtd">Quantidade</Label>
-                <Input id="qtd" type="number" min={1} value={quantidade} onChange={(e) => setQuantidade(e.target.value)} />
+                <Label htmlFor="qtd" className={LABEL}>Quantidade</Label>
+                <Input id="qtd" type="number" min={1} value={quantidade} onChange={(e) => setQuantidade(e.target.value)} className={FIELD} />
               </div>
             </div>
             <div>
-              <Label htmlFor="categoria">Categoria</Label>
+              <Label htmlFor="categoria" className={LABEL}>Categoria</Label>
               <Select value={categoria} onValueChange={setCategoria}>
-                <SelectTrigger id="categoria" className="mt-1.5">
+                <SelectTrigger id="categoria" className={`mt-1.5 ${FIELD}`}>
                   <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
-                <SelectContent className="max-h-80">
+                <SelectContent className="max-h-80 bg-white text-slate-900 border-slate-300">
                   {CATEGORIAS_GRUPOS.map((g) => (
                     <SelectGroup key={g.grupo}>
-                      <SelectLabel>{g.grupo}</SelectLabel>
+                      <SelectLabel className="text-slate-500">{g.grupo}</SelectLabel>
                       {g.itens.map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                        <SelectItem key={c} value={c} className="focus:bg-sky-200 focus:text-slate-900">{c}</SelectItem>
                       ))}
                     </SelectGroup>
                   ))}
@@ -259,14 +265,14 @@ export function CadastroLivroDialog({ isOpen, onClose, onRegisterBook, existingB
               </Select>
             </div>
             <div>
-              <Label htmlFor="desc">Descrição</Label>
-              <Textarea id="desc" value={descricao} onChange={(e) => setDescricao(e.target.value)} maxLength={500} rows={3} />
+              <Label htmlFor="desc" className={LABEL}>Descrição</Label>
+              <Textarea id="desc" value={descricao} onChange={(e) => setDescricao(e.target.value)} maxLength={500} rows={3} className={FIELD} />
             </div>
             <div>
-              <Label htmlFor="quem">Cadastrado por (seu nome)</Label>
-              <Input id="quem" value={cadastradoPor} onChange={(e) => setCadastradoPor(e.target.value)} maxLength={100} />
+              <Label htmlFor="quem" className={LABEL}>Cadastrado por (seu nome)</Label>
+              <Input id="quem" value={cadastradoPor} onChange={(e) => setCadastradoPor(e.target.value)} maxLength={100} className={FIELD} />
             </div>
-            <Button type="submit" disabled={loading} className="w-full" size="lg">
+            <Button type="submit" disabled={loading} className={`w-full ${SOLID}`} size="lg">
               {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Salvando...</> : "Cadastrar livro"}
             </Button>
           </form>
@@ -274,10 +280,10 @@ export function CadastroLivroDialog({ isOpen, onClose, onRegisterBook, existingB
       </DialogContent>
 
       <Dialog open={camOpen} onOpenChange={(v) => { if (!v) stopCam(); setCamOpen(v); }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-sky-100 border-sky-300 text-slate-900">
           <DialogHeader>
-            <DialogTitle className="font-display">Fotografar capa</DialogTitle>
-            <DialogDescription>Posicione a capa do livro e capture.</DialogDescription>
+            <DialogTitle className="font-display text-slate-900">Fotografar capa</DialogTitle>
+            <DialogDescription className="text-sky-800">Posicione a capa do livro e capture.</DialogDescription>
           </DialogHeader>
           <div className="relative bg-black rounded-lg overflow-hidden aspect-[3/4]">
             <video ref={videoRef} playsInline muted className="w-full h-full object-cover" />
@@ -287,15 +293,16 @@ export function CadastroLivroDialog({ isOpen, onClose, onRegisterBook, existingB
               type="button"
               variant="outline"
               size="icon"
+              className={SOFT}
               onClick={() => setFacingMode((m) => (m === "environment" ? "user" : "environment"))}
               title="Trocar câmera"
             >
               <RefreshCw className="h-4 w-4" />
             </Button>
-            <Button type="button" variant="outline" className="gap-2" onClick={() => setCamOpen(false)}>
+            <Button type="button" variant="outline" className={`gap-2 ${SOFT}`} onClick={() => setCamOpen(false)}>
               <X className="h-4 w-4" /> Cancelar
             </Button>
-            <Button type="button" className="gap-2 flex-1" onClick={capturarFoto}>
+            <Button type="button" className={`gap-2 flex-1 ${SOLID}`} onClick={capturarFoto}>
               <Camera className="h-4 w-4" /> Capturar
             </Button>
           </div>
