@@ -31,7 +31,8 @@ interface HeaderProps {
   onOpenDesignSystem: () => void;
   onOpenNewLoan?: () => void;
   onOpenNewSuggestion?: () => void;
-  onOpenRegisterBook?: () => void;\n  onOpenRecommendations?: () => void;
+  onOpenRegisterBook?: () => void;
+  onOpenRecommendations?: () => void;
   onOpenAccessibility?: () => void;
   onOpenOpeningVideo?: () => void;
   searchQuery: string;
