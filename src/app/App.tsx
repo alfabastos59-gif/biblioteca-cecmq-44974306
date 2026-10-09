@@ -994,7 +994,7 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={handleNavigateTab}
         onOpenDesignSystem={() => setIsDesignSystemOpen(true)}
-        onOpenRegisterBook={() => setIsRegisterBookOpen(true)}
+        onOpenRegisterBook={() => setIsRegisterBookOpen(true)}\n        onOpenRecommendations={() => setIsRecommendationsOpen(true)}
         onOpenAccessibility={() => setIsAccessibilityModalOpen(true)}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
