@@ -489,7 +489,7 @@ export function startAuthorsCloudSync() {
         if (list.length === 0) return;
         applyingCloud = true;
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch {}
           window.dispatchEvent(new Event(CUSTOM_EVENT_NAME));
         } finally {
           applyingCloud = false;
@@ -505,7 +505,7 @@ export function getStoredAuthors(): AuthorItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_AUTHORS));
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_AUTHORS)); } catch {}
       return DEFAULT_AUTHORS;
     }
     const parsed = JSON.parse(raw);
@@ -552,7 +552,7 @@ export function getStoredAuthors(): AuthorItem[] {
 
       if (missingAuthors.length > 0) {
         updated = [...updated, ...missingAuthors];
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)); } catch {}
       }
       return updated;
     }
@@ -566,7 +566,7 @@ export function getStoredAuthors(): AuthorItem[] {
 export function saveStoredAuthors(authors: AuthorItem[]): void {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(authors));
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(authors)); } catch {}
     window.dispatchEvent(new Event(CUSTOM_EVENT_NAME));
     if (!applyingCloud) {
       import('../services/firebase')
@@ -591,7 +591,7 @@ export function setPinnedAuthorId(id: string | null): void {
   if (typeof window === 'undefined') return;
   try {
     if (id) {
-      localStorage.setItem(PINNED_STORAGE_KEY, id);
+      try { localStorage.setItem(PINNED_STORAGE_KEY, id); } catch {}
     } else {
       localStorage.removeItem(PINNED_STORAGE_KEY);
     }

@@ -22,6 +22,14 @@ import { MissaoQuiterioView } from './components/MissaoQuiterioView';
 import { LibrasAccessibilityModal } from './components/LibrasAccessibilityModal';
 import { Footer } from './components/Footer';
 
+const safeSetItem = (key: string, value: string) => {
+  try { localStorage.setItem(key, value); }
+  catch (e) {
+    try { localStorage.removeItem(key); } catch {}
+    console.warn('Armazenamento local cheio; dados mantidos apenas na nuvem:', key);
+  }
+};
+
 import {
   INITIAL_BOOKS,
   INITIAL_LOANS,
@@ -73,13 +81,13 @@ export default function App() {
     );
 
     if (version !== DB_VERSION) {
-      localStorage.setItem('bmq_db_version', DB_VERSION);
-      localStorage.setItem('bmq_books', JSON.stringify(sortedInitBooks));
-      localStorage.setItem('bmq_loans', JSON.stringify(INITIAL_LOANS));
-      localStorage.setItem('bmq_students', JSON.stringify(sortedInitStudents));
-      localStorage.setItem('bmq_suggestions', JSON.stringify(INITIAL_SUGGESTIONS));
-      localStorage.setItem('bmq_admin_users', JSON.stringify(INITIAL_ADMIN_USERS));
-      localStorage.setItem('bmq_audit_logs', JSON.stringify(INITIAL_AUDIT_LOGS));
+      safeSetItem('bmq_db_version', DB_VERSION);
+      safeSetItem('bmq_books', JSON.stringify(sortedInitBooks));
+      safeSetItem('bmq_loans', JSON.stringify(INITIAL_LOANS));
+      safeSetItem('bmq_students', JSON.stringify(sortedInitStudents));
+      safeSetItem('bmq_suggestions', JSON.stringify(INITIAL_SUGGESTIONS));
+      safeSetItem('bmq_admin_users', JSON.stringify(INITIAL_ADMIN_USERS));
+      safeSetItem('bmq_audit_logs', JSON.stringify(INITIAL_AUDIT_LOGS));
       return sortedInitBooks;
     }
     const saved = localStorage.getItem('bmq_books');
@@ -186,31 +194,31 @@ export default function App() {
 
   // Persist state to localStorage
   useEffect(() => {
-    localStorage.setItem('bmq_books', JSON.stringify(books));
+    safeSetItem('bmq_books', JSON.stringify(books));
   }, [books]);
 
   useEffect(() => {
-    localStorage.setItem('bmq_loans', JSON.stringify(loans));
+    safeSetItem('bmq_loans', JSON.stringify(loans));
   }, [loans]);
 
   useEffect(() => {
-    localStorage.setItem('bmq_students', JSON.stringify(students));
+    safeSetItem('bmq_students', JSON.stringify(students));
   }, [students]);
 
   useEffect(() => {
-    localStorage.setItem('bmq_suggestions', JSON.stringify(suggestions));
+    safeSetItem('bmq_suggestions', JSON.stringify(suggestions));
   }, [suggestions]);
 
   useEffect(() => {
-    localStorage.setItem('bmq_admin_users', JSON.stringify(adminUsers));
+    safeSetItem('bmq_admin_users', JSON.stringify(adminUsers));
   }, [adminUsers]);
 
   useEffect(() => {
-    localStorage.setItem('bmq_audit_logs', JSON.stringify(auditLogs));
+    safeSetItem('bmq_audit_logs', JSON.stringify(auditLogs));
   }, [auditLogs]);
 
   useEffect(() => {
-    localStorage.setItem('bmq_favorites', JSON.stringify(favorites));
+    safeSetItem('bmq_favorites', JSON.stringify(favorites));
   }, [favorites]);
 
   useEffect(() => {
@@ -813,7 +821,7 @@ export default function App() {
     const updatedList = [newAdmin, ...adminUsers];
     setAdminUsers(updatedList);
     try {
-      localStorage.setItem('bmq_admin_users', JSON.stringify(updatedList));
+      safeSetItem('bmq_admin_users', JSON.stringify(updatedList));
     } catch (e) {}
     saveAdminUserToCloud(newAdmin).catch(console.error);
 
@@ -835,7 +843,7 @@ export default function App() {
     const updatedList = adminUsers.map((a) => (a.id === updatedAdmin.id ? updatedAdmin : a));
     setAdminUsers(updatedList);
     try {
-      localStorage.setItem('bmq_admin_users', JSON.stringify(updatedList));
+      safeSetItem('bmq_admin_users', JSON.stringify(updatedList));
     } catch (e) {}
     saveAdminUserToCloud(updatedAdmin).catch(console.error);
 
@@ -864,7 +872,7 @@ export default function App() {
     const updatedList = adminUsers.filter((a) => a.id !== adminId);
     setAdminUsers(updatedList);
     try {
-      localStorage.setItem('bmq_admin_users', JSON.stringify(updatedList));
+      safeSetItem('bmq_admin_users', JSON.stringify(updatedList));
     } catch (e) {}
     deleteAdminUserFromCloud(adminId).catch(console.error);
 

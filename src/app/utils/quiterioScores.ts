@@ -59,7 +59,7 @@ export function loadScoresMap(): Record<string, StudentScoreData> {
 export function saveScoresMap(map: Record<string, StudentScoreData>): void {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(map)); } catch {}
   } catch {
     // Ignore storage quota errors
   }
