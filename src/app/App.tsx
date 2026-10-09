@@ -1172,6 +1172,7 @@ export default function App() {
         isOpen={isRegisterBookOpen}
         onClose={() => setIsRegisterBookOpen(false)}
         onRegisterBook={handleRegisterBook}
+        existingBooks={books}
       />
 
       {/* Authentication Modal */}
