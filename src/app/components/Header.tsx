@@ -31,7 +31,7 @@ interface HeaderProps {
   onOpenDesignSystem: () => void;
   onOpenNewLoan?: () => void;
   onOpenNewSuggestion?: () => void;
-  onOpenRegisterBook?: () => void;
+  onOpenRegisterBook?: () => void;\n  onOpenRecommendations?: () => void;
   onOpenAccessibility?: () => void;
   onOpenOpeningVideo?: () => void;
   searchQuery: string;
@@ -337,6 +337,18 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="hidden xl:inline text-[11px]">Livros do MEC</span>
             </a>
 
+            {onOpenRecommendations && (
+              <button
+                id="btn-header-quiteria-recommendations"
+                onClick={onOpenRecommendations}
+                title="Receber uma dica de leitura da Maria Quitéria"
+                className="flex items-center gap-1.5 rounded-xl border border-amber-400/50 bg-amber-400 px-3 py-1.5 text-xs font-extrabold text-slate-950 shadow-sm transition hover:bg-amber-300"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                <span className="hidden xl:inline">Dica da Quitéria</span>
+              </button>
+            )}
+
             {/* BOTÃO ASSISTIR VÍDEO DE ABERTURA DO APLICATIVO */}
             {onOpenOpeningVideo && (
               <button
@@ -521,6 +533,15 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           <div className="grid grid-cols-2 gap-2 mb-3">
+            {onOpenRecommendations && (
+              <button
+                onClick={() => { onOpenRecommendations(); setMobileMenuOpen(false); }}
+                className="col-span-2 flex items-center justify-center gap-2 rounded-xl border border-amber-300 bg-amber-400 p-2.5 text-sm font-extrabold text-slate-950"
+              >
+                <Sparkles className="h-4 w-4" />
+                O que ler hoje? — Dica da Quitéria
+              </button>
+            )}
             <button
               onClick={() => {
                 setActiveTab('inicio');
