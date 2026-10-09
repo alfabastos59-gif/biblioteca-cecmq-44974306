@@ -4,7 +4,8 @@ import logoMariaQuiteria from '../assets/logo-maria-quiteria.png.asset.json';
 import { Header } from './components/Header';
 import { HeroBanner } from './components/HeroBanner';
 import { BookCatalog } from './components/BookCatalog';
-import { BookDetailModal } from './components/BookDetailModal';\nimport { BookRecommendationModal } from './components/BookRecommendationModal';
+import { BookDetailModal } from './components/BookDetailModal';
+import { BookRecommendationModal } from './components/BookRecommendationModal';
 import { AdminDashboard } from './components/AdminDashboard';
 import { ReportsView } from './components/ReportsView';
 import { MobileSimulator } from './components/MobileSimulator';
@@ -180,7 +181,8 @@ export default function App() {
   // UI state
   const [activeTab, setActiveTab] = useState<ActiveTab>('inicio');
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-  const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);\n  const [isRecommendationsOpen, setIsRecommendationsOpen] = useState(false);
+  const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
+  const [isRecommendationsOpen, setIsRecommendationsOpen] = useState(false);
   const [isManageBooksOpen, setIsManageBooksOpen] = useState(false);
   const [isRegisterBookOpen, setIsRegisterBookOpen] = useState(false);
   const [isDesignSystemOpen, setIsDesignSystemOpen] = useState(false);
@@ -994,7 +996,8 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={handleNavigateTab}
         onOpenDesignSystem={() => setIsDesignSystemOpen(true)}
-        onOpenRegisterBook={() => setIsRegisterBookOpen(true)}\n        onOpenRecommendations={() => setIsRecommendationsOpen(true)}
+        onOpenRegisterBook={() => setIsRegisterBookOpen(true)}
+        onOpenRecommendations={() => setIsRecommendationsOpen(true)}
         onOpenAccessibility={() => setIsAccessibilityModalOpen(true)}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -1040,7 +1043,8 @@ export default function App() {
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             onOpenRegisterBook={() => setIsRegisterBookOpen(true)}
-            onOpenSuggestions={() => setActiveTab('sugestoes')}\n            onOpenRecommendations={() => setIsRecommendationsOpen(true)}
+            onOpenSuggestions={() => setActiveTab('sugestoes')}
+            onOpenRecommendations={() => setIsRecommendationsOpen(true)}
           />
         )}
 
