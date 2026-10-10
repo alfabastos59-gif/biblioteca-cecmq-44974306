@@ -28,7 +28,8 @@ async function carregarAcervo(): Promise<BookRow[]> {
     const { data, error } = await sb.from("records").select("id,data").eq("collection", "books").range(from, from + 999);
     if (error) throw new Error("db");
     for (const r of data ?? []) {
-      const d = (r.data ?? {}) as Record<string, unknown>;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const d = (r.data ?? {}) as any;
       const title = String(d.title ?? "").trim();
       if (!title) continue;
       out.push({
