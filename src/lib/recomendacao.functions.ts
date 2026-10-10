@@ -52,7 +52,7 @@ export const recomendarLivros = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<RecomendacaoResult> => {
     if (!data.pedido) return { ok: false, erro: "entrada_invalida", mensagem: "Conte para a Quitéria o que você gosta de ler!" };
-    const apiKey = process.env["OPENAI_API_KEY"];
+    const apiKey = process.env["LOVABLE_API_KEY"];
     if (!apiKey) return { ok: false, erro: "sem_chave", mensagem: "A Dica da Quitéria ainda não foi configurada. Avise a equipe da biblioteca." };
 
     let acervo: BookRow[];
@@ -69,12 +69,12 @@ export const recomendarLivros = createServerFn({ method: "POST" })
 
     let resp: Response;
     try {
-      resp = await fetch("https://api.openai.com/v1/chat/completions", {
+      resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
-        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", "X-Lovable-AIG-SDK": "fetch" },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
-          temperature: 0.6,
+          model: "openai/gpt-5.6-luna",
+          reasoning_effort: "none",
           messages: [
             {
               role: "system",
@@ -115,12 +115,12 @@ export const recomendarLivros = createServerFn({ method: "POST" })
       return { ok: false, erro: "falha_api", mensagem: "A Quitéria não conseguiu pensar agora. Tente de novo em instantes." };
     }
     if (!resp.ok) {
-      console.error("OpenAI status", resp.status);
+      console.error("AI gateway status", resp.status);
       const msg =
         resp.status === 401
           ? "A chave da Dica da Quitéria é inválida. Avise a equipe da biblioteca."
-          : resp.status === 429
-            ? "Muitos pedidos ou créditos esgotados. Tente mais tarde."
+          : resp.status === 429 || resp.status === 402
+            ? "A Quitéria está descansando (limite de uso atingido). Tente mais tarde."
             : "A Quitéria não conseguiu pensar agora. Tente de novo em instantes.";
       return { ok: false, erro: resp.status === 401 ? "sem_chave" : "falha_api", mensagem: msg };
     }
