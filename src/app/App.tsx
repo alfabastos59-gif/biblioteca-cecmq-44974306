@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { HeroBanner } from './components/HeroBanner';
 import { BookCatalog } from './components/BookCatalog';
 import { BookDetailModal } from './components/BookDetailModal';
+import { DicaQuiteriaModal } from './components/DicaQuiteriaModal';
 import { AdminDashboard } from './components/AdminDashboard';
 import { ReportsView } from './components/ReportsView';
 import { MobileSimulator } from './components/MobileSimulator';
@@ -180,6 +181,7 @@ export default function App() {
   // UI state
   const [activeTab, setActiveTab] = useState<ActiveTab>('inicio');
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [isDicaOpen, setIsDicaOpen] = useState(false);
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
   const [isManageBooksOpen, setIsManageBooksOpen] = useState(false);
   const [isRegisterBookOpen, setIsRegisterBookOpen] = useState(false);
@@ -1041,8 +1043,11 @@ export default function App() {
             setSearchQuery={setSearchQuery}
             onOpenRegisterBook={() => setIsRegisterBookOpen(true)}
             onOpenSuggestions={() => setActiveTab('sugestoes')}
+            onOpenDica={() => setIsDicaOpen(true)}
           />
         )}
+        <DicaQuiteriaModal isOpen={isDicaOpen} onClose={() => setIsDicaOpen(false)} books={books} onOpenBook={handleSelectBook} />
+
 
         {/* TAB: RANKING DE LEITORES E MAIS LIDOS */}
         {activeTab === 'ranking' && (
