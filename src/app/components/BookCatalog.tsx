@@ -12,6 +12,7 @@ interface BookCatalogProps {
   setSearchQuery: (query: string) => void;
   onOpenRegisterBook?: () => void;
   onOpenSuggestions?: () => void;
+  onOpenDica?: () => void;
 }
 
 export const BookCatalog: React.FC<BookCatalogProps> = ({
@@ -21,6 +22,7 @@ export const BookCatalog: React.FC<BookCatalogProps> = ({
   setSearchQuery,
   onOpenRegisterBook,
   onOpenSuggestions,
+  onOpenDica,
 }) => {
   const { isDark } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState('Todos');
@@ -133,6 +135,15 @@ export const BookCatalog: React.FC<BookCatalogProps> = ({
             </button>
           )}
         </div>
+        {onOpenDica && (
+          <button
+            id="btn-dica-quiteria"
+            onClick={onOpenDica}
+            className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-amber-600"
+          >
+            <Sparkles className="w-4 h-4" /> Dica da Quitéria
+          </button>
+        )}
 
         {/* Filter Trigger Button */}
         <div className="flex items-center gap-2">
