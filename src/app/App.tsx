@@ -16,6 +16,7 @@ import { DesignSystemModal } from './components/DesignSystemModal';
 import { LoanModal } from './components/LoanModal';
 import { ManageBooksModal } from './components/ManageBooksModal';
 import { RegisterBookModal } from './components/RegisterBookModal';
+import { QuiterioChat } from './components/QuiterioChat';
 import { AuthModal } from './components/AuthModal';
 import { StudentPortalView } from './components/StudentPortalView';
 import { RankingView } from './components/RankingView';
@@ -1171,6 +1172,8 @@ export default function App() {
           />
         )}
       </main>
+
+      <QuiterioChat />
 
       {/* Register Book Modal (com Câmera Fotográfica de Smartphone) */}
       <RegisterBookModal
