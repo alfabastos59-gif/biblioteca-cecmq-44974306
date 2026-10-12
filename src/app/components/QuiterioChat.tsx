@@ -149,7 +149,7 @@ export function QuiterioChat() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-5 left-5 z-[60] h-24 w-24 overflow-hidden rounded-full grid place-items-center bg-white shadow-2xl hover:scale-110 transition-transform border-2 border-sky-400"
+          className="fixed bottom-5 left-5 z-[60] h-24 w-24 overflow-hidden rounded-full grid place-items-center bg-white shadow-2xl hover:scale-110 transition-transform border-2 border-green-400"
           aria-label="Abrir Quitério — assistente de leitura"
         >
           <BoltMascot size={96} mood="happy" />
@@ -159,21 +159,21 @@ export function QuiterioChat() {
 
       {/* Janela do chat */}
       {open && (
-        <div className="fixed inset-x-3 bottom-3 sm:inset-auto sm:bottom-5 sm:left-5 sm:w-[380px] z-[60] bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col max-h-[80vh] sm:max-h-[600px] overflow-hidden">
+        <div className="fixed inset-x-3 bottom-3 sm:inset-auto sm:bottom-5 sm:left-5 sm:w-[380px] z-[60] bg-green-50 border border-green-300 rounded-2xl shadow-2xl flex flex-col max-h-[80vh] sm:max-h-[600px] overflow-hidden">
           <PuzzleStripe />
-          <header className="px-4 py-3 flex items-center gap-2 border-b border-slate-200 bg-sky-50">
+          <header className="px-4 py-3 flex items-center gap-2 border-b border-green-300 bg-green-100">
             <div className="h-10 w-10 grid place-items-center">
               <BoltMascot size={40} mood={loading ? "talking" : "happy"} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-display font-bold text-sm leading-tight">Quitério</p>
-              <p className="text-[11px] text-slate-500 leading-tight">
+              <p className="font-display font-bold text-sm leading-tight text-slate-900">Quitério</p>
+              <p className="text-[11px] text-green-800 leading-tight">
                 Seu guia de leitura 🐱
               </p>
             </div>
             <button
               onClick={closeAndReset}
-              className="grid h-8 w-8 place-items-center rounded-full border border-slate-200 bg-slate-100 text-slate-900 shadow-sm transition-colors hover:bg-red-500 hover:text-white"
+              className="grid h-8 w-8 place-items-center rounded-full border border-green-300 bg-white text-slate-900 shadow-sm transition-colors hover:bg-red-500 hover:text-white"
               aria-label="Fechar"
             >
               <X className="h-4 w-4" />
@@ -186,8 +186,8 @@ export function QuiterioChat() {
                 key={i}
                 className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
                   m.role === "user"
-                    ? "ml-auto bg-sky-600 text-white rounded-br-sm"
-                    : "bg-slate-100 text-slate-900 rounded-bl-sm"
+                    ? "ml-auto bg-green-600 text-white rounded-br-sm"
+                    : "bg-white text-slate-900 rounded-bl-sm border border-green-200"
                 }`}
               >
                 {m.role === "assistant" ? (
@@ -200,7 +200,7 @@ export function QuiterioChat() {
               </div>
             ))}
             {loading && messages[messages.length - 1]?.role === "user" && (
-              <div className="bg-slate-100 text-slate-900 rounded-2xl rounded-bl-sm px-3 py-2 text-sm w-fit">
+              <div className="bg-white border border-green-200 text-slate-900 rounded-2xl rounded-bl-sm px-3 py-2 text-sm w-fit">
                 <Loader2 className="h-4 w-4 animate-spin" />
               </div>
             )}
@@ -212,7 +212,7 @@ export function QuiterioChat() {
                 <button
                   key={s}
                   onClick={() => send(s)}
-                  className="text-[11px] px-2.5 py-1 rounded-full bg-slate-100 hover:bg-amber-400 hover:text-slate-900 transition-colors border border-slate-200"
+                  className="text-[11px] px-2.5 py-1 rounded-full bg-white text-slate-900 hover:bg-green-200 hover:text-slate-900 transition-colors border border-green-300"
                 >
                   {s}
                 </button>
@@ -225,16 +225,16 @@ export function QuiterioChat() {
               e.preventDefault();
               send(input);
             }}
-            className="p-2 border-t border-slate-200 flex gap-2 bg-white"
+            className="p-2 border-t border-green-300 flex gap-2 bg-green-100"
           >
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Pergunte ao Quitério..."
               disabled={loading}
-              className="flex-1 bg-white text-slate-900 border-slate-300"
+              className="flex-1 bg-white text-slate-900 border-green-300"
             />
-            <Button type="submit" size="icon" className="bg-sky-600 text-white hover:bg-sky-700" disabled={loading || !input.trim()}>
+            <Button type="submit" size="icon" className="bg-green-600 text-white hover:bg-green-700" disabled={loading || !input.trim()}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </form>
