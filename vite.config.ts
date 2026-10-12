@@ -12,4 +12,8 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    // Pre-bundle up front so a late re-optimization never loads a second copy of React.
+    optimizeDeps: { include: ["react-markdown"] },
+  },
 });
