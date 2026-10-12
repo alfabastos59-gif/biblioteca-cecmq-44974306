@@ -166,8 +166,8 @@ export function QuiterioChat() {
               <BoltMascot size={40} mood={loading ? "talking" : "happy"} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-display font-bold text-sm leading-tight">Quitério</p>
-              <p className="text-[11px] text-slate-500 leading-tight">
+              <p className="font-display font-bold text-sm leading-tight text-slate-900">Quitério</p>
+              <p className="text-[11px] text-green-800 leading-tight">
                 Seu guia de leitura 🐱
               </p>
             </div>
@@ -212,7 +212,7 @@ export function QuiterioChat() {
                 <button
                   key={s}
                   onClick={() => send(s)}
-                  className="text-[11px] px-2.5 py-1 rounded-full bg-white hover:bg-green-200 hover:text-slate-900 transition-colors border border-green-300"
+                  className="text-[11px] px-2.5 py-1 rounded-full bg-white text-slate-900 hover:bg-green-200 hover:text-slate-900 transition-colors border border-green-300"
                 >
                   {s}
                 </button>
