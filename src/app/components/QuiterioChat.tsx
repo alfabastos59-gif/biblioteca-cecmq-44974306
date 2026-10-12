@@ -200,7 +200,7 @@ export function QuiterioChat() {
               </div>
             ))}
             {loading && messages[messages.length - 1]?.role === "user" && (
-              <div className="bg-slate-100 text-slate-900 rounded-2xl rounded-bl-sm px-3 py-2 text-sm w-fit">
+              <div className="bg-white border border-green-200 text-slate-900 rounded-2xl rounded-bl-sm px-3 py-2 text-sm w-fit">
                 <Loader2 className="h-4 w-4 animate-spin" />
               </div>
             )}
@@ -212,7 +212,7 @@ export function QuiterioChat() {
                 <button
                   key={s}
                   onClick={() => send(s)}
-                  className="text-[11px] px-2.5 py-1 rounded-full bg-slate-100 hover:bg-amber-400 hover:text-slate-900 transition-colors border border-slate-200"
+                  className="text-[11px] px-2.5 py-1 rounded-full bg-white hover:bg-green-200 hover:text-slate-900 transition-colors border border-green-300"
                 >
                   {s}
                 </button>
@@ -225,16 +225,16 @@ export function QuiterioChat() {
               e.preventDefault();
               send(input);
             }}
-            className="p-2 border-t border-slate-200 flex gap-2 bg-white"
+            className="p-2 border-t border-green-300 flex gap-2 bg-green-100"
           >
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Pergunte ao Quitério..."
               disabled={loading}
-              className="flex-1 bg-white text-slate-900 border-slate-300"
+              className="flex-1 bg-white text-slate-900 border-green-300"
             />
-            <Button type="submit" size="icon" className="bg-sky-600 text-white hover:bg-sky-700" disabled={loading || !input.trim()}>
+            <Button type="submit" size="icon" className="bg-green-600 text-white hover:bg-green-700" disabled={loading || !input.trim()}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </Button>
           </form>
