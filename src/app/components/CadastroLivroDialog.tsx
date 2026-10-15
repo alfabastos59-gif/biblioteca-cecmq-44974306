@@ -54,6 +54,7 @@ export function CadastroLivroDialog({
   const [loading, setLoading] = useState(false);
   const [titulo, setTitulo] = useState("");
   const [autor, setAutor] = useState("");
+  const [autorIds, setAutorIds] = useState<string[]>([]);
   const [isbn, setIsbn] = useState("");
   const [ano, setAno] = useState("");
   const [quantidade, setQuantidade] = useState("1");
@@ -125,6 +126,7 @@ export function CadastroLivroDialog({
   const reset = () => {
     setTitulo("");
     setAutor("");
+    setAutorIds([]);
     setIsbn("");
     setAno("");
     setQuantidade("1");
@@ -183,6 +185,8 @@ export function CadastroLivroDialog({
         id: `book-${crypto.randomUUID()}`,
         title: titulo.trim(),
         author: autor.trim(),
+        authorId: autorIds[0],
+        authorIds: autorIds,
         cover: capa_url || "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400",
         category: categoria || "Geral",
         rating: 0,
@@ -318,7 +322,7 @@ export function CadastroLivroDialog({
               />
             </div>
             <div>
-              <AuthorAutocompleteField
+              <AuthorMultiSelectField
                 id="autor"
                 value={autor}
                 onChange={(val) => setAutor(val)}

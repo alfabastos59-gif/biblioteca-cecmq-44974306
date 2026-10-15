@@ -929,11 +929,15 @@ export function importAuthors(incomingList: AuthorItem[]): {
   added: number;
   updated: number;
   total: number;
+  ignored: number;
+  errors: string[];
   authors: AuthorItem[];
 } {
   const current = getStoredAuthors();
   let addedCount = 0;
   let updatedCount = 0;
+  let ignoredCount = 0;
+  const errors: string[] = [];
 
   const currentMap = new Map<string, AuthorItem>();
   for (const a of current) {
@@ -943,7 +947,11 @@ export function importAuthors(incomingList: AuthorItem[]): {
   const resultList = [...current];
 
   for (const item of incomingList) {
-    if (!item.name || !item.name.trim()) continue;
+    if (!item.name || !item.name.trim()) {
+      ignoredCount++;
+      errors.push("Registro sem nome de autor ignorado.");
+      continue;
+    }
     const norm = normalizeAuthorName(item.name);
     const existing = currentMap.get(norm);
 
@@ -956,6 +964,7 @@ export function importAuthors(incomingList: AuthorItem[]): {
           authorCode: item.authorCode || existing.authorCode,
           nationality: item.nationality || existing.nationality || "Brasileira",
           active: item.active !== undefined ? item.active : existing.active,
+          updatedAt: new Date().toISOString(),
         };
         currentMap.set(norm, resultList[idx]);
         updatedCount++;
@@ -969,6 +978,7 @@ export function importAuthors(incomingList: AuthorItem[]): {
         nationality: item.nationality || "Brasileira",
         active: item.active !== false,
         createdAt: item.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
       resultList.push(newAuthor);
       currentMap.set(norm, newAuthor);
@@ -982,8 +992,18 @@ export function importAuthors(incomingList: AuthorItem[]): {
     added: addedCount,
     updated: updatedCount,
     total: resultList.length,
+    ignored: ignoredCount,
+    errors,
     authors: resultList,
   };
+}
+
+/** Migra um livro legado (autor em texto) para IDs sem remover o valor exibido. */
+export function migrateBookAuthorRelations<T extends { author?: string; authorId?: string; authorIds?: string[] }>(book: T): T {
+  const current = getStoredAuthors();
+  const names = String(book.author || "").split(/\s*(?:\/|;|,)\s*/).map((n) => n.trim()).filter(Boolean);
+  const ids = (book.authorIds && book.authorIds.length ? book.authorIds : names.map((name) => findAuthorByName(name, current)?.id).filter(Boolean)) as string[];
+  return { ...book, authorIds: ids, authorId: book.authorId || ids[0] } as T;
 }
 
 export function saveStoredAuthors(authors: AuthorItem[]): void {

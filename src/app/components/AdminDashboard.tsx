@@ -2210,7 +2210,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         )}
 
         {/* SECTION: AUTORES DA SEMANA (CADASTRO E GESTÃO) */}
-        {adminSection === "autores" && <AdminAuthorsView />}
+        {adminSection === "autores" && <AdminAuthorsView books={books} />}
       </main>
 
       {/* Modal de Gestão de Livros (Cadastro e Alteração) */}

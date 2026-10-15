@@ -27,3 +27,14 @@ npm run dev
 - TypeScript
 - React
 - Tailwind CSS
+
+
+## Cadastro e importação de autores
+
+O cadastro de autores está disponível no menu administrativo **Autores**. A tela permite pesquisar sem diferenciar acentos, filtrar por status/nacionalidade, cadastrar/editar/ativar/inativar, consultar o total de livros relacionados e importar CSV.
+
+Para importar novos autores, clique em **Importar CSV**, selecione um arquivo UTF-8 com as colunas `id_autor;nome_autor;nacionalidade;status` e confira o resumo de novos, atualizados, ignorados e erros. A importação é idempotente: repetir o mesmo CSV não cria duplicatas.
+
+Livros antigos continuam exibindo o campo textual `author`; na primeira leitura, o sistema cria/preenche `authorId` e `authorIds` quando encontra correspondência no catálogo. Novos cadastros usam o seletor com sugestões e permitem adicionar mais de um autor.
+
+A migração `supabase/migrations/20261014233400_author_catalog.sql` adiciona índices sobre essas relações no armazenamento `public.records`. Execute as migrações do projeto Supabase antes de publicar a alteração.

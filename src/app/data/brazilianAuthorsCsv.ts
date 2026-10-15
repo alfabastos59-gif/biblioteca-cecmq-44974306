@@ -250,6 +250,7 @@ export function convertCsvRowToAuthorItem(
     featuredQuote: "",
     quoteSource: "",
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 }
 

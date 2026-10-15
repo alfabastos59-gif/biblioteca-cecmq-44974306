@@ -29,7 +29,7 @@ import {
   Flag,
   X,
 } from "lucide-react";
-import { AuthorItem } from "../types";
+import { AuthorItem, Book } from "../types";
 import { useTheme } from "../context/ThemeContext";
 import { AuthorModal } from "./AuthorModal";
 import {
@@ -52,7 +52,7 @@ import { FeaturedAuthor } from "./FeaturedAuthor";
 type FilterTab = "todos" | "ativos" | "destaque" | "inativos";
 type ViewMode = "grid" | "table";
 
-export const AdminAuthorsView: React.FC = () => {
+export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) => {
   const { isDark, isEmerald, isPurple } = useTheme();
 
   const [authors, setAuthors] = useState<AuthorItem[]>(() => getStoredAuthors());
@@ -76,6 +76,7 @@ export const AdminAuthorsView: React.FC = () => {
     title: string;
     added: number;
     updated: number;
+    ignored: number;
     total: number;
     errors: string[];
   } | null>(null);
@@ -153,6 +154,11 @@ export const AdminAuthorsView: React.FC = () => {
     );
   }, [authors, searchQuery, activeFilter, weeklyInfo.author?.id]);
 
+  const getAssociatedBookCount = (author: AuthorItem) => books.filter((book) => {
+    if (book.authorIds?.includes(author.id) || book.authorId === author.id) return true;
+    return normalizeAuthorName(book.author || "").split(/\s*(?:\/|;|,)\s*/).includes(normalizeAuthorName(author.name));
+  }).length;
+
   const handleSaveAuthor = (author: AuthorItem) => {
     const norm = normalizeAuthorName(author.name);
     const existingIndex = authors.findIndex(
@@ -185,11 +191,12 @@ export const AdminAuthorsView: React.FC = () => {
         title: `Importação Concluída (${sourceName})`,
         added: result.added,
         updated: result.updated,
+        ignored: result.ignored,
         total: result.total,
         errors: parsed.errors,
       });
       showNotificationMsg(
-        `${result.added} novos autores cadastrados, ${result.updated} atualizados. Sem duplicidades!`,
+        `${result.added} novos, ${result.updated} atualizados, ${result.ignored} ignorados. Sem duplicidades!`,
       );
     } catch (err) {
       console.error("Erro na importação CSV:", err);
@@ -243,14 +250,13 @@ export const AdminAuthorsView: React.FC = () => {
   };
 
   const handleDeleteAuthor = (id: string) => {
-    const toRemove = authors.find((a) => a.id === id);
-    const updated = authors.filter((a) => a.id !== id);
+    const target = authors.find((a) => a.id === id);
+    if (!target) return;
+    const updated = authors.map((a) => (a.id === id ? { ...a, active: false, updatedAt: new Date().toISOString() } : a));
     saveStoredAuthors(updated);
-    if (pinnedId === id) {
-      setPinnedAuthorId(null);
-    }
+    if (pinnedId === id) setPinnedAuthorId(null);
     setAuthorToDelete(null);
-    showNotificationMsg(`Autor(a) "${toRemove?.name}" excluído do sistema.`);
+    showNotificationMsg(`Autor(a) "${target.name}" foi inativado com segurança; os livros associados foram preservados.`);
   };
 
   const handleTogglePin = (id: string) => {
@@ -987,6 +993,22 @@ export const AdminAuthorsView: React.FC = () => {
             <Plus className="w-4 h-4" />
             <span>Cadastrar Autor Agora</span>
           </button>
+        </div>
+      )}
+
+      {importResultModal?.isOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className={`w-full max-w-md rounded-3xl p-6 border shadow-2xl ${isDark ? "bg-[#092032] border-[#163650] text-white" : "bg-white border-slate-200 text-slate-900"}`}>
+            <h3 className="text-lg font-bold mb-1">{importResultModal.title}</h3>
+            <p className="text-xs text-slate-400 mb-5">Importação segura e repetível; nenhum registro foi apagado.</p>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-xl bg-emerald-500/10 p-3"><strong className="block text-xl text-emerald-400">{importResultModal.added}</strong><span className="text-[10px] text-slate-400">novos</span></div>
+              <div className="rounded-xl bg-sky-500/10 p-3"><strong className="block text-xl text-sky-400">{importResultModal.updated}</strong><span className="text-[10px] text-slate-400">atualizados</span></div>
+              <div className="rounded-xl bg-amber-500/10 p-3"><strong className="block text-xl text-amber-400">{importResultModal.ignored}</strong><span className="text-[10px] text-slate-400">ignorados</span></div>
+            </div>
+            {importResultModal.errors.length > 0 && <p className="mt-4 text-xs text-rose-400">{importResultModal.errors.length} erro(s): {importResultModal.errors.slice(0, 2).join("; ")}</p>}
+            <button type="button" onClick={() => setImportResultModal(null)} className="mt-5 w-full rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-slate-950">Fechar</button>
+          </div>
         </div>
       )}
 

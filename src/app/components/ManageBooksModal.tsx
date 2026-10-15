@@ -14,6 +14,7 @@ import {
 import { Book } from "../types";
 import { CATEGORIES } from "../data/mockData";
 import { useTheme } from "../context/ThemeContext";
+import { AuthorMultiSelectField } from "./AuthorMultiSelectField";
 
 interface ManageBooksModalProps {
   isOpen: boolean;
@@ -126,6 +127,8 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
       id: formData.id || `livro-${Date.now()}`,
       title: formData.title!.trim(),
       author: formData.author!.trim(),
+      authorId: formData.authorIds?.[0],
+      authorIds: formData.authorIds || [],
       category: formData.category || "Literatura Brasileira",
       year: Number(formData.year) || new Date().getFullYear(),
       totalCopies,
@@ -451,29 +454,15 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
                   )}
                 </div>
 
-                <div>
-                  <label
-                    className={`block font-semibold mb-1 text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}
-                  >
-                    Autor(a) <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.author || ""}
-                    onChange={(e) => setFormData({ ...formData, author: e.target.value })}
-                    placeholder="Ex: Machado de Assis"
-                    className={`w-full px-3.5 py-2.5 rounded-xl focus:outline-none border transition-all ${
-                      isDark
-                        ? "bg-[#031522] border-[#163650] focus:border-emerald-500 text-white placeholder-slate-400"
-                        : "bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400"
-                    }`}
-                  />
-                  {formErrors.author && (
-                    <span className="text-rose-500 text-[11px] mt-1 block">
-                      {formErrors.author}
-                    </span>
-                  )}
-                </div>
+                <AuthorMultiSelectField
+                  value={formData.author || ""}
+                  authorIds={formData.authorIds || []}
+                  onChange={(author) => setFormData({ ...formData, author })}
+                  onAuthorIdsChange={(authorIds) => setFormData({ ...formData, authorIds })}
+                  error={formErrors.author}
+                  isDark={isDark}
+                  required
+                />
               </div>
 
               {/* Categoria, Ano & ISBN */}

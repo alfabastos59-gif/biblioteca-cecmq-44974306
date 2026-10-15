@@ -5,7 +5,8 @@ import { Book } from "../types";
 import { CATEGORIES } from "../data/mockData";
 import { useTheme } from "../context/ThemeContext";
 import { BookCoverCaptureModal } from "./BookCoverCaptureModal";
-import { AuthorAutocompleteField } from "./AuthorAutocompleteField";
+import { AuthorMultiSelectField } from "./AuthorMultiSelectField";
+import { findAuthorByName, getStoredAuthors } from "../data/authorsData";
 
 interface BookModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export const BookModal: React.FC<BookModalProps> = ({
 
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
+  const [authorIds, setAuthorIds] = useState<string[]>([]);
   const [category, setCategory] = useState("Literatura Brasileira");
   const [year, setYear] = useState<number | string>(new Date().getFullYear());
   const [isbn, setIsbn] = useState("");
@@ -41,6 +43,7 @@ export const BookModal: React.FC<BookModalProps> = ({
     if (bookToEdit) {
       setTitle(bookToEdit.title || "");
       setAuthor(bookToEdit.author || "");
+      setAuthorIds(bookToEdit.authorIds?.length ? bookToEdit.authorIds : (bookToEdit.authorId ? [bookToEdit.authorId] : (bookToEdit.author || "").split(/\s*(?:\/|;|,)\s*/).map((n) => findAuthorByName(n, getStoredAuthors())?.id).filter(Boolean)));
       setCategory(bookToEdit.category || "Literatura Brasileira");
       setYear(bookToEdit.year || new Date().getFullYear());
       setIsbn(bookToEdit.isbn || "");
@@ -57,6 +60,7 @@ export const BookModal: React.FC<BookModalProps> = ({
     } else {
       setTitle("");
       setAuthor("");
+      setAuthorIds([]);
       setCategory("Literatura Brasileira");
       setYear(new Date().getFullYear());
       setIsbn("");
@@ -100,6 +104,8 @@ export const BookModal: React.FC<BookModalProps> = ({
       id: bookToEdit?.id || `livro-${Date.now()}`,
       title: title.trim(),
       author: author.trim(),
+      authorId: authorIds[0],
+      authorIds,
       category: category || "Literatura Brasileira",
       year: Number(year) || new Date().getFullYear(),
       totalCopies: total,
@@ -199,10 +205,12 @@ export const BookModal: React.FC<BookModalProps> = ({
                 )}
               </div>
 
-              <AuthorAutocompleteField
-                id="input-book-author"
+              <AuthorMultiSelectField
                 value={author}
-                onChange={(val) => setAuthor(val)}
+                authorIds={authorIds}
+                onChange={setAuthor}
+                onAuthorIdsChange={setAuthorIds}
+                id="input-book-author"
                 error={errors.author}
                 isDark={isDark}
                 required

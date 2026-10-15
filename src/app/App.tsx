@@ -43,6 +43,7 @@ import {
   AuditActionCategory,
 } from "./types";
 import { useTheme } from "./context/ThemeContext";
+import { migrateBookAuthorRelations } from "./data/authorsData";
 import {
   testConnection,
   subscribeToBooks,
@@ -117,7 +118,7 @@ export default function App() {
   const [lastCloudSyncTime, setLastCloudSyncTime] = useState<Date | null>(null);
 
   const [books, setBooks] = useState<Book[]>(() => {
-    const sortedInitBooks = [...INITIAL_BOOKS].sort((a, b) =>
+    const sortedInitBooks = INITIAL_BOOKS.map(migrateBookAuthorRelations).sort((a, b) =>
       a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" }),
     );
     const sortedInitStudents = [...INITIAL_STUDENTS].sort((a, b) =>
@@ -138,7 +139,7 @@ export default function App() {
       }
       const saved = safeStorageGet("bmq_books");
       const parsed: Book[] = saved ? JSON.parse(saved) : sortedInitBooks;
-      return parsed.sort((a, b) => a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" }));
+      return parsed.map(migrateBookAuthorRelations).sort((a, b) => a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" }));
     } catch {
       return sortedInitBooks;
     }
@@ -357,7 +358,7 @@ export default function App() {
     // Listeners em tempo real para sincronização contínua com outros computadores na web
     const unsubBooks = subscribeToBooks((cloudBooks) => {
       if (!isSubscribed || !cloudBooks) return;
-      const sorted = [...cloudBooks].sort((a, b) =>
+      const sorted = cloudBooks.map(migrateBookAuthorRelations).sort((a, b) =>
         a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" }),
       );
       setBooks(sorted);
@@ -721,7 +722,8 @@ export default function App() {
     setActiveTab("catalogo");
   };
 
-  const handleSaveBook = (updatedBook: Book) => {
+  const handleSaveBook = (rawBook: Book) => {
+    const updatedBook = migrateBookAuthorRelations(rawBook);
     if (session.role !== "admin") {
       handleOpenLogin("admin", "Alterar Livro");
       return;
@@ -757,7 +759,8 @@ export default function App() {
     );
   };
 
-  const handleCreateBook = (newBook: Book) => {
+  const handleCreateBook = (rawBook: Book) => {
+    const newBook = migrateBookAuthorRelations(rawBook);
     if (session.role !== "admin") {
       handleOpenLogin("admin", "Cadastrar Novo Livro");
       return;
@@ -777,7 +780,8 @@ export default function App() {
     );
   };
 
-  const handleRegisterBook = (newBook: Book) => {
+  const handleRegisterBook = (rawBook: Book) => {
+    const newBook = migrateBookAuthorRelations(rawBook);
     setBooks((prev) =>
       [...prev, newBook].sort((a, b) =>
         a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" }),

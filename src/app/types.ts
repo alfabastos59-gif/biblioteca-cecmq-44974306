@@ -5,6 +5,10 @@ export interface Book {
   id: string;
   title: string;
   author: string;
+  /** ID legado/principal para compatibilidade com livros antigos. */
+  authorId?: string;
+  /** IDs dos autores associados; permite coautoria sem remover `author`. */
+  authorIds?: string[];
   cover: string;
   category: string;
   rating: number;
@@ -132,6 +136,7 @@ export interface AuthorItem {
   additionalQuotes?: AuthorQuote[];
   active?: boolean;
   createdAt?: string;
+  updatedAt?: string;
   nationality?: string;
   authorCode?: string;
 }
