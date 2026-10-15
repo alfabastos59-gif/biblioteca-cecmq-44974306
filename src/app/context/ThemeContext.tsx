@@ -1,12 +1,13 @@
 // @ts-nocheck
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export type AppTheme = "emerald" | "dark" | "ocean" | "kinetic" | "purple" | "light";
+export type AppTheme = 'alegre' | 'emerald' | 'dark' | 'ocean' | 'kinetic' | 'purple' | 'light';
 
 interface ThemeContextType {
   theme: AppTheme;
   setTheme: (theme: AppTheme) => void;
   toggleTheme: () => void;
+  isAlegre: boolean;
   isDark: boolean;
   isKinetic: boolean;
   isClassicDark: boolean;
@@ -19,34 +20,31 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Tema único e padronizado em ROXO (Creative Purple)
-  const theme: AppTheme = "purple";
+  // Tema alegre escolar e comunitário da Biblioteca Maria Quitéria
+  const [theme, setThemeState] = useState<AppTheme>('alegre');
 
   useEffect(() => {
-    localStorage.setItem("bmq_theme", "purple");
+    localStorage.setItem('bmq_theme', 'alegre');
     const root = document.documentElement;
-    root.classList.remove("light", "kinetic", "ocean", "emerald");
-    root.classList.add("purple", "dark");
-    document.body.style.backgroundColor = "#13072b";
-    document.body.style.color = "#f5f3ff";
+    root.classList.remove('purple', 'dark', 'kinetic', 'ocean', 'emerald');
+    root.classList.add('alegre', 'light');
+    document.body.style.backgroundColor = '#fbf8ef';
+    document.body.style.color = '#1e293b';
   }, []);
 
-  const toggleTheme = () => {
-    // Tema fixo em roxo
+  const toggleTheme = () => {};
+  const setTheme = (t: AppTheme) => {
+    setThemeState(t);
   };
 
-  const setTheme = () => {
-    // Tema fixo em roxo
-  };
-
-  // Tema fixo: Roxo Escuro Criativo
-  const isDark = true;
+  const isAlegre = theme === 'alegre';
+  const isDark = false;
   const isEmerald = false;
-  const isPurple = true;
+  const isPurple = false;
   const isKinetic = false;
   const isClassicDark = false;
   const isOcean = false;
-  const isLight = false;
+  const isLight = true;
 
   return (
     <ThemeContext.Provider
@@ -54,6 +52,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         theme,
         setTheme,
         toggleTheme,
+        isAlegre,
         isDark,
         isKinetic,
         isClassicDark,
@@ -69,16 +68,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 };
 
 const defaultThemeValue: ThemeContextType = {
-  theme: "purple",
+  theme: 'alegre',
   setTheme: () => {},
   toggleTheme: () => {},
-  isDark: true,
+  isAlegre: true,
+  isDark: false,
   isKinetic: false,
   isClassicDark: false,
   isOcean: false,
-  isPurple: true,
+  isPurple: false,
   isEmerald: false,
-  isLight: false,
+  isLight: true,
 };
 
 export const useTheme = () => {

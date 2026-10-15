@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Feather,
   Plus,
@@ -22,16 +22,16 @@ import {
   Copy,
   Check,
   AlertTriangle,
-  Image as ImageIcon,
   Upload,
   Download,
   FileSpreadsheet,
-  Flag,
-  X,
-} from "lucide-react";
-import { AuthorItem, Book } from "../types";
-import { useTheme } from "../context/ThemeContext";
-import { AuthorModal } from "./AuthorModal";
+  Image as ImageIcon
+} from 'lucide-react';
+import { AuthorItem } from '../types';
+import { useTheme } from '../context/ThemeContext';
+import { AuthorModal } from './AuthorModal';
+import { ImportAuthorsCsvModal } from './ImportAuthorsCsvModal';
+import { normalizeText, exportAuthorsToCsv } from '../utils/authorCsvHelper';
 import {
   getStoredAuthors,
   saveStoredAuthors,
@@ -39,47 +39,30 @@ import {
   setPinnedAuthorId,
   calculateWeeklyAuthorData,
   subscribeToAuthorsUpdate,
-  DEFAULT_AUTHORS,
-  normalizeAuthorName,
-  parseAuthorsCsv,
-  convertCsvRowToAuthorItem,
-  importAuthors,
-  BRAZILIAN_AUTHORS_INITIAL,
-  BRAZILIAN_AUTHORS_CSV_RAW,
-} from "../data/authorsData";
-import { FeaturedAuthor } from "./FeaturedAuthor";
+  DEFAULT_AUTHORS
+} from '../data/authorsData';
+import { FeaturedAuthor } from './FeaturedAuthor';
 
-type FilterTab = "todos" | "ativos" | "destaque" | "inativos";
-type ViewMode = "grid" | "table";
+type FilterTab = 'todos' | 'ativos' | 'destaque' | 'inativos';
+type ViewMode = 'grid' | 'table';
 
-export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) => {
+export const AdminAuthorsView: React.FC = () => {
   const { isDark, isEmerald, isPurple } = useTheme();
 
   const [authors, setAuthors] = useState<AuthorItem[]>(() => getStoredAuthors());
   const [pinnedId, setPinnedId] = useState<string | null>(() => getPinnedAuthorId());
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<FilterTab>("todos");
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState<FilterTab>('todos');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
   const [authorToEdit, setAuthorToEdit] = useState<AuthorItem | null>(null);
   const [authorToDelete, setAuthorToDelete] = useState<AuthorItem | null>(null);
   const [expandedQuotesId, setExpandedQuotesId] = useState<string | null>(null);
 
   const [notification, setNotification] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
-
-  // Referência para upload de arquivo CSV
-  const csvInputRef = useRef<HTMLInputElement>(null);
-  const [importResultModal, setImportResultModal] = useState<{
-    isOpen: boolean;
-    title: string;
-    added: number;
-    updated: number;
-    ignored: number;
-    total: number;
-    errors: string[];
-  } | null>(null);
 
   useEffect(() => {
     const unsub = subscribeToAuthorsUpdate(() => {
@@ -108,67 +91,40 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
     }, 0);
   }, [authors]);
 
+  // Listar autores em ordem alfabética com pesquisa tolerante a acentos
   const filteredAuthors = useMemo(() => {
-    const list = authors.filter((author) => {
-      // Filtro por tab
-      if (activeFilter === "ativos" && author.active === false) return false;
-      if (activeFilter === "inativos" && author.active !== false) return false;
-      if (activeFilter === "destaque" && author.id !== weeklyInfo.author?.id) return false;
+    return authors
+      .filter((author) => {
+        // Filtro por tab
+        if (activeFilter === 'ativos' && author.active === false) return false;
+        if (activeFilter === 'inativos' && author.active !== false) return false;
+        if (activeFilter === 'destaque' && author.id !== weeklyInfo.author?.id) return false;
 
-      // Filtro por busca com suporte completo a acentos e minúsculas
-      if (!searchQuery.trim()) return true;
-      const q = normalizeAuthorName(searchQuery);
+        // Filtro por busca insensível a acentos
+        if (!searchQuery.trim()) return true;
+        const q = normalizeText(searchQuery);
 
-      const nameMatch = normalizeAuthorName(author.name).includes(q);
-      const tagMatch = normalizeAuthorName(author.tag || "").includes(q);
-      const roleMatch = normalizeAuthorName(author.role || "").includes(q);
-      const natMatch = normalizeAuthorName(author.nationality || "").includes(q);
-      const periodMatch = normalizeAuthorName(author.period || "").includes(q);
-      const quoteMatch = normalizeAuthorName(author.featuredQuote || "").includes(q);
-      const sourceMatch = normalizeAuthorName(author.quoteSource || "").includes(q);
-      const codeMatch = author.authorCode
-        ? normalizeAuthorName(author.authorCode).includes(q)
-        : false;
-      const additionalMatch = author.additionalQuotes?.some(
-        (aq) =>
-          normalizeAuthorName(aq.text).includes(q) ||
-          (aq.source && normalizeAuthorName(aq.source).includes(q)),
-      );
+        const nameMatch = normalizeText(author.name).includes(q) || normalizeText(author.nome_autor || '').includes(q);
+        const nacMatch = normalizeText(author.nacionalidade || '').includes(q);
+        const tagMatch = author.tag ? normalizeText(author.tag).includes(q) : false;
+        const roleMatch = author.role ? normalizeText(author.role).includes(q) : false;
+        const periodMatch = author.period ? normalizeText(author.period).includes(q) : false;
+        const quoteMatch = author.featuredQuote ? normalizeText(author.featuredQuote).includes(q) : false;
+        const sourceMatch = author.quoteSource ? normalizeText(author.quoteSource).includes(q) : false;
+        const additionalMatch = author.additionalQuotes?.some(
+          (aq) => normalizeText(aq.text).includes(q) || (aq.source && normalizeText(aq.source).includes(q))
+        );
 
-      return (
-        nameMatch ||
-        tagMatch ||
-        roleMatch ||
-        natMatch ||
-        periodMatch ||
-        quoteMatch ||
-        sourceMatch ||
-        codeMatch ||
-        additionalMatch
-      );
-    });
-
-    // Listar autores obrigatoriamente em ordem alfabética (pt-BR)
-    return list.sort((a, b) =>
-      a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }),
-    );
+        return nameMatch || nacMatch || tagMatch || roleMatch || periodMatch || quoteMatch || sourceMatch || additionalMatch;
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
   }, [authors, searchQuery, activeFilter, weeklyInfo.author?.id]);
 
-  const getAssociatedBookCount = (author: AuthorItem) => books.filter((book) => {
-    if (book.authorIds?.includes(author.id) || book.authorId === author.id) return true;
-    return normalizeAuthorName(book.author || "").split(/\s*(?:\/|;|,)\s*/).includes(normalizeAuthorName(author.name));
-  }).length;
-
   const handleSaveAuthor = (author: AuthorItem) => {
-    const norm = normalizeAuthorName(author.name);
-    const existingIndex = authors.findIndex(
-      (a) => a.id === author.id || normalizeAuthorName(a.name) === norm,
-    );
+    const exists = authors.some((a) => a.id === author.id);
     let updated: AuthorItem[];
-    if (existingIndex !== -1) {
-      updated = authors.map((a, i) =>
-        i === existingIndex ? { ...a, ...author, id: a.id } : a,
-      );
+    if (exists) {
+      updated = authors.map((a) => (a.id === author.id ? author : a));
       showNotificationMsg(`Autor(a) "${author.name}" atualizado com sucesso!`);
     } else {
       updated = [author, ...authors];
@@ -177,92 +133,21 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
     saveStoredAuthors(updated);
   };
 
-  const processCsvContent = (content: string, sourceName = "Arquivo CSV") => {
-    try {
-      const parsed = parseAuthorsCsv(content);
-      if (parsed.rows.length === 0) {
-        alert("Nenhum registro de autor válido foi encontrado no arquivo.");
-        return;
-      }
-      const converted = parsed.rows.map((r) => convertCsvRowToAuthorItem(r, authors));
-      const result = importAuthors(converted);
-      setImportResultModal({
-        isOpen: true,
-        title: `Importação Concluída (${sourceName})`,
-        added: result.added,
-        updated: result.updated,
-        ignored: result.ignored,
-        total: result.total,
-        errors: parsed.errors,
-      });
-      showNotificationMsg(
-        `${result.added} novos, ${result.updated} atualizados, ${result.ignored} ignorados. Sem duplicidades!`,
-      );
-    } catch (err) {
-      console.error("Erro na importação CSV:", err);
-      alert("Erro ao processar o arquivo CSV. Verifique o formato.");
-    }
-  };
-
-  const handleCsvFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const text = event.target?.result as string;
-      processCsvContent(text, file.name);
-    };
-    reader.readAsText(file, "UTF-8");
-    if (csvInputRef.current) csvInputRef.current.value = "";
-  };
-
-  const handleImportOfficialBrazilians = () => {
-    processCsvContent(BRAZILIAN_AUTHORS_CSV_RAW, "86 Autores Brasileiros da CECMQ");
-  };
-
-  const handleExportCsv = () => {
-    const header = "id_autor;nome_autor;nacionalidade;status\n";
-    const sorted = [...authors].sort((a, b) =>
-      a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }),
-    );
-    const rows = sorted
-      .map((a, i) => {
-        const id = a.authorCode || String(i + 1).padStart(3, "0");
-        const status = a.active !== false ? "Ativo" : "Inativo";
-        const nat = a.nationality || "Brasileira";
-        return `${id};${a.name};${nat};${status}`;
-      })
-      .join("\n");
-
-    const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute(
-      "download",
-      `autores_brasileiros_cecmq_${new Date().toISOString().slice(0, 10)}.csv`,
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    showNotificationMsg("Arquivo CSV exportado com sucesso!");
-  };
-
   const handleDeleteAuthor = (id: string) => {
-    const target = authors.find((a) => a.id === id);
-    if (!target) return;
-    const updated = authors.map((a) => (a.id === id ? { ...a, active: false, updatedAt: new Date().toISOString() } : a));
+    const toRemove = authors.find((a) => a.id === id);
+    const updated = authors.filter((a) => a.id !== id);
     saveStoredAuthors(updated);
-    if (pinnedId === id) setPinnedAuthorId(null);
+    if (pinnedId === id) {
+      setPinnedAuthorId(null);
+    }
     setAuthorToDelete(null);
-    showNotificationMsg(`Autor(a) "${target.name}" foi inativado com segurança; os livros associados foram preservados.`);
+    showNotificationMsg(`Autor(a) "${toRemove?.name}" excluído do sistema.`);
   };
 
   const handleTogglePin = (id: string) => {
     if (pinnedId === id) {
       setPinnedAuthorId(null);
-      showNotificationMsg("Rotação semanal automática ativada (muda toda segunda-feira)!");
+      showNotificationMsg('Rotação semanal automática ativada (muda toda segunda-feira)!');
     } else {
       setPinnedAuthorId(id);
       const chosen = authors.find((a) => a.id === id);
@@ -277,7 +162,7 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
         showNotificationMsg(
           nextState
             ? `"${a.name}" foi reativado na rotação semanal.`
-            : `"${a.name}" foi pausado da rotação semanal.`,
+            : `"${a.name}" foi pausado da rotação semanal.`
         );
         return { ...a, active: nextState };
       }
@@ -291,7 +176,7 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
       ...item,
       id: `author-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
       name: `${item.name} (Cópia)`,
-      createdAt: new Date().toISOString(),
+      createdAt: new Date().toISOString()
     };
     const updated = [clone, ...authors];
     saveStoredAuthors(updated);
@@ -301,12 +186,12 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
   const handleRestoreDefaults = () => {
     if (
       window.confirm(
-        "Deseja restaurar a lista original de autores brasileiros (Manoel de Barros, Machado de Assis, Clarice Lispector, etc.)?",
+        'Deseja restaurar a lista original de autores brasileiros (Manoel de Barros, Machado de Assis, Clarice Lispector, etc.)?'
       )
     ) {
       saveStoredAuthors(DEFAULT_AUTHORS);
       setPinnedAuthorId(null);
-      showNotificationMsg("Acervo de autores restaurado para o padrão original.");
+      showNotificationMsg('Acervo de autores restaurado para o padrão original.');
     }
   };
 
@@ -324,12 +209,12 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
       <div
         className={`p-6 rounded-3xl border shadow-xl relative overflow-hidden transition-all ${
           isEmerald
-            ? "bg-[#062438] border-[#0c4061]"
+            ? 'bg-[#062438] border-[#0c4061]'
             : isPurple
-              ? "bg-[#220d43] border-[#3e196e]"
-              : isDark
-                ? "bg-[#092032] border-[#163650]"
-                : "bg-white border-slate-200"
+            ? 'bg-[#220d43] border-[#3e196e]'
+            : isDark
+            ? 'bg-[#092032] border-[#163650]'
+            : 'bg-white border-slate-200'
         }`}
       >
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
@@ -338,10 +223,10 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
               <span
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border ${
                   isEmerald
-                    ? "bg-emerald-500/15 text-[#00e676] border-emerald-500/30"
+                    ? 'bg-emerald-500/15 text-[#00e676] border-emerald-500/30'
                     : isPurple
-                      ? "bg-purple-500/20 text-purple-300 border-purple-500/30"
-                      : "bg-amber-400/20 text-amber-500 border-amber-400/40"
+                    ? 'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                    : 'bg-amber-400/20 text-amber-500 border-amber-400/40'
                 }`}
               >
                 <Feather className="w-3.5 h-3.5" />
@@ -365,19 +250,17 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
               Gerenciamento de Autores e Frases Semanais
             </h2>
 
-            <p
-              className={`text-xs sm:text-sm max-w-2xl ${isDark ? "text-slate-300" : "text-slate-600"}`}
-            >
+            <p className={`text-xs sm:text-sm max-w-2xl ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
               Cadastre nome, foto e frases semanais de autores. O sistema verifica a data atual e
-              exibe automaticamente o autor da semana no <strong>HeroBanner</strong> da página
-              inicial, trocando todo início de segunda-feira.
+              exibe automaticamente o autor da semana no <strong>HeroBanner</strong> da página inicial,
+              trocando todo início de segunda-feira.
             </p>
           </div>
 
           {/* Card Resumo do Autor em Exibição */}
           <div
             className={`p-4 rounded-2xl border shrink-0 min-w-[300px] shadow-md ${
-              isDark ? "bg-black/35 border-white/10" : "bg-slate-50 border-slate-200"
+              isDark ? 'bg-black/35 border-white/10' : 'bg-slate-50 border-slate-200'
             }`}
           >
             <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center justify-between">
@@ -411,44 +294,30 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
         {/* Barra de Métricas Numéricas */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-white/10">
           <div className="p-3 rounded-2xl bg-black/15 border border-white/5">
-            <span className="text-[11px] font-bold text-slate-400 block uppercase">
-              Total de Autores
-            </span>
+            <span className="text-[11px] font-bold text-slate-400 block uppercase">Total de Autores</span>
             <span className="text-xl sm:text-2xl font-black text-white">{totalAuthors}</span>
           </div>
 
           <div className="p-3 rounded-2xl bg-black/15 border border-white/5">
-            <span className="text-[11px] font-bold text-slate-400 block uppercase">
-              Ativos na Rotação
-            </span>
-            <span className="text-xl sm:text-2xl font-black text-emerald-400">
-              {activeAuthorsCount}
-            </span>
+            <span className="text-[11px] font-bold text-slate-400 block uppercase">Ativos na Rotação</span>
+            <span className="text-xl sm:text-2xl font-black text-emerald-400">{activeAuthorsCount}</span>
           </div>
 
           <div className="p-3 rounded-2xl bg-black/15 border border-white/5">
-            <span className="text-[11px] font-bold text-slate-400 block uppercase">
-              Frases Cadastradas
-            </span>
-            <span className="text-xl sm:text-2xl font-black text-amber-400">
-              {totalWeeklyQuotes}
-            </span>
+            <span className="text-[11px] font-bold text-slate-400 block uppercase">Frases Cadastradas</span>
+            <span className="text-xl sm:text-2xl font-black text-amber-400">{totalWeeklyQuotes}</span>
           </div>
 
           <div className="p-3 rounded-2xl bg-black/15 border border-white/5">
-            <span className="text-[11px] font-bold text-slate-400 block uppercase">
-              Dia de Troca
-            </span>
-            <span className="text-base sm:text-lg font-bold text-purple-300">
-              Segunda-feira 00h
-            </span>
+            <span className="text-[11px] font-bold text-slate-400 block uppercase">Dia de Troca</span>
+            <span className="text-base sm:text-lg font-bold text-purple-300">Segunda-feira 00h</span>
           </div>
         </div>
       </div>
 
       {/* Barra de Ações do CRUD, Filtros e Busca */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        {/* Botão Principal de Cadastro */}
+        {/* Botão Principal de Cadastro e Importação CSV */}
         <div className="flex items-center gap-2 flex-wrap">
           <button
             id="btn-cadastrar-novo-autor"
@@ -459,10 +328,10 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
             }}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-black transition-all shadow-lg cursor-pointer hover:scale-105 active:scale-95 ${
               isEmerald
-                ? "bg-[#00e676] hover:bg-[#1fa950] text-slate-950 shadow-emerald-950/30"
+                ? 'bg-[#00e676] hover:bg-[#1fa950] text-slate-950 shadow-emerald-950/30'
                 : isPurple
-                  ? "bg-purple-500 hover:bg-purple-600 text-white shadow-purple-950/30"
-                  : "bg-emerald-500 hover:bg-emerald-600 text-white"
+                ? 'bg-purple-500 hover:bg-purple-600 text-white shadow-purple-950/30'
+                : 'bg-emerald-500 hover:bg-emerald-600 text-white'
             }`}
           >
             <Plus className="w-4 h-4" />
@@ -470,18 +339,59 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
           </button>
 
           <button
+            id="btn-importar-autores-csv"
+            type="button"
+            onClick={() => setIsCsvModalOpen(true)}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold border transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95 ${
+              isDark
+                ? 'bg-emerald-500/15 hover:bg-emerald-500/25 border-emerald-500/30 text-[#00e676]'
+                : 'bg-emerald-50 hover:bg-emerald-100 border-emerald-300 text-emerald-800'
+            }`}
+          >
+            <Upload className="w-4 h-4" />
+            <span>Importar CSV</span>
+          </button>
+
+          <button
+            id="btn-exportar-autores-csv"
+            type="button"
+            onClick={() => {
+              const csv = exportAuthorsToCsv(authors);
+              const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.setAttribute('download', `autores_brasileiros_${new Date().toISOString().slice(0, 10)}.csv`);
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              URL.revokeObjectURL(url);
+              showNotificationMsg(`${authors.length} autores exportados em CSV com sucesso!`);
+            }}
+            title="Exportar arquivo CSV com todos os autores"
+            className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl text-xs font-semibold border transition-colors cursor-pointer ${
+              isDark
+                ? 'border-white/10 hover:bg-white/10 text-slate-300 hover:text-white'
+                : 'border-slate-200 hover:bg-slate-100 text-slate-700'
+            }`}
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Exportar CSV</span>
+          </button>
+
+          <button
             type="button"
             onClick={() => setShowPreview(!showPreview)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold border transition-colors cursor-pointer ${
               showPreview
-                ? "bg-emerald-500 text-slate-950 border-emerald-400 font-black"
+                ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-black'
                 : isDark
-                  ? "bg-white/10 hover:bg-white/20 border-white/10 text-white"
-                  : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"
+                ? 'bg-white/10 hover:bg-white/20 border-white/10 text-white'
+                : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
             }`}
           >
             <Eye className="w-4 h-4" />
-            <span>{showPreview ? "Ocultar Prévia HeroBanner" : "Prévia no HeroBanner"}</span>
+            <span>{showPreview ? 'Ocultar Prévia HeroBanner' : 'Prévia no HeroBanner'}</span>
           </button>
 
           <button
@@ -490,8 +400,8 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
             title="Restaurar a coleção inicial de autores"
             className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl text-xs font-semibold border transition-colors cursor-pointer ${
               isDark
-                ? "border-white/10 hover:bg-white/10 text-slate-400 hover:text-white"
-                : "border-slate-200 hover:bg-slate-100 text-slate-600"
+                ? 'border-white/10 hover:bg-white/10 text-slate-400 hover:text-white'
+                : 'border-slate-200 hover:bg-slate-100 text-slate-600'
             }`}
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -505,24 +415,24 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
           <div className="flex items-center rounded-xl p-1 border bg-black/20">
             <button
               type="button"
-              onClick={() => setViewMode("grid")}
+              onClick={() => setViewMode('grid')}
               title="Visualização em Grade de Cards"
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                viewMode === "grid"
-                  ? "bg-emerald-500 text-slate-950"
-                  : "text-slate-400 hover:text-white"
+                viewMode === 'grid'
+                  ? 'bg-emerald-500 text-slate-950'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               type="button"
-              onClick={() => setViewMode("table")}
+              onClick={() => setViewMode('table')}
               title="Visualização em Lista/Tabela Detalhada"
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                viewMode === "table"
-                  ? "bg-emerald-500 text-slate-950"
-                  : "text-slate-400 hover:text-white"
+                viewMode === 'table'
+                  ? 'bg-emerald-500 text-slate-950'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <List className="w-4 h-4" />
@@ -539,8 +449,8 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
               onChange={(e) => setSearchQuery(e.target.value)}
               className={`w-full pl-9 pr-3.5 py-2 rounded-xl text-xs sm:text-sm border transition-all ${
                 isDark
-                  ? "bg-black/30 border-white/15 text-white placeholder-slate-500"
-                  : "bg-white border-slate-300 text-slate-900 placeholder-slate-400"
+                  ? 'bg-black/30 border-white/15 text-white placeholder-slate-500'
+                  : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
               }`}
             />
           </div>
@@ -551,10 +461,10 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
       <div className="flex items-center gap-2 border-b border-white/10 pb-2 overflow-x-auto">
         {(
           [
-            { id: "todos", label: "Todos os Autores", count: totalAuthors },
-            { id: "ativos", label: "Ativos na Rotação", count: activeAuthorsCount },
-            { id: "destaque", label: "Destaque Desta Semana", count: 1 },
-            { id: "inativos", label: "Pausados", count: totalAuthors - activeAuthorsCount },
+            { id: 'todos', label: 'Todos os Autores', count: totalAuthors },
+            { id: 'ativos', label: 'Ativos na Rotação', count: activeAuthorsCount },
+            { id: 'destaque', label: 'Destaque Desta Semana', count: 1 },
+            { id: 'inativos', label: 'Pausados', count: totalAuthors - activeAuthorsCount }
           ] as const
         ).map((tab) => {
           const isActive = activeFilter === tab.id;
@@ -565,13 +475,13 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
                 isActive
                   ? isEmerald
-                    ? "bg-emerald-500/20 text-[#00e676] border border-emerald-500/40"
+                    ? 'bg-emerald-500/20 text-[#00e676] border border-emerald-500/40'
                     : isPurple
-                      ? "bg-purple-500/20 text-purple-300 border border-purple-500/40"
-                      : "bg-amber-400/20 text-amber-500 border border-amber-400/40"
+                    ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40'
+                    : 'bg-amber-400/20 text-amber-500 border border-amber-400/40'
                   : isDark
-                    ? "text-slate-400 hover:text-white"
-                    : "text-slate-600 hover:text-slate-900"
+                  ? 'text-slate-400 hover:text-white'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               <span>{tab.label}</span>
@@ -603,7 +513,7 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
       )}
 
       {/* Conteúdo: Modo Grade de Cards */}
-      {viewMode === "grid" && (
+      {viewMode === 'grid' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredAuthors.map((item) => {
             const isCurrentlyActive = weeklyInfo.author?.id === item.id;
@@ -617,12 +527,12 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
                 key={item.id}
                 className={`rounded-3xl border p-5 relative flex flex-col justify-between transition-all duration-300 shadow-md ${
                   isCurrentlyActive
-                    ? "ring-2 ring-emerald-400 border-emerald-500/60 shadow-emerald-950/25"
+                    ? 'ring-2 ring-emerald-400 border-emerald-500/60 shadow-emerald-950/25'
                     : item.active === false
-                      ? "opacity-65 border-dashed"
-                      : isDark
-                        ? "bg-[#092032] border-[#163650] text-white hover:border-slate-600"
-                        : "bg-white border-slate-200 text-slate-900 hover:border-slate-300"
+                    ? 'opacity-65 border-dashed'
+                    : isDark
+                    ? 'bg-[#092032] border-[#163650] text-white hover:border-slate-600'
+                    : 'bg-white border-slate-200 text-slate-900 hover:border-slate-300'
                 }`}
               >
                 <div>
@@ -637,7 +547,7 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
                             referrerPolicy="no-referrer"
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              (e.target as HTMLElement).style.display = "none";
+                              (e.target as HTMLElement).style.display = 'none';
                             }}
                           />
                         ) : (
@@ -689,11 +599,11 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
                         <span
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
                             totalQuotesThisAuthor > 1
-                              ? "bg-purple-500/20 text-purple-300"
-                              : "bg-white/10 text-slate-400"
+                              ? 'bg-purple-500/20 text-purple-300'
+                              : 'bg-white/10 text-slate-400'
                           }`}
                         >
-                          {totalQuotesThisAuthor} {totalQuotesThisAuthor === 1 ? "frase" : "frases"}
+                          {totalQuotesThisAuthor} {totalQuotesThisAuthor === 1 ? 'frase' : 'frases'}
                         </span>
                       </div>
                     </div>
@@ -702,7 +612,7 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
                   {/* Frase Principal Cadastrada */}
                   <div
                     className={`p-3.5 rounded-2xl border mb-3 ${
-                      isDark ? "bg-black/30 border-white/10" : "bg-amber-50/60 border-amber-200/60"
+                      isDark ? 'bg-black/30 border-white/10' : 'bg-amber-50/60 border-amber-200/60'
                     }`}
                   >
                     <Quote className="w-4 h-4 text-amber-400/80 mb-1" />
@@ -741,10 +651,7 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
                       {isExpanded && (
                         <div className="mt-2.5 space-y-2 p-3 rounded-2xl bg-black/20 border border-white/10 text-xs">
                           {item.additionalQuotes?.map((aq, i) => (
-                            <div
-                              key={i}
-                              className="border-b border-white/5 pb-1.5 last:border-b-0 last:pb-0"
-                            >
+                            <div key={i} className="border-b border-white/5 pb-1.5 last:border-b-0 last:pb-0">
                               <p className="font-serif italic text-slate-300">“{aq.text}”</p>
                               {aq.source && (
                                 <p className="text-[10px] text-slate-500 mt-0.5">— {aq.source}</p>
@@ -764,39 +671,31 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
                     <button
                       type="button"
                       onClick={() => handleTogglePin(item.id)}
-                      title={
-                        isPinnedItem
-                          ? "Desafixar (voltar à rotação semanal)"
-                          : "Fixar este escritor agora no Início"
-                      }
+                      title={isPinnedItem ? 'Desafixar (voltar à rotação semanal)' : 'Fixar este escritor agora no Início'}
                       className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                         isPinnedItem
-                          ? "bg-amber-500 text-slate-950 font-black"
+                          ? 'bg-amber-500 text-slate-950 font-black'
                           : isDark
-                            ? "bg-white/10 hover:bg-white/20 text-slate-300"
-                            : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                          ? 'bg-white/10 hover:bg-white/20 text-slate-300'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                       }`}
                     >
                       <Pin className="w-3 h-3" />
-                      <span>{isPinnedItem ? "Fixado" : "Fixar"}</span>
+                      <span>{isPinnedItem ? 'Fixado' : 'Fixar'}</span>
                     </button>
 
                     {/* Botão de Ativar / Desativar */}
                     <button
                       type="button"
                       onClick={() => handleToggleActive(item.id)}
-                      title={
-                        item.active !== false
-                          ? "Pausar este escritor da rotação"
-                          : "Ativar escritor na rotação"
-                      }
+                      title={item.active !== false ? 'Pausar este escritor da rotação' : 'Ativar escritor na rotação'}
                       className={`px-2 py-1.5 rounded-xl text-[11px] font-bold transition-colors cursor-pointer ${
                         item.active !== false
-                          ? "text-emerald-400 hover:bg-emerald-500/10"
-                          : "text-slate-400 hover:bg-white/10 line-through"
+                          ? 'text-emerald-400 hover:bg-emerald-500/10'
+                          : 'text-slate-400 hover:bg-white/10 line-through'
                       }`}
                     >
-                      {item.active !== false ? "Ativo" : "Pausado"}
+                      {item.active !== false ? 'Ativo' : 'Pausado'}
                     </button>
                   </div>
 
@@ -842,18 +741,16 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
       )}
 
       {/* Conteúdo: Modo Tabela Detalhada */}
-      {viewMode === "table" && (
+      {viewMode === 'table' && (
         <div
           className={`rounded-3xl border overflow-hidden shadow-lg ${
-            isDark ? "bg-[#092032] border-[#163650]" : "bg-white border-slate-200"
+            isDark ? 'bg-[#092032] border-[#163650]' : 'bg-white border-slate-200'
           }`}
         >
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs sm:text-sm">
               <thead>
-                <tr
-                  className={`border-b ${isDark ? "border-white/10 bg-black/25 text-slate-300" : "border-slate-200 bg-slate-50 text-slate-700"}`}
-                >
+                <tr className={`border-b ${isDark ? 'border-white/10 bg-black/25 text-slate-300' : 'border-slate-200 bg-slate-50 text-slate-700'}`}>
                   <th className="py-3 px-4 font-black">Autor</th>
                   <th className="py-3 px-4 font-black">Categoria / Período</th>
                   <th className="py-3 px-4 font-black">Frases Semanais</th>
@@ -865,14 +762,13 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
                 {filteredAuthors.map((item) => {
                   const isCurrentlyActive = weeklyInfo.author?.id === item.id;
                   const isPinnedItem = pinnedId === item.id;
-                  const totalQuotes =
-                    1 + (item.additionalQuotes ? item.additionalQuotes.length : 0);
+                  const totalQuotes = 1 + (item.additionalQuotes ? item.additionalQuotes.length : 0);
 
                   return (
                     <tr
                       key={item.id}
                       className={`hover:bg-white/5 transition-colors ${
-                        isCurrentlyActive ? "bg-emerald-500/10" : ""
+                        isCurrentlyActive ? 'bg-emerald-500/10' : ''
                       }`}
                     >
                       {/* Foto e Nome */}
@@ -885,9 +781,7 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
                           />
                           <div className="min-w-0">
                             <span className="font-bold block truncate">{item.name}</span>
-                            <span className="text-[11px] text-slate-400 block truncate">
-                              {item.role}
-                            </span>
+                            <span className="text-[11px] text-slate-400 block truncate">{item.role}</span>
                           </div>
                         </div>
                       </td>
@@ -904,7 +798,7 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
                       <td className="py-3.5 px-4 max-w-xs">
                         <p className="font-serif italic text-xs truncate">“{item.featuredQuote}”</p>
                         <span className="text-[10px] text-slate-400 block mt-0.5 font-semibold">
-                          Total: {totalQuotes} {totalQuotes === 1 ? "frase" : "frases cadastradas"}
+                          Total: {totalQuotes} {totalQuotes === 1 ? 'frase' : 'frases cadastradas'}
                         </span>
                       </td>
 
@@ -924,11 +818,11 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
                           <span
                             className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                               item.active !== false
-                                ? "bg-emerald-500/10 text-emerald-400"
-                                : "bg-red-500/10 text-red-400"
+                                ? 'bg-emerald-500/10 text-emerald-400'
+                                : 'bg-red-500/10 text-red-400'
                             }`}
                           >
-                            {item.active !== false ? "Ativo" : "Pausado"}
+                            {item.active !== false ? 'Ativo' : 'Pausado'}
                           </span>
                         </div>
                       </td>
@@ -939,7 +833,7 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
                           <button
                             type="button"
                             onClick={() => handleTogglePin(item.id)}
-                            title={isPinnedItem ? "Desafixar" : "Fixar agora"}
+                            title={isPinnedItem ? 'Desafixar' : 'Fixar agora'}
                             className="p-1.5 rounded-lg border border-white/10 hover:bg-white/10 text-slate-300"
                           >
                             <Pin className="w-3.5 h-3.5" />
@@ -996,22 +890,6 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
         </div>
       )}
 
-      {importResultModal?.isOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className={`w-full max-w-md rounded-3xl p-6 border shadow-2xl ${isDark ? "bg-[#092032] border-[#163650] text-white" : "bg-white border-slate-200 text-slate-900"}`}>
-            <h3 className="text-lg font-bold mb-1">{importResultModal.title}</h3>
-            <p className="text-xs text-slate-400 mb-5">Importação segura e repetível; nenhum registro foi apagado.</p>
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-xl bg-emerald-500/10 p-3"><strong className="block text-xl text-emerald-400">{importResultModal.added}</strong><span className="text-[10px] text-slate-400">novos</span></div>
-              <div className="rounded-xl bg-sky-500/10 p-3"><strong className="block text-xl text-sky-400">{importResultModal.updated}</strong><span className="text-[10px] text-slate-400">atualizados</span></div>
-              <div className="rounded-xl bg-amber-500/10 p-3"><strong className="block text-xl text-amber-400">{importResultModal.ignored}</strong><span className="text-[10px] text-slate-400">ignorados</span></div>
-            </div>
-            {importResultModal.errors.length > 0 && <p className="mt-4 text-xs text-rose-400">{importResultModal.errors.length} erro(s): {importResultModal.errors.slice(0, 2).join("; ")}</p>}
-            <button type="button" onClick={() => setImportResultModal(null)} className="mt-5 w-full rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-slate-950">Fechar</button>
-          </div>
-        </div>
-      )}
-
       {/* Modal de Criação / Edição */}
       <AuthorModal
         isOpen={isModalOpen}
@@ -1028,9 +906,7 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
           <div
             className={`w-full max-w-md rounded-3xl p-6 border shadow-2xl space-y-4 ${
-              isDark
-                ? "bg-[#092032] border-[#163650] text-white"
-                : "bg-white border-slate-200 text-slate-900"
+              isDark ? 'bg-[#092032] border-[#163650] text-white' : 'bg-white border-slate-200 text-slate-900'
             }`}
           >
             <div className="flex items-center gap-3 text-red-400">
@@ -1038,8 +914,7 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
               <h3 className="text-lg font-bold">Excluir Autor</h3>
             </div>
             <p className="text-xs sm:text-sm text-slate-400">
-              Tem certeza que deseja remover o autor <strong>{authorToDelete.name}</strong> e suas
-              frases do sistema? Ele não aparecerá mais no HeroBanner.
+              Tem certeza que deseja remover o autor <strong>{authorToDelete.name}</strong> e suas frases do sistema? Ele não aparecerá mais no HeroBanner.
             </p>
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
               <button
@@ -1060,6 +935,14 @@ export const AdminAuthorsView: React.FC<{ books?: Book[] }> = ({ books = [] }) =
           </div>
         </div>
       )}
+
+      {/* Modal de Importação de Autores em CSV */}
+      <ImportAuthorsCsvModal
+        isOpen={isCsvModalOpen}
+        onClose={() => setIsCsvModalOpen(false)}
+        existingAuthors={authors}
+        onSuccess={(msg) => showNotificationMsg(msg)}
+      />
     </div>
   );
 };

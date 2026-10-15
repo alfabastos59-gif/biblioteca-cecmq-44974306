@@ -79,6 +79,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1.0" },
       { title: "Biblioteca Maria Quitéria" },
+      {
+        name: "description",
+        content:
+          "Sistema de gerenciamento e portal da Biblioteca Maria Quitéria com catálogo de livros, controle de empréstimos, relatórios e painel administrativo.",
+      },
+      { property: "og:title", content: "Biblioteca Maria Quitéria" },
+      {
+        property: "og:description",
+        content:
+          "Sistema de gerenciamento e portal da Biblioteca Maria Quitéria com catálogo de livros, controle de empréstimos, relatórios e painel administrativo.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -105,7 +116,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="bg-[#001424] text-slate-100 font-['Poppins',sans-serif] antialiased selection:bg-emerald-500 selection:text-white">
+      <body className="bg-[#fbf8ef] text-slate-800 font-['Poppins',sans-serif] antialiased selection:bg-[#009677] selection:text-white min-h-screen">
         {children}
         <Scripts />
       </body>

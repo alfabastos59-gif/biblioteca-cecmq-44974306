@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from 'react';
 import {
   X,
   Upload,
@@ -16,16 +16,10 @@ import {
   ChevronDown,
   ChevronUp,
   Eye,
-  Link as LinkIcon,
-  Flag,
-} from "lucide-react";
-import { AuthorItem } from "../types";
-import { useTheme } from "../context/ThemeContext";
-import {
-  getStoredAuthors,
-  normalizeAuthorName,
-  slugifyAuthorName,
-} from "../data/authorsData";
+  Link as LinkIcon
+} from 'lucide-react';
+import { AuthorItem } from '../types';
+import { useTheme } from '../context/ThemeContext';
 
 interface QuoteEntry {
   id: string;
@@ -43,55 +37,55 @@ interface AuthorModalProps {
 // Exemplos de fotos de domínio público / referências de grandes escritores
 const SUGGESTED_AVATARS = [
   {
-    name: "Manoel de Barros",
-    url: "https://upload.wikimedia.org/wikipedia/commons/2/29/Manoel_Ramos_de_Barros.jpg",
+    name: 'Manoel de Barros',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/2/29/Manoel_Ramos_de_Barros.jpg'
   },
   {
-    name: "Machado de Assis",
-    url: "https://upload.wikimedia.org/wikipedia/commons/0/05/Machado_de_Assis_real.jpg",
+    name: 'Machado de Assis',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/0/05/Machado_de_Assis_real.jpg'
   },
   {
-    name: "Clarice Lispector",
-    url: "https://upload.wikimedia.org/wikipedia/commons/9/90/Clarice_Lispector.jpg",
+    name: 'Clarice Lispector',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/9/90/Clarice_Lispector.jpg'
   },
   {
-    name: "Conceição Evaristo",
-    url: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Concei%C3%A7%C3%A3o_Evaristo_em_2019.jpg",
+    name: 'Conceição Evaristo',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/e/e0/Concei%C3%A7%C3%A3o_Evaristo_em_2019.jpg'
   },
   {
-    name: "Guimarães Rosa",
-    url: "https://upload.wikimedia.org/wikipedia/commons/b/b2/Jo%C3%A3o_Guimar%C3%A3es_Rosa_%281967%29.jpg",
+    name: 'Guimarães Rosa',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/b/b2/Jo%C3%A3o_Guimar%C3%A3es_Rosa_%281967%29.jpg'
   },
   {
-    name: "Carolina Maria de Jesus",
-    url: "https://upload.wikimedia.org/wikipedia/commons/1/1d/Carolina_Maria_de_Jesus_1960.jpg",
+    name: 'Carolina Maria de Jesus',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/1/1d/Carolina_Maria_de_Jesus_1960.jpg'
   },
   {
-    name: "Ariano Suassuna",
-    url: "https://upload.wikimedia.org/wikipedia/commons/5/52/Ariano_Suassuna_%281980%29.jpg",
+    name: 'Ariano Suassuna',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/5/52/Ariano_Suassuna_%281980%29.jpg'
   },
   {
-    name: "Cora Coralina",
-    url: "https://upload.wikimedia.org/wikipedia/commons/3/30/Cora_Coralina.jpg",
-  },
+    name: 'Cora Coralina',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/3/30/Cora_Coralina.jpg'
+  }
 ];
 
 export const AuthorModal: React.FC<AuthorModalProps> = ({
   isOpen,
   onClose,
   onSave,
-  authorToEdit,
+  authorToEdit
 }) => {
   const { isDark, isEmerald, isPurple } = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [name, setName] = useState("");
-  const [nationality, setNationality] = useState("Brasileira");
-  const [period, setPeriod] = useState("");
-  const [role, setRole] = useState("");
-  const [tag, setTag] = useState("");
-  const [photoUrl, setPhotoUrl] = useState("");
-  const [referenceUrl, setReferenceUrl] = useState("");
+  const [name, setName] = useState('');
+  const [nacionalidade, setNacionalidade] = useState('Brasileira');
+  const [period, setPeriod] = useState('');
+  const [role, setRole] = useState('');
+  const [tag, setTag] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [referenceUrl, setReferenceUrl] = useState('');
   const [active, setActive] = useState(true);
 
   // Lista dinâmica de frases semanais
@@ -103,22 +97,22 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
 
   useEffect(() => {
     if (authorToEdit) {
-      setName(authorToEdit.name || "");
-      setNationality(authorToEdit.nationality || "Brasileira");
-      setPeriod(authorToEdit.period || "");
-      setRole(authorToEdit.role || "");
-      setTag(authorToEdit.tag || "");
-      setPhotoUrl(authorToEdit.photoUrl || "");
-      setReferenceUrl(authorToEdit.referenceUrl || "");
-      setActive(authorToEdit.active !== false);
+      setName(authorToEdit.name || authorToEdit.nome_autor || '');
+      setNacionalidade(authorToEdit.nacionalidade || 'Brasileira');
+      setPeriod(authorToEdit.period || '');
+      setRole(authorToEdit.role || '');
+      setTag(authorToEdit.tag || '');
+      setPhotoUrl(authorToEdit.photoUrl || '');
+      setReferenceUrl(authorToEdit.referenceUrl || '');
+      setActive(authorToEdit.status ? authorToEdit.status === 'ativo' : authorToEdit.active !== false);
 
       // Carrega frases existentes: a principal + as adicionais
       const initialQuotes: QuoteEntry[] = [];
       if (authorToEdit.featuredQuote) {
         initialQuotes.push({
-          id: "q-1",
+          id: 'q-1',
           text: authorToEdit.featuredQuote,
-          source: authorToEdit.quoteSource || "",
+          source: authorToEdit.quoteSource || ''
         });
       }
       if (authorToEdit.additionalQuotes && authorToEdit.additionalQuotes.length > 0) {
@@ -127,26 +121,28 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
             initialQuotes.push({
               id: `q-${idx + 2}`,
               text: aq.text,
-              source: aq.source || "",
+              source: aq.source || ''
             });
           }
         });
       }
       // Se não havia nenhuma frase, adiciona 1 vazia
       if (initialQuotes.length === 0) {
-        initialQuotes.push({ id: "q-1", text: "", source: "" });
+        initialQuotes.push({ id: 'q-1', text: '', source: '' });
       }
       setQuotes(initialQuotes);
     } else {
-      setName("");
-      setNationality("Brasileira");
-      setPeriod("");
-      setRole("Escritor(a) Brasileiro(a)");
-      setTag("Literatura Brasileira");
-      setPhotoUrl("");
-      setReferenceUrl("");
+      setName('');
+      setNacionalidade('Brasileira');
+      setPeriod('');
+      setRole('');
+      setTag('Literatura Brasileira');
+      setPhotoUrl('');
+      setReferenceUrl('');
       setActive(true);
-      setQuotes([{ id: "q-1", text: "", source: "" }]);
+      setQuotes([
+        { id: 'q-1', text: '', source: '' }
+      ]);
     }
     setErrors({});
     setImagePreviewError(false);
@@ -158,7 +154,7 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 3 * 1024 * 1024) {
-        setErrors((prev) => ({ ...prev, photo: "A imagem deve ter no máximo 3MB" }));
+        setErrors((prev) => ({ ...prev, photo: 'A imagem deve ter no máximo 3MB' }));
         return;
       }
       const reader = new FileReader();
@@ -178,28 +174,23 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
   const handleAddQuote = () => {
     setQuotes((prev) => [
       ...prev,
-      {
-        id: `quote-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-        text: "",
-        source: "",
-      },
+      { id: `quote-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`, text: '', source: '' }
     ]);
   };
 
   const handleRemoveQuote = (index: number) => {
     if (quotes.length <= 1) {
-      setQuotes([{ id: quotes[0]?.id || "q-1", text: "", source: "" }]);
+      // Limpa os campos da única frase em vez de remover
+      setQuotes([{ id: quotes[0].id, text: '', source: '' }]);
       return;
     }
     setQuotes((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleQuoteChange = (index: number, field: "text" | "source", value: string) => {
+  const handleQuoteChange = (index: number, field: 'text' | 'source', value: string) => {
     setQuotes((prev) => {
       const copy = [...prev];
-      if (copy[index]) {
-        copy[index] = { ...copy[index], [field]: value };
-      }
+      copy[index] = { ...copy[index], [field]: value };
       return copy;
     });
   };
@@ -208,7 +199,6 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
     if (index === 0) return;
     setQuotes((prev) => {
       const item = prev[index];
-      if (!item) return prev;
       const rest = prev.filter((_, i) => i !== index);
       return [item, ...rest];
     });
@@ -216,20 +206,7 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    const cleanName = name.trim();
-    if (!cleanName) {
-      newErrors.name = "O nome do escritor é obrigatório.";
-    } else {
-      // Verificação de duplicidade por nome normalizado (sem acento, case-insensitive)
-      const norm = normalizeAuthorName(cleanName);
-      const allAuthors = getStoredAuthors();
-      const duplicate = allAuthors.find(
-        (a) => normalizeAuthorName(a.name) === norm && (!authorToEdit || a.id !== authorToEdit.id),
-      );
-      if (duplicate) {
-        newErrors.name = `Já existe um autor cadastrado com o nome "${duplicate.name}". Para evitar duplicações, edite o cadastro existente ou informe um diferencial.`;
-      }
-    }
+    if (!name.trim()) newErrors.name = 'Nome do escritor é obrigatório';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -240,27 +217,36 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
     if (!validate()) return;
 
     const validQuotes = quotes.filter((q) => q.text.trim().length > 0);
-    const primaryQuote = validQuotes[0];
+    const primaryQuote = validQuotes[0] || {
+      text: 'A leitura enriquece a alma e transforma a sociedade.',
+      source: 'Acervo Cultural'
+    };
     const otherQuotes = validQuotes.slice(1).map((q) => ({
       text: q.text.trim(),
-      source: q.source.trim() || undefined,
+      source: q.source.trim() || undefined
     }));
 
+    const finalPhoto = photoUrl.trim() || 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&auto=format&fit=crop&q=80';
+    const finalPeriod = period.trim() || 'Literatura Brasileira';
+    const finalNac = nacionalidade.trim() || 'Brasileira';
+
     const newAuthor: AuthorItem = {
-      id: authorToEdit?.id || slugifyAuthorName(name.trim()),
+      id: authorToEdit?.id || `author-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      id_autor: authorToEdit?.id_autor || authorToEdit?.id,
       name: name.trim(),
-      nationality: nationality.trim() || "Brasileira",
-      period: period.trim() || undefined,
-      role: role.trim() || "Escritor(a) Brasileiro(a)",
-      tag: tag.trim() || "Literatura Brasileira",
-      photoUrl: photoUrl.trim() || "",
-      featuredQuote: primaryQuote?.text?.trim() || "",
-      quoteSource: primaryQuote?.source?.trim() || "",
+      nome_autor: name.trim(),
+      nacionalidade: finalNac,
+      status: active ? 'ativo' : 'inativo',
+      period: finalPeriod,
+      role: role.trim() || `${finalNac} • Literatura`,
+      tag: tag.trim() || finalNac || 'Literatura Brasileira',
+      photoUrl: finalPhoto,
+      featuredQuote: primaryQuote.text.trim(),
+      quoteSource: primaryQuote.source.trim() || 'Acervo Literário',
       referenceUrl: referenceUrl.trim() || undefined,
       additionalQuotes: otherQuotes,
       active,
-      authorCode: authorToEdit?.authorCode,
-      createdAt: authorToEdit?.createdAt || new Date().toISOString(),
+      createdAt: authorToEdit?.createdAt || new Date().toISOString()
     };
 
     onSave(newAuthor);
@@ -272,37 +258,37 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
       <div
         className={`relative w-full max-w-3xl rounded-3xl border shadow-2xl overflow-hidden my-6 transition-all ${
           isEmerald
-            ? "bg-[#061f30] border-[#0c4061] text-white"
+            ? 'bg-[#061f30] border-[#0c4061] text-white'
             : isPurple
-              ? "bg-[#1f0b3b] border-[#3e196e] text-white"
-              : isDark
-                ? "bg-[#092032] border-[#163650] text-white"
-                : "bg-white border-slate-200 text-slate-900"
+            ? 'bg-[#1f0b3b] border-[#3e196e] text-white'
+            : isDark
+            ? 'bg-[#092032] border-[#163650] text-white'
+            : 'bg-white border-slate-200 text-slate-900'
         }`}
       >
         {/* Modal Header */}
         <div
           className={`flex items-center justify-between px-6 py-4 border-b ${
-            isDark ? "border-white/10 bg-black/25" : "border-slate-200 bg-slate-50"
+            isDark ? 'border-white/10 bg-black/25' : 'border-slate-200 bg-slate-50'
           }`}
         >
           <div className="flex items-center gap-3">
             <div
               className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-md ${
                 isEmerald
-                  ? "bg-[#00e676]/20 text-[#00e676] border border-emerald-500/30"
+                  ? 'bg-[#00e676]/20 text-[#00e676] border border-emerald-500/30'
                   : isPurple
-                    ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                    : "bg-amber-500/20 text-amber-500 border border-amber-500/30"
+                  ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                  : 'bg-amber-500/20 text-amber-500 border border-amber-500/30'
               }`}
             >
               <Feather className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-lg sm:text-xl font-black">
-                {authorToEdit ? "Editar Autor em Destaque" : "Cadastrar Autor em Destaque"}
+                {authorToEdit ? 'Editar Autor em Destaque' : 'Cadastrar Autor em Destaque'}
               </h2>
-              <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+              <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                 Configure nome, foto e frases semanais para o HeroBanner da página inicial
               </p>
             </div>
@@ -314,22 +300,22 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
               onClick={() => setShowLivePreview(!showLivePreview)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
                 showLivePreview
-                  ? "bg-emerald-500 text-slate-950 border-emerald-400"
+                  ? 'bg-emerald-500 text-slate-950 border-emerald-400'
                   : isDark
-                    ? "border-white/10 hover:bg-white/10 text-slate-300"
-                    : "border-slate-300 hover:bg-slate-100 text-slate-700"
+                  ? 'border-white/10 hover:bg-white/10 text-slate-300'
+                  : 'border-slate-300 hover:bg-slate-100 text-slate-700'
               }`}
             >
               <Eye className="w-3.5 h-3.5" />
-              <span>{showLivePreview ? "Fechar Prévia" : "Prévia"}</span>
+              <span>{showLivePreview ? 'Fechar Prévia' : 'Prévia'}</span>
             </button>
 
             <button
               onClick={onClose}
               className={`p-2 rounded-xl border transition-colors cursor-pointer ${
                 isDark
-                  ? "border-white/10 hover:bg-white/10 text-slate-400 hover:text-white"
-                  : "border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-900"
+                  ? 'border-white/10 hover:bg-white/10 text-slate-400 hover:text-white'
+                  : 'border-slate-200 hover:bg-slate-100 text-slate-500 hover:text-slate-900'
               }`}
             >
               <X className="w-5 h-5" />
@@ -341,7 +327,7 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
         {showLivePreview && (
           <div
             className={`p-5 border-b flex flex-col items-center justify-center ${
-              isDark ? "bg-black/50 border-white/10" : "bg-slate-100 border-slate-200"
+              isDark ? 'bg-black/50 border-white/10' : 'bg-slate-100 border-slate-200'
             }`}
           >
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3">
@@ -349,7 +335,7 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
             </span>
             <div
               className="w-full max-w-xs rounded-3xl overflow-hidden shadow-2xl border border-[#2d2116] bg-[#0d0906]"
-              style={{ backgroundColor: "#0d0906" }}
+              style={{ backgroundColor: '#0d0906' }}
             >
               <div className="relative w-full aspect-[4/3] overflow-hidden bg-[#18110b]">
                 {photoUrl && !imagePreviewError ? (
@@ -370,12 +356,12 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
               <div className="p-4 text-center flex flex-col items-center justify-center space-y-2 bg-[#0d0906]">
                 <blockquote className="text-[#ecd39f] font-serif text-sm font-bold leading-snug">
                   <span className="text-[#c79b4b] mr-1 text-base leading-none">❝</span>
-                  {quotes[0]?.text || "A frase cadastrada aparecerá aqui."}
+                  {quotes[0]?.text || 'A frase cadastrada aparecerá aqui.'}
                   <span className="text-[#c79b4b] ml-1 text-base leading-none">❞</span>
                 </blockquote>
                 <div className="pt-0.5">
                   <h4 className="text-[#d8be8d] font-serif text-xs font-semibold">
-                    {name || "Nome do Autor"},
+                    {name || 'Nome do Autor'},
                   </h4>
                   {quotes[0]?.source && (
                     <p className="text-[#a48858] font-serif italic text-[11px]">
@@ -393,7 +379,7 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
           {/* Seção 1: Foto do Autor (Upload ou URL) */}
           <div className="space-y-3">
             <label className="block text-xs font-black uppercase tracking-wider text-emerald-400">
-              1. Foto do Autor (Opcional - Usada no HeroBanner)
+              1. Foto do Autor <span className="text-red-500">*</span>
             </label>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl border bg-black/15">
@@ -402,10 +388,10 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                 <div
                   className={`w-24 h-24 rounded-2xl overflow-hidden border-2 flex items-center justify-center shadow-lg transition-transform hover:scale-105 ${
                     isEmerald
-                      ? "border-emerald-400 bg-emerald-950/40"
+                      ? 'border-emerald-400 bg-emerald-950/40'
                       : isPurple
-                        ? "border-purple-400 bg-purple-950/40"
-                        : "border-amber-400 bg-amber-950/20"
+                      ? 'border-purple-400 bg-purple-950/40'
+                      : 'border-amber-400 bg-amber-950/20'
                   }`}
                 >
                   {photoUrl && !imagePreviewError ? (
@@ -436,19 +422,19 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                     <input
                       type="url"
                       placeholder="Insira a URL direta da imagem (ex: https://.../foto.jpg)"
-                      value={photoUrl.startsWith("data:") ? "" : photoUrl}
+                      value={photoUrl.startsWith('data:') ? '' : photoUrl}
                       onChange={(e) => {
                         setPhotoUrl(e.target.value);
                         setImagePreviewError(false);
                       }}
                       className={`w-full pl-9 pr-3.5 py-2.5 rounded-xl text-xs sm:text-sm border transition-all ${
                         isDark
-                          ? "bg-black/30 border-white/15 text-white placeholder-slate-500 focus:border-emerald-400"
-                          : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:border-emerald-500"
+                          ? 'bg-black/30 border-white/15 text-white placeholder-slate-500 focus:border-emerald-400'
+                          : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:border-emerald-500'
                       }`}
                     />
                   </div>
-                  {photoUrl.startsWith("data:") && (
+                  {photoUrl.startsWith('data:') && (
                     <p className="text-[11px] text-emerald-400 mt-1 font-semibold flex items-center gap-1">
                       <Check className="w-3.5 h-3.5" /> Imagem carregada do computador (Base64)
                     </p>
@@ -468,8 +454,8 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                     onClick={() => fileInputRef.current?.click()}
                     className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
                       isDark
-                        ? "bg-white/10 hover:bg-white/20 border-white/10 text-white"
-                        : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800"
+                        ? 'bg-white/10 hover:bg-white/20 border-white/10 text-white'
+                        : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800'
                     }`}
                   >
                     <Upload className="w-3.5 h-3.5" />
@@ -479,7 +465,7 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                   {photoUrl && (
                     <button
                       type="button"
-                      onClick={() => setPhotoUrl("")}
+                      onClick={() => setPhotoUrl('')}
                       className="text-xs text-red-400 hover:underline cursor-pointer ml-auto"
                     >
                       Remover foto
@@ -504,10 +490,10 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                         }}
                         className={`text-[10px] font-semibold px-2 py-1 rounded-lg border transition-colors cursor-pointer ${
                           photoUrl === sug.url
-                            ? "bg-emerald-500 text-slate-950 border-emerald-400"
+                            ? 'bg-emerald-500 text-slate-950 border-emerald-400'
                             : isDark
-                              ? "bg-white/5 hover:bg-white/10 border-white/10 text-slate-300"
-                              : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"
+                            ? 'bg-white/5 hover:bg-white/10 border-white/10 text-slate-300'
+                            : 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700'
                         }`}
                       >
                         {sug.name}
@@ -538,59 +524,33 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: Machado de Assis"
+                  placeholder="Ex: Manoel de Barros"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className={`w-full px-3.5 py-2.5 rounded-xl text-sm border ${
                     isDark
-                      ? "bg-black/30 border-white/15 text-white"
-                      : "bg-white border-slate-300 text-slate-900"
+                      ? 'bg-black/30 border-white/15 text-white'
+                      : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
                 {errors.name && <p className="text-xs text-red-400 mt-1">{errors.name}</p>}
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                  <Flag className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Nacionalidade</span>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5">
+                  Nacionalidade
                 </label>
                 <input
                   type="text"
                   placeholder="Ex: Brasileira"
-                  value={nationality}
-                  onChange={(e) => setNationality(e.target.value)}
+                  value={nacionalidade}
+                  onChange={(e) => setNacionalidade(e.target.value)}
                   className={`w-full px-3.5 py-2.5 rounded-xl text-sm border ${
                     isDark
-                      ? "bg-black/30 border-white/15 text-white"
-                      : "bg-white border-slate-300 text-slate-900"
+                      ? 'bg-black/30 border-white/15 text-white'
+                      : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5">
-                  Status no Catálogo
-                </label>
-                <div className="flex items-center gap-3 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setActive(!active)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
-                      active
-                        ? "bg-emerald-500/20 text-[#00e676] border-emerald-500/40"
-                        : "bg-rose-500/20 text-rose-400 border-rose-500/40"
-                    }`}
-                  >
-                    <span
-                      className={`w-2.5 h-2.5 rounded-full ${active ? "bg-[#00e676]" : "bg-rose-500"}`}
-                    />
-                    <span>{active ? "Ativo (Disponível)" : "Inativo (Pausado)"}</span>
-                  </button>
-                  <span className="text-[11px] text-slate-400">
-                    {active ? "Autor visível para buscas e empréstimos" : "Autor temporariamente inativo"}
-                  </span>
-                </div>
               </div>
 
               <div>
@@ -599,16 +559,33 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: 1839 – 1908"
+                  placeholder="Ex: 1916 – 2014"
                   value={period}
                   onChange={(e) => setPeriod(e.target.value)}
                   className={`w-full px-3.5 py-2.5 rounded-xl text-sm border ${
                     isDark
-                      ? "bg-black/30 border-white/15 text-white"
-                      : "bg-white border-slate-300 text-slate-900"
+                      ? 'bg-black/30 border-white/15 text-white'
+                      : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
-                {errors.period && <p className="text-xs text-red-400 mt-1">{errors.period}</p>}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5">
+                  Status no Sistema
+                </label>
+                <select
+                  value={active ? 'ativo' : 'inativo'}
+                  onChange={(e) => setActive(e.target.value === 'ativo')}
+                  className={`w-full px-3.5 py-2.5 rounded-xl text-sm border ${
+                    isDark
+                      ? 'bg-black/30 border-white/15 text-white'
+                      : 'bg-white border-slate-300 text-slate-900'
+                  }`}
+                >
+                  <option value="ativo">Ativo (visível no acervo e rotação)</option>
+                  <option value="inativo">Inativo (pausado)</option>
+                </select>
               </div>
 
               <div>
@@ -617,13 +594,13 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: Escritor Clássico • Patrono da ABL"
+                  placeholder="Ex: Poeta Pantaneiro • Prêmio Jabuti"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                   className={`w-full px-3.5 py-2.5 rounded-xl text-sm border ${
                     isDark
-                      ? "bg-black/30 border-white/15 text-white"
-                      : "bg-white border-slate-300 text-slate-900"
+                      ? 'bg-black/30 border-white/15 text-white'
+                      : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -634,13 +611,13 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: Literatura Brasileira, Realismo"
+                  placeholder="Ex: Poesia Pantaneira, Modernismo, Clássico"
                   value={tag}
                   onChange={(e) => setTag(e.target.value)}
                   className={`w-full px-3.5 py-2.5 rounded-xl text-sm border ${
                     isDark
-                      ? "bg-black/30 border-white/15 text-white"
-                      : "bg-white border-slate-300 text-slate-900"
+                      ? 'bg-black/30 border-white/15 text-white'
+                      : 'bg-white border-slate-300 text-slate-900'
                   }`}
                 />
               </div>
@@ -657,8 +634,8 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                 onChange={(e) => setReferenceUrl(e.target.value)}
                 className={`w-full px-3.5 py-2.5 rounded-xl text-sm border ${
                   isDark
-                    ? "bg-black/30 border-white/15 text-white"
-                    : "bg-white border-slate-300 text-slate-900"
+                    ? 'bg-black/30 border-white/15 text-white'
+                    : 'bg-white border-slate-300 text-slate-900'
                 }`}
               />
             </div>
@@ -671,9 +648,8 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                 <label className="block text-xs font-black uppercase tracking-wider text-emerald-400">
                   3. Frases Semanais para o HeroBanner <span className="text-red-500">*</span>
                 </label>
-                <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
-                  Cadastre as frases que serão exibidas na semana deste autor. O leitor poderá
-                  alternar entre elas no card.
+                <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  Cadastre as frases que serão exibidas na semana deste autor. O leitor poderá alternar entre elas no card.
                 </p>
               </div>
 
@@ -682,8 +658,8 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                 onClick={handleAddQuote}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                   isEmerald
-                    ? "bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-500/40"
-                    : "bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 border-amber-500/40"
+                    ? 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-500/40'
+                    : 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-500 border-amber-500/40'
                 }`}
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -708,11 +684,11 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                     className={`rounded-2xl border p-4 transition-all relative ${
                       isPrimary
                         ? isEmerald
-                          ? "bg-[#041c2c]/80 border-emerald-500/40 ring-1 ring-emerald-500/30"
-                          : "bg-amber-500/10 border-amber-500/40"
+                          ? 'bg-[#041c2c]/80 border-emerald-500/40 ring-1 ring-emerald-500/30'
+                          : 'bg-amber-500/10 border-amber-500/40'
                         : isDark
-                          ? "bg-black/20 border-white/10"
-                          : "bg-slate-50 border-slate-200"
+                        ? 'bg-black/20 border-white/10'
+                        : 'bg-slate-50 border-slate-200'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -720,14 +696,12 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                         <span
                           className={`text-xs font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
                             isPrimary
-                              ? "bg-emerald-400 text-slate-950 font-black"
-                              : "bg-white/10 text-slate-400"
+                              ? 'bg-emerald-400 text-slate-950 font-black'
+                              : 'bg-white/10 text-slate-400'
                           }`}
                         >
                           <Quote className="w-3 h-3" />
-                          <span>
-                            Frase {index + 1} {isPrimary ? "(Principal no Início)" : ""}
-                          </span>
+                          <span>Frase {index + 1} {isPrimary ? '(Principal no Início)' : ''}</span>
                         </span>
 
                         {!isPrimary && (
@@ -757,11 +731,11 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                         rows={2}
                         placeholder="Digite a frase inspiradora do escritor..."
                         value={quoteItem.text}
-                        onChange={(e) => handleQuoteChange(index, "text", e.target.value)}
+                        onChange={(e) => handleQuoteChange(index, 'text', e.target.value)}
                         className={`w-full px-3.5 py-2.5 rounded-xl text-sm border font-serif italic ${
                           isDark
-                            ? "bg-black/30 border-white/15 text-white placeholder-slate-500"
-                            : "bg-white border-slate-300 text-slate-900 placeholder-slate-400"
+                            ? 'bg-black/30 border-white/15 text-white placeholder-slate-500'
+                            : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
                         }`}
                       />
 
@@ -771,11 +745,11 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                           type="text"
                           placeholder="Obra / Livro / Origem da frase (ex: O Guardador de Águas)"
                           value={quoteItem.source}
-                          onChange={(e) => handleQuoteChange(index, "source", e.target.value)}
+                          onChange={(e) => handleQuoteChange(index, 'source', e.target.value)}
                           className={`w-full px-3 py-1.5 rounded-xl text-xs border ${
                             isDark
-                              ? "bg-black/25 border-white/10 text-white placeholder-slate-500"
-                              : "bg-white border-slate-300 text-slate-900 placeholder-slate-400"
+                              ? 'bg-black/25 border-white/10 text-white placeholder-slate-500'
+                              : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
                           }`}
                         />
                       </div>
@@ -795,10 +769,7 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
               onChange={(e) => setActive(e.target.checked)}
               className="w-4 h-4 rounded text-emerald-500 cursor-pointer"
             />
-            <label
-              htmlFor="author-active-checkbox"
-              className="text-xs sm:text-sm font-semibold cursor-pointer"
-            >
+            <label htmlFor="author-active-checkbox" className="text-xs sm:text-sm font-semibold cursor-pointer">
               Ativar este escritor no ciclo de rotação semanal automática (muda toda segunda-feira)
             </label>
           </div>
@@ -806,7 +777,7 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
           {/* Footer Actions */}
           <div
             className={`flex items-center justify-end gap-3 pt-4 border-t ${
-              isDark ? "border-white/10" : "border-slate-200"
+              isDark ? 'border-white/10' : 'border-slate-200'
             }`}
           >
             <button
@@ -814,8 +785,8 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
               onClick={onClose}
               className={`px-5 py-2.5 rounded-xl text-sm font-bold border transition-colors cursor-pointer ${
                 isDark
-                  ? "border-white/15 hover:bg-white/10 text-slate-300"
-                  : "border-slate-300 hover:bg-slate-100 text-slate-700"
+                  ? 'border-white/15 hover:bg-white/10 text-slate-300'
+                  : 'border-slate-300 hover:bg-slate-100 text-slate-700'
               }`}
             >
               Cancelar
@@ -825,14 +796,14 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
               type="submit"
               className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md cursor-pointer ${
                 isEmerald
-                  ? "bg-[#00e676] hover:bg-[#1fa950] text-slate-950 font-black"
+                  ? 'bg-[#00e676] hover:bg-[#1fa950] text-slate-950 font-black'
                   : isPurple
-                    ? "bg-purple-500 hover:bg-purple-600 text-white"
-                    : "bg-emerald-500 hover:bg-emerald-600 text-white"
+                  ? 'bg-purple-500 hover:bg-purple-600 text-white'
+                  : 'bg-emerald-500 hover:bg-emerald-600 text-white'
               }`}
             >
               <Check className="w-4 h-4" />
-              <span>{authorToEdit ? "Salvar Alterações" : "Cadastrar Autor"}</span>
+              <span>{authorToEdit ? 'Salvar Alterações' : 'Cadastrar Autor'}</span>
             </button>
           </div>
         </form>

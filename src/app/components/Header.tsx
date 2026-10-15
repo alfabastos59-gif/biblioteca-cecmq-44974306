@@ -20,6 +20,7 @@ import {
   Lightbulb,
   Film,
   ExternalLink,
+  Feather,
 } from "lucide-react";
 import {
   ActiveTab,
@@ -186,6 +187,34 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <BookOpen className={`w-3.5 h-3.5 ${isEmerald ? "text-[#00e676]" : ""}`} />
               <span>Catálogo</span>
+            </button>
+            <button
+              id="nav-autores"
+              onClick={() => setActiveTab("autores")}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+                activeTab === "autores"
+                  ? isEmerald
+                    ? "bg-[#00e676] text-[#022c1b] font-extrabold shadow-[0_0_18px_rgba(0,230,118,0.5)]"
+                    : isPurple
+                      ? "bg-gradient-to-r from-[#9333ea] to-[#a855f7] text-white font-bold shadow-[0_0_15px_rgba(168,85,247,0.5)]"
+                      : isKinetic
+                        ? "bg-[#0088cc] text-white font-bold shadow-[0_0_12px_rgba(0,136,204,0.4)]"
+                        : isDark
+                          ? "bg-[#1dbb64] text-slate-950 font-bold shadow-[0_0_12px_rgba(29,187,100,0.4)]"
+                          : "bg-[#23c65e] text-white font-bold shadow-sm"
+                  : isEmerald
+                    ? "text-slate-300 hover:text-white hover:bg-[#0c3654]"
+                    : isPurple
+                      ? "text-[#d8b4fe] hover:text-white hover:bg-[#32145e]/80"
+                      : isKinetic
+                        ? "text-slate-300 hover:text-white hover:bg-[#2a313a]"
+                        : isDark
+                          ? "text-slate-300 hover:text-white hover:bg-[#133e4a]/60"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/80"
+              }`}
+            >
+              <Feather className={`w-3.5 h-3.5 ${isEmerald ? "text-[#00e676]" : ""}`} />
+              <span>Autores</span>
             </button>
             <button
               id="nav-ranking"
@@ -571,6 +600,22 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               Catálogo
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab("autores");
+                setMobileMenuOpen(false);
+              }}
+              className={`p-2.5 rounded-xl text-sm font-medium text-left flex items-center gap-1.5 ${
+                activeTab === "autores"
+                  ? "bg-[#23c65e] text-white font-bold"
+                  : isDark
+                    ? "bg-[#092032] text-slate-200"
+                    : "bg-white border border-slate-200 text-slate-800"
+              }`}
+            >
+              <Feather className="w-3.5 h-3.5" />
+              <span>Autores</span>
             </button>
             <button
               onClick={() => {

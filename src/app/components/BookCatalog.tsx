@@ -9,6 +9,7 @@ import {
   Plus,
   BookPlus,
   Sparkles,
+  Feather,
 } from "lucide-react";
 import { Book } from "../types";
 import { CATEGORIES, getCategoryColor } from "../data/mockData";
@@ -22,6 +23,7 @@ interface BookCatalogProps {
   onOpenRegisterBook?: () => void;
   onOpenSuggestions?: () => void;
   onOpenDica?: () => void;
+  onOpenAuthors?: () => void;
 }
 
 export const BookCatalog: React.FC<BookCatalogProps> = ({
@@ -32,6 +34,7 @@ export const BookCatalog: React.FC<BookCatalogProps> = ({
   onOpenRegisterBook,
   onOpenSuggestions,
   onOpenDica,
+  onOpenAuthors,
 }) => {
   const { isDark } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState("Todos");
@@ -97,12 +100,6 @@ export const BookCatalog: React.FC<BookCatalogProps> = ({
       {/* Title, Subtitle & Prominent Yellow Highlight Action Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-amber-400/15 text-amber-300 border border-amber-400/40">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>Acervo Completo Oficial</span>
-            </span>
-          </div>
           <h1
             className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${
               isDark ? "text-white" : "text-slate-900"
@@ -149,29 +146,26 @@ export const BookCatalog: React.FC<BookCatalogProps> = ({
             </button>
           )}
         </div>
-        {onOpenDica && (
-          <button
-            id="btn-dica-quiteria"
-            onClick={onOpenDica}
-            className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-amber-600"
-          >
-            <Sparkles className="w-4 h-4" /> Dica da Quitéria
-          </button>
-        )}
 
-        {onOpenDica && (
-          <button
-            id="btn-dica-quiteria"
-            onClick={onOpenDica}
-            className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-slate-950 shadow-sm hover:bg-amber-400 transition-all cursor-pointer hover:scale-105 active:scale-95"
-          >
-            <Sparkles className="w-4 h-4 text-slate-950" />
-            <span>Dica da Quitéria</span>
-          </button>
-        )}
-
-        {/* Filter Trigger Button */}
+        {/* Filter Trigger Button & Autores */}
         <div className="flex items-center gap-2">
+          {onOpenAuthors && (
+            <button
+              id="btn-catalog-authors"
+              type="button"
+              onClick={onOpenAuthors}
+              className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold border transition-all cursor-pointer hover:scale-105 active:scale-95 shrink-0 ${
+                isDark
+                  ? "bg-[#092032] hover:bg-[#0e2c44] border-emerald-500/40 text-[#00e676]"
+                  : "bg-emerald-50 hover:bg-emerald-100 border-emerald-300 text-emerald-800 shadow-sm"
+              }`}
+              title="Ver todos os autores cadastrados"
+            >
+              <Feather className="w-4 h-4 text-[#00e676]" />
+              <span>Autores</span>
+            </button>
+          )}
+
           <button
             id="btn-catalog-filters"
             onClick={() => setShowFiltersModal(!showFiltersModal)}
