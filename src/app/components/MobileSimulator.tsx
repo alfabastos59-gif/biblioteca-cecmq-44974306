@@ -151,9 +151,14 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
               {/* Livros em destaque */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-white">
-                    Livros em destaque
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-white">
+                      Livros em destaque
+                    </span>
+                    <span className="text-[10px] font-medium text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full border border-emerald-500/30">
+                      ({books.length} {books.length === 1 ? 'Livro' : 'Livros'})
+                    </span>
+                  </div>
                   <button
                     onClick={() => setMobileTab('catalogo')}
                     className="text-[10px] text-emerald-400 font-semibold cursor-pointer hover:underline"

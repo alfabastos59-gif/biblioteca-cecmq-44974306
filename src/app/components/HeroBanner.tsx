@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React from 'react';
-import { Search, BookOpen, ChevronRight, Star, Film } from 'lucide-react';
+import { Search, BookOpen, ChevronRight, Star } from 'lucide-react';
 import { Book, Loan, Student } from '../types';
 import { useTheme } from '../context/ThemeContext';
 import { HomeRankingWidget } from './HomeRankingWidget';
@@ -14,7 +14,6 @@ interface HeroBannerProps {
   onViewCatalog: () => void;
   onViewRanking?: () => void;
   onViewMissaoQuiterio?: () => void;
-  onOpenOpeningVideo?: () => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   onSearchSubmit: (e: React.FormEvent) => void;
@@ -28,7 +27,6 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   onViewCatalog,
   onViewRanking,
   onViewMissaoQuiterio,
-  onOpenOpeningVideo,
   searchQuery,
   setSearchQuery,
   onSearchSubmit,
@@ -64,20 +62,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-10">
             {/* Left Column (7 cols): Text & Search */}
             <div className="lg:col-span-7">
-              {/* Quick Opening Trigger */}
-              {onOpenOpeningVideo && (
-                <div className="flex flex-wrap items-center gap-2.5 mb-4">
-                  <button
-                    id="hero-watch-opening-video-btn"
-                    type="button"
-                    onClick={onOpenOpeningVideo}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-extrabold transition-all duration-200 cursor-pointer bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 hover:from-amber-500/30 hover:to-orange-500/30 text-amber-300 border border-amber-500/40 shadow-sm hover:scale-105 active:scale-95 group"
-                  >
-                    <Film className="w-3.5 h-3.5 text-amber-400 group-hover:rotate-12 transition-transform" />
-                    <span>▶ Assistir Vídeo de Abertura</span>
-                  </button>
-                </div>
-              )}
+
 
               {/* Title & Subtitle */}
               <h1
@@ -169,11 +154,27 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
           <div className="pt-2 sm:pt-4">
             <div className="flex items-center justify-between mb-6">
               <h2
-                className={`text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2 ${
+                className={`text-xl sm:text-2xl font-bold tracking-tight flex items-center flex-wrap gap-2 sm:gap-2.5 ${
                   isDark ? 'text-white' : 'text-slate-900'
                 }`}
               >
                 <span>Livros em destaque</span>
+                <span
+                  className={`text-xs sm:text-sm font-semibold px-2.5 py-0.5 rounded-full border transition-all ${
+                    isEmerald
+                      ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                      : isPurple
+                      ? 'bg-purple-500/15 text-purple-200 border-purple-500/30'
+                      : isKinetic
+                      ? 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30'
+                      : isDark
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
+                      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  }`}
+                  title={`${books.length} livros cadastrados no acervo`}
+                >
+                  ({books.length} {books.length === 1 ? 'Livro' : 'Livros'})
+                </span>
               </h2>
               <button
                 id="btn-ver-todos-destaques"

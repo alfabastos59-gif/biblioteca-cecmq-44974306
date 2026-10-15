@@ -3,7 +3,7 @@ import React from 'react';
 import { BookOpen, ShieldCheck, Sparkles, Heart } from 'lucide-react';
 import { Logo } from './Logo';
 import { useTheme } from '../context/ThemeContext';
-import gatinhoQuiterioImg from '../assets/images/gatinho_quiterio_1788399673265.jpg';
+import gatinhoQuiterioImg from '../assets/images/cat_typing_coffee.jpg';
 
 interface AboutViewProps {
   onBackToCatalog?: () => void;
@@ -73,7 +73,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onBackToCatalog }) => {
               <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
             </h3>
             <p className={`text-xs sm:text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-              Nosso dedicado bibliotecário felino trabalhando duro na organização do acervo e pronto para incentivar a leitura de todos os alunos!
+              Nosso dedicado bibliotecário felino trabalhando a todo vapor no computador, com sua gravatinha, óculos e cafezinho quente para incentivar a leitura de todos os alunos!
             </p>
           </div>
         </div>

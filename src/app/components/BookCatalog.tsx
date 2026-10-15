@@ -145,6 +145,17 @@ export const BookCatalog: React.FC<BookCatalogProps> = ({
           </button>
         )}
 
+        {onOpenDica && (
+          <button
+            id="btn-dica-quiteria"
+            onClick={onOpenDica}
+            className="flex items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-slate-950 shadow-sm hover:bg-amber-400 transition-all cursor-pointer hover:scale-105 active:scale-95"
+          >
+            <Sparkles className="w-4 h-4 text-slate-950" />
+            <span>Dica da Quitéria</span>
+          </button>
+        )}
+
         {/* Filter Trigger Button */}
         <div className="flex items-center gap-2">
           <button

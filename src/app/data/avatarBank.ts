@@ -473,6 +473,13 @@ export const AVATAR_BANK: AvatarOption[] = [
   // 5. MASCOTES & ANIMAIS
   // ==========================================
   {
+    id: 'mas-gato-quiterio',
+    name: 'Gatinho Quitério (Digitando com Gravata & Café)',
+    category: 'mascotes',
+    url: '/assets/cat_typing_coffee.jpg',
+    bgColor: '#064e3b',
+  },
+  {
     id: 'mas-01',
     name: 'Gatinho com Chapéu de Festa',
     category: 'mascotes',

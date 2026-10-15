@@ -5,7 +5,6 @@ import { Header } from './components/Header';
 import { HeroBanner } from './components/HeroBanner';
 import { BookCatalog } from './components/BookCatalog';
 import { BookDetailModal } from './components/BookDetailModal';
-import { DicaQuiteriaModal } from './components/DicaQuiteriaModal';
 import { AdminDashboard } from './components/AdminDashboard';
 import { ReportsView } from './components/ReportsView';
 import { MobileSimulator } from './components/MobileSimulator';
@@ -16,21 +15,13 @@ import { DesignSystemModal } from './components/DesignSystemModal';
 import { LoanModal } from './components/LoanModal';
 import { ManageBooksModal } from './components/ManageBooksModal';
 import { RegisterBookModal } from './components/RegisterBookModal';
-import { QuiterioChat } from './components/QuiterioChat';
 import { AuthModal } from './components/AuthModal';
 import { StudentPortalView } from './components/StudentPortalView';
 import { RankingView } from './components/RankingView';
 import { MissaoQuiterioView } from './components/MissaoQuiterioView';
-import { LibrasAccessibilityModal } from './components/LibrasAccessibilityModal';
+import { QuiterioChat } from './components/QuiterioChat';
+import { DicaQuiteriaModal } from './components/DicaQuiteriaModal';
 import { Footer } from './components/Footer';
-
-const safeSetItem = (key: string, value: string) => {
-  try { localStorage.setItem(key, value); }
-  catch (e) {
-    try { localStorage.removeItem(key); } catch {}
-    console.warn('Armazenamento local cheio; dados mantidos apenas na nuvem:', key);
-  }
-};
 
 import {
   INITIAL_BOOKS,
@@ -83,13 +74,13 @@ export default function App() {
     );
 
     if (version !== DB_VERSION) {
-      safeSetItem('bmq_db_version', DB_VERSION);
-      safeSetItem('bmq_books', JSON.stringify(sortedInitBooks));
-      safeSetItem('bmq_loans', JSON.stringify(INITIAL_LOANS));
-      safeSetItem('bmq_students', JSON.stringify(sortedInitStudents));
-      safeSetItem('bmq_suggestions', JSON.stringify(INITIAL_SUGGESTIONS));
-      safeSetItem('bmq_admin_users', JSON.stringify(INITIAL_ADMIN_USERS));
-      safeSetItem('bmq_audit_logs', JSON.stringify(INITIAL_AUDIT_LOGS));
+      localStorage.setItem('bmq_db_version', DB_VERSION);
+      localStorage.setItem('bmq_books', JSON.stringify(sortedInitBooks));
+      localStorage.setItem('bmq_loans', JSON.stringify(INITIAL_LOANS));
+      localStorage.setItem('bmq_students', JSON.stringify(sortedInitStudents));
+      localStorage.setItem('bmq_suggestions', JSON.stringify(INITIAL_SUGGESTIONS));
+      localStorage.setItem('bmq_admin_users', JSON.stringify(INITIAL_ADMIN_USERS));
+      localStorage.setItem('bmq_audit_logs', JSON.stringify(INITIAL_AUDIT_LOGS));
       return sortedInitBooks;
     }
     const saved = localStorage.getItem('bmq_books');
@@ -105,7 +96,7 @@ export default function App() {
     const parsed: Loan[] = JSON.parse(saved);
     return parsed.map((l) => ({
       ...l,
-      studentCode: l.studentCode ? l.studentCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() : undefined,
+      studentCode: l.studentCode ? l.studentCode.replace(/^ALU-/, '') : undefined,
     }));
   });
 
@@ -121,7 +112,7 @@ export default function App() {
     return parsed
       .map((s) => ({
         ...s,
-        studentCode: s.studentCode ? s.studentCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() : s.studentCode,
+        studentCode: s.studentCode ? s.studentCode.replace(/^ALU-/, '') : s.studentCode,
       }))
       .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
   });
@@ -182,12 +173,11 @@ export default function App() {
   // UI state
   const [activeTab, setActiveTab] = useState<ActiveTab>('inicio');
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-  const [isDicaOpen, setIsDicaOpen] = useState(false);
   const [isLoanModalOpen, setIsLoanModalOpen] = useState(false);
   const [isManageBooksOpen, setIsManageBooksOpen] = useState(false);
   const [isRegisterBookOpen, setIsRegisterBookOpen] = useState(false);
   const [isDesignSystemOpen, setIsDesignSystemOpen] = useState(false);
-  const [isAccessibilityModalOpen, setIsAccessibilityModalOpen] = useState(false);
+  const [isDicaQuiteriaOpen, setIsDicaQuiteriaOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Banco de dados de autores na nuvem
@@ -197,31 +187,31 @@ export default function App() {
 
   // Persist state to localStorage
   useEffect(() => {
-    safeSetItem('bmq_books', JSON.stringify(books));
+    localStorage.setItem('bmq_books', JSON.stringify(books));
   }, [books]);
 
   useEffect(() => {
-    safeSetItem('bmq_loans', JSON.stringify(loans));
+    localStorage.setItem('bmq_loans', JSON.stringify(loans));
   }, [loans]);
 
   useEffect(() => {
-    safeSetItem('bmq_students', JSON.stringify(students));
+    localStorage.setItem('bmq_students', JSON.stringify(students));
   }, [students]);
 
   useEffect(() => {
-    safeSetItem('bmq_suggestions', JSON.stringify(suggestions));
+    localStorage.setItem('bmq_suggestions', JSON.stringify(suggestions));
   }, [suggestions]);
 
   useEffect(() => {
-    safeSetItem('bmq_admin_users', JSON.stringify(adminUsers));
+    localStorage.setItem('bmq_admin_users', JSON.stringify(adminUsers));
   }, [adminUsers]);
 
   useEffect(() => {
-    safeSetItem('bmq_audit_logs', JSON.stringify(auditLogs));
+    localStorage.setItem('bmq_audit_logs', JSON.stringify(auditLogs));
   }, [auditLogs]);
 
   useEffect(() => {
-    safeSetItem('bmq_favorites', JSON.stringify(favorites));
+    localStorage.setItem('bmq_favorites', JSON.stringify(favorites));
   }, [favorites]);
 
   useEffect(() => {
@@ -296,19 +286,13 @@ export default function App() {
 
     const unsubLoans = subscribeToLoans((cloudLoans) => {
       if (!isSubscribed || !cloudLoans) return;
-      setLoans(cloudLoans.map((loan) => ({
-        ...loan,
-        studentCode: loan.studentCode?.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(),
-      })));
+      setLoans(cloudLoans);
       markSynced();
     }, markOffline);
 
     const unsubStudents = subscribeToStudents((cloudStudents) => {
       if (!isSubscribed || !cloudStudents) return;
-      const sorted = cloudStudents.map((student) => ({
-        ...student,
-        studentCode: student.studentCode?.replace(/[^a-zA-Z0-9]/g, '').toUpperCase(),
-      })).sort((a, b) =>
+      const sorted = [...cloudStudents].sort((a, b) =>
         a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
       );
       setStudents(sorted);
@@ -824,7 +808,7 @@ export default function App() {
     const updatedList = [newAdmin, ...adminUsers];
     setAdminUsers(updatedList);
     try {
-      safeSetItem('bmq_admin_users', JSON.stringify(updatedList));
+      localStorage.setItem('bmq_admin_users', JSON.stringify(updatedList));
     } catch (e) {}
     saveAdminUserToCloud(newAdmin).catch(console.error);
 
@@ -846,7 +830,7 @@ export default function App() {
     const updatedList = adminUsers.map((a) => (a.id === updatedAdmin.id ? updatedAdmin : a));
     setAdminUsers(updatedList);
     try {
-      safeSetItem('bmq_admin_users', JSON.stringify(updatedList));
+      localStorage.setItem('bmq_admin_users', JSON.stringify(updatedList));
     } catch (e) {}
     saveAdminUserToCloud(updatedAdmin).catch(console.error);
 
@@ -875,7 +859,7 @@ export default function App() {
     const updatedList = adminUsers.filter((a) => a.id !== adminId);
     setAdminUsers(updatedList);
     try {
-      safeSetItem('bmq_admin_users', JSON.stringify(updatedList));
+      localStorage.setItem('bmq_admin_users', JSON.stringify(updatedList));
     } catch (e) {}
     deleteAdminUserFromCloud(adminId).catch(console.error);
 
@@ -978,19 +962,17 @@ export default function App() {
       }`}
     >
 
-      {/* Marca d'água de fundo com a logo do colégio (oculta no painel ADM) */}
-      {!(activeTab === 'admin' && session.role === 'admin') && (
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center overflow-hidden"
-        >
-          <img
-            src={logoMariaQuiteria.url}
-            alt=""
-            className="h-[85vmin] w-[85vmin] max-h-[900px] max-w-[900px] rounded-full object-contain opacity-[0.22]"
-          />
-        </div>
-      )}
+      {/* Marca d'água de fundo com a logo do colégio */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center overflow-hidden"
+      >
+        <img
+          src={logoMariaQuiteria.url}
+          alt=""
+          className="h-[85vmin] w-[85vmin] max-h-[900px] max-w-[900px] rounded-full object-contain opacity-[0.22]"
+        />
+      </div>
 
       {/* Global Header */}
       <Header
@@ -998,7 +980,6 @@ export default function App() {
         setActiveTab={handleNavigateTab}
         onOpenDesignSystem={() => setIsDesignSystemOpen(true)}
         onOpenRegisterBook={() => setIsRegisterBookOpen(true)}
-        onOpenAccessibility={() => setIsAccessibilityModalOpen(true)}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         session={session}
@@ -1044,11 +1025,9 @@ export default function App() {
             setSearchQuery={setSearchQuery}
             onOpenRegisterBook={() => setIsRegisterBookOpen(true)}
             onOpenSuggestions={() => setActiveTab('sugestoes')}
-            onOpenDica={() => setIsDicaOpen(true)}
+            onOpenDica={() => setIsDicaQuiteriaOpen(true)}
           />
         )}
-        <DicaQuiteriaModal isOpen={isDicaOpen} onClose={() => setIsDicaOpen(false)} books={books} onOpenBook={handleSelectBook} />
-
 
         {/* TAB: RANKING DE LEITORES E MAIS LIDOS */}
         {activeTab === 'ranking' && (
@@ -1109,6 +1088,7 @@ export default function App() {
             onAddSuggestion={handleAddSuggestion}
           />
         )}
+
 
         {/* TAB 5: SOBRE */}
         {activeTab === 'sobre' && (
@@ -1173,14 +1153,11 @@ export default function App() {
         )}
       </main>
 
-      <QuiterioChat />
-
       {/* Register Book Modal (com Câmera Fotográfica de Smartphone) */}
       <RegisterBookModal
         isOpen={isRegisterBookOpen}
         onClose={() => setIsRegisterBookOpen(false)}
         onRegisterBook={handleRegisterBook}
-        existingBooks={books}
       />
 
       {/* Authentication Modal */}
@@ -1232,19 +1209,22 @@ export default function App() {
         onClose={() => setIsDesignSystemOpen(false)}
       />
 
-      {/* Acessibilidade em Libras & Inclusão (Surdos e Mudos / Deficiência Auditiva e Fala) */}
-      <LibrasAccessibilityModal
-        isOpen={isAccessibilityModalOpen}
-        onClose={() => setIsAccessibilityModalOpen(false)}
-        isDark={isDark}
+      {/* Dica da Quitéria Modal */}
+      <DicaQuiteriaModal
+        isOpen={isDicaQuiteriaOpen}
+        onClose={() => setIsDicaQuiteriaOpen(false)}
+        books={books}
+        onOpenBook={handleSelectBook}
       />
+
+      {/* Assistente Quitério Chat Flutuante (exibido apenas na página de início) */}
+      {activeTab === 'inicio' && <QuiterioChat />}
 
       {/* Footer */}
       {activeTab !== 'admin' && activeTab !== 'missao_quiterio' && (
         <Footer
           setActiveTab={handleNavigateTab}
           onOpenDesignSystem={() => setIsDesignSystemOpen(true)}
-          onOpenAccessibility={() => setIsAccessibilityModalOpen(true)}
         />
       )}
     </div>

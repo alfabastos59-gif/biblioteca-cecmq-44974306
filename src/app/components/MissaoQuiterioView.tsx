@@ -25,6 +25,15 @@ import {
   User,
   AlertCircle,
   Check,
+  TrendingUp,
+  Lightbulb,
+  Search,
+  Heart,
+  Zap,
+  HelpCircle,
+  Bot,
+  RefreshCw,
+  Coins,
 } from 'lucide-react';
 import { Book, Loan, Student, UserSession } from '../types';
 import { useTheme } from '../context/ThemeContext';
@@ -47,6 +56,10 @@ import {
   playCelebrationSound,
   setSoundEnabled,
 } from '../utils/gameAudio';
+import {
+  gerarQuestaoComGemini,
+  converterParaQuizQuestion,
+} from '../services/geminiQuiz';
 
 interface MissaoQuiterioViewProps {
   books: Book[];
@@ -87,6 +100,12 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
   // Audio mute state
   const [soundOn, setSoundOn] = useState<boolean>(true);
 
+  // AI & Game-Show Stage Features
+  const [useGeminiAi, setUseGeminiAi] = useState<boolean>(true);
+  const [isAiLoading, setIsAiLoading] = useState<boolean>(false);
+  const [streakCount, setStreakCount] = useState<number>(0);
+  const [showGuruTip, setShowGuruTip] = useState<boolean>(false);
+
   // Score & Gamification Data
   const [gameData, setGameData] = useState<StudentScoreData>(() => {
     const codeOrId = activeStudent?.studentCode || activeStudent?.id || 'anon';
@@ -123,8 +142,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
   const studentLoans = useMemo(() => {
     if (!activeStudent) return [];
     return loans.filter((l) => {
-      const studentCodeNormalized = (activeStudent.studentCode || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-      const loanCodeNormalized = (l.studentCode || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      const studentCodeNormalized = (activeStudent.studentCode || '').trim().toLowerCase().replace(/^alu-/, '');
+      const loanCodeNormalized = (l.studentCode || '').trim().toLowerCase().replace(/^alu-/, '');
       const codeMatch =
         Boolean(studentCodeNormalized && loanCodeNormalized && studentCodeNormalized === loanCodeNormalized);
 
@@ -145,7 +164,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
     });
   }, [activeStudent, loans]);
 
-  // Unique books from student's loans (strictly the books the student has borrowed/read)
+  // Unique books from student's loans
   const studentBooks = useMemo(() => {
     const map = new Map<string, { book: Book; loan: Loan }>();
     studentLoans.forEach((loan) => {
@@ -177,34 +196,34 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
     return Array.from(map.values());
   }, [studentLoans, books]);
 
-  // Default book for quiz: Strictly drawn from the books the student has read
+  // Default book for quiz
   const defaultBook = useMemo(() => {
     if (studentBooks.length > 0) return studentBooks[0].book;
     return (
       books[0] || {
         id: 'default_book',
-        title: 'Livro da Biblioteca',
-        author: 'Autor',
+        title: 'Dom Casmurro',
+        author: 'Machado de Assis',
         cover: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&auto=format&fit=crop&q=80',
-        category: 'Literatura',
+        category: 'Literatura Brasileira',
         rating: 5,
         reviewsCount: 1,
         status: 'disponivel',
-        pages: 100,
+        pages: 256,
         year: 2026,
-        publisher: 'Biblioteca',
+        publisher: 'Biblioteca Maria Quitéria',
         location: 'Geral',
-        synopsis: 'Livro do acervo escolar.',
-        isbn: '000',
-        totalCopies: 1,
-        availableCopies: 1,
+        synopsis: 'Clássico da literatura com a história de Bento Santiago e Capitu.',
+        isbn: '978-85-001',
+        totalCopies: 5,
+        availableCopies: 5,
       }
     );
   }, [books, studentBooks]);
 
   const [selectedBookForQuiz, setSelectedBookForQuiz] = useState<Book>(defaultBook);
 
-  // Sync selected book when student books change: MUST always be one of the student's read books!
+  // Sync selected book when student books change
   useEffect(() => {
     if (studentBooks.length > 0) {
       const isAlreadyInStudentBooks = studentBooks.some(
@@ -222,7 +241,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
   useEffect(() => {
     if (!activeStudent) {
       setSpeechBubbleText(
-        'Miau! Identifique-se com seu código ou nome para cruzarmos seus empréstimos e liberar o Desafio! 🐾'
+        'Miau! Identifique-se com seu código ou nome para cruzarmos seus empréstimos e liberar o Show de Saberes! 🐾'
       );
       setMascotMood('talking');
     } else if (studentLoans.length === 0) {
@@ -232,16 +251,19 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
       setMascotMood('thinking');
     } else {
       setSpeechBubbleText(
-        `Miau! Perguntas retiradas dos livros que você leu na biblioteca! Mostre o que você aprendeu com a leitura! 🐾`
+        `Miau! Bem-vindo ao Desafio Literário! Perguntas exclusivas de "${selectedBookForQuiz.title}" geradas para testar sua leitura real! 🐾`
       );
       setMascotMood('talking');
     }
-  }, [activeStudent, studentLoans.length]);
+  }, [activeStudent, studentLoans.length, selectedBookForQuiz]);
 
-  // Current Question Set - Exclusively derived from the selected read book!
-  const currentQuestions: QuizQuestion[] = useMemo(() => {
+  // Curated Questions as baseline
+  const curatedQuestions: QuizQuestion[] = useMemo(() => {
     return getQuestionsForBook(selectedBookForQuiz);
   }, [selectedBookForQuiz]);
+
+  // AI-generated question cache per question level (1 to 5)
+  const [aiQuestionsCache, setAiQuestionsCache] = useState<Record<number, QuizQuestion>>({});
 
   // Quiz Game State
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
@@ -255,16 +277,78 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
   const [floatingScore, setFloatingScore] = useState<number | null>(null);
   const [coverHasError, setCoverHasError] = useState<boolean>(false);
 
-  // Mascot Mood & Speech Bubble Text (Exact from video)
+  // Mascot Mood & Speech Bubble Text
   const [mascotMood, setMascotMood] = useState<MascotMood>('talking');
   const [isMeowing, setIsMeowing] = useState<boolean>(false);
   const [speechBubbleText, setSpeechBubbleText] = useState<string>(
-    'Vamos testar seu conhecimento sobre o livro que você leu? 🐾'
+    'Bem-vindo ao Show de Saberes Literários! 🐾'
   );
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const activeQuestion: QuizQuestion | undefined = currentQuestions[currentQuestionIndex];
+  // Active question resolution: prefers AI question if enabled and cached, else curated
+  const activeQuestion: QuizQuestion = useMemo(() => {
+    const level = currentQuestionIndex + 1;
+    if (useGeminiAi && aiQuestionsCache[level]) {
+      return aiQuestionsCache[level];
+    }
+    if (curatedQuestions[currentQuestionIndex]) {
+      return curatedQuestions[currentQuestionIndex];
+    }
+    return (
+      curatedQuestions[0] || {
+        id: `fb_${level}`,
+        bookTitle: selectedBookForQuiz.title,
+        bookAuthor: selectedBookForQuiz.author,
+        bookCover: selectedBookForQuiz.cover,
+        question: `Qual é o tema central da obra "${selectedBookForQuiz.title}" de ${selectedBookForQuiz.author}?`,
+        options: [
+          'O valor humano e a reflexão proporcionada pela leitura',
+          'A montagem técnica de engrenagens mecânicas',
+          'Viagens interestelares em buracos negros',
+          'Fórmulas matemáticas de geometria euclidiana',
+        ],
+        correctIndex: 0,
+        explanation: `A leitura de "${selectedBookForQuiz.title}" enriquece a imaginação e a formação leitora!`,
+        points: level * 1000,
+        capituloReferencia: 'Acervo Escolar',
+        dicaGuru: 'Pense no impacto literário da narrativa que você retirou na biblioteca!',
+        nivel: level,
+      }
+    );
+  }, [useGeminiAi, aiQuestionsCache, currentQuestionIndex, curatedQuestions, selectedBookForQuiz]);
+
+  // Fetch AI Question from Gemini server proxy when question level changes
+  useEffect(() => {
+    if (!useGeminiAi || !selectedBookForQuiz?.title) return;
+    const level = currentQuestionIndex + 1;
+    if (aiQuestionsCache[level]) return;
+
+    let isMounted = true;
+    setIsAiLoading(true);
+
+    gerarQuestaoComGemini(
+      selectedBookForQuiz.title,
+      selectedBookForQuiz.author,
+      level,
+      5
+    )
+      .then((geminiRes) => {
+        if (!isMounted) return;
+        const converted = converterParaQuizQuestion(geminiRes, selectedBookForQuiz.cover);
+        setAiQuestionsCache((prev) => ({ ...prev, [level]: converted }));
+      })
+      .catch((err) => {
+        console.error('Fallback para questão local:', err);
+      })
+      .finally(() => {
+        if (isMounted) setIsAiLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [useGeminiAi, currentQuestionIndex, selectedBookForQuiz, aiQuestionsCache]);
 
   // Reset question state
   const startQuestion = (idx: number) => {
@@ -276,7 +360,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
     setIsTimerActive(true);
     setMascotMood('talking');
     setIsMeowing(false);
-    setSpeechBubbleText('Vamos testar seu conhecimento sobre o livro que você leu? 🐾');
+    setShowGuruTip(false);
+    setSpeechBubbleText(`Questão ${idx + 1} de 5 valendo ${(idx + 1) * 1000} pontos! Mostre seus conhecimentos! 🐾`);
     setFloatingScore(null);
     setCoverHasError(false);
   };
@@ -284,7 +369,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
   const handlePetQuiterio = () => {
     if (soundOn) playCatMeowSound();
     setIsMeowing(true);
-    setSpeechBubbleText('Miau!! 🐾 Quitério adora carinho e leitores dedicados!');
+    setSpeechBubbleText('Miau!! 🐾 O Quitério adora carinho e torce pelo seu sucesso no quiz!');
     setTimeout(() => {
       setIsMeowing(false);
     }, 2200);
@@ -318,7 +403,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
     setIsCorrect(false);
     setIsTimerActive(false);
     setMascotMood('thinking');
-    setSpeechBubbleText('O tempo acabou! Mas não desanime, o aprendizado continua! 🐾');
+    setStreakCount(0);
+    setSpeechBubbleText('Buzzer! ⏰ O tempo da pergunta esgotou! Na próxima você recupera! 🐾');
     if (soundOn) playWrongSound();
   };
 
@@ -335,15 +421,16 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
 
     const studentKey = activeStudent?.studentCode || activeStudent?.id || 'aluno_anonimo';
     const studentName = activeStudent?.name || 'Leitor Apaixonado';
+    const questionPoints = activeQuestion.points || (currentQuestionIndex + 1) * 1000;
 
     if (correct) {
-      const totalPoints = 100;
+      const newStreak = streakCount + 1;
+      setStreakCount(newStreak);
 
-      setFloatingScore(totalPoints);
+      setFloatingScore(questionPoints);
       setMascotMood('celebrating');
       setIsMeowing(true);
-      // Exact praise from user video
-      setSpeechBubbleText('Miau!! 🐾 Você mandou bem! Continua lendo e acertando as perguntas!');
+      setSpeechBubbleText(`RESPOSTA EXATA! 🏆 +${questionPoints} LivroCoins para sua pontuação! Miau!! 🐾`);
 
       if (soundOn) {
         playCorrectSound();
@@ -352,23 +439,23 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
         }, 250);
       }
 
-      // Confetti burst
+      // Stage victory confetti burst
       try {
         confetti({
-          particleCount: 70,
-          spread: 60,
+          particleCount: 80,
+          spread: 70,
           origin: { y: 0.6 },
-          colors: ['#38bdf8', '#fbbf24', '#34d399', '#f43f5e', '#a855f7'],
+          colors: ['#ffd165', '#f7be1d', '#62f0b3', '#06b6d4', '#eab308'],
         });
       } catch {
-        // Confetti fallback
+        // Fallback
       }
 
       // Persist score & update leaderboard
       const { updatedData } = addGamePoints(
         studentKey,
         studentName,
-        totalPoints,
+        questionPoints,
         true,
         selectedBookForQuiz.title,
         selectedBookForQuiz.author,
@@ -378,12 +465,13 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
       setLeaderboard(getTopSchoolRanking(activeStudent?.studentCode));
       setRoundStats((prev) => ({
         correct: prev.correct + 1,
-        pointsEarned: prev.pointsEarned + totalPoints,
+        pointsEarned: prev.pointsEarned + questionPoints,
       }));
     } else {
+      setStreakCount(0);
       setMascotMood('thinking');
       setIsMeowing(false);
-      setSpeechBubbleText('Quase lá! Na próxima pergunta você brilha! Continue lendo! 🐾');
+      setSpeechBubbleText('Ah, não foi dessa vez! Mas não desanime, leia a explicação literária e siga firme! 🐾');
 
       if (soundOn) playWrongSound();
 
@@ -403,13 +491,13 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
 
   // Next Question or Complete with 5-attempt limit tracking
   const handleNextQuestion = () => {
-    if (currentQuestionIndex < currentQuestions.length - 1) {
+    if (currentQuestionIndex < 4) {
       startQuestion(currentQuestionIndex + 1);
     } else {
       const studentKey = activeStudent?.studentCode || activeStudent?.id || 'aluno_anonimo';
       const studentName = activeStudent?.name || 'Leitor Apaixonado';
 
-      // Record completed attempt for this book (enforcing max 5 attempts)
+      // Record completed attempt for this book
       const { updatedData, isLimitReached } = recordAttemptCompletion(
         studentKey,
         studentName,
@@ -418,7 +506,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
         selectedBookForQuiz.cover,
         roundStats.pointsEarned,
         roundStats.correct,
-        currentQuestions.length
+        5
       );
 
       setGameData(updatedData);
@@ -430,14 +518,14 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
         setMascotMood('celebrating');
         setIsMeowing(true);
         setSpeechBubbleText(
-          'Miau!! 🎓 Incrível! Você completou sua 5ª e última tentativa! Veja sua pontuação para cada livro! 🐾'
+          'Miau!! 🎓 ESPETÁCULO! Você atingiu sua 5ª e última tentativa na Missão Quitério! Veja sua pontuação detalhada! 🐾'
         );
         setShowBookScoresView(true);
         if (soundOn) playCelebrationSound();
       } else {
         setMascotMood('celebrating');
         setSpeechBubbleText(
-          `Parabéns, Leitor de Ouro! Tentativa ${updatedData.attemptsCount} de ${MAX_QUIZ_ATTEMPTS} concluída com sucesso! 🏆`
+          `Sensacional, leitor de ouro! Rodada concluída com ${roundStats.pointsEarned} LivroCoins conquistados! 🏆`
         );
         if (soundOn) playCelebrationSound();
       }
@@ -449,13 +537,15 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
       setShowBookScoresView(true);
       setMascotMood('talking');
       setSpeechBubbleText(
-        'Miau! Você já utilizou suas 5 tentativas na Missão! Não é possível iniciar novas partidas. Veja sua pontuação por livro! 🐾'
+        'Miau! Você já utilizou suas 5 tentativas na Missão! Confira seu boletim por livro abaixo! 🐾'
       );
       return;
     }
     setRoundCompleted(false);
     setRoundStats({ correct: 0, pointsEarned: 0 });
     setShowBookScoresView(false);
+    setStreakCount(0);
+    setAiQuestionsCache({});
     startQuestion(0);
   };
 
@@ -465,7 +555,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
       setShowBookScoresView(true);
       setMascotMood('talking');
       setSpeechBubbleText(
-        'Miau! Você já utilizou todas as 5 tentativas disponíveis! Veja sua pontuação em cada livro! 🐾'
+        'Miau! Suas 5 tentativas foram concluídas! Confira seu histórico por livro! 🐾'
       );
       return;
     }
@@ -473,27 +563,29 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
     setRoundCompleted(false);
     setRoundStats({ correct: 0, pointsEarned: 0 });
     setShowBookScoresView(false);
+    setStreakCount(0);
+    setAiQuestionsCache({});
     startQuestion(0);
     setMascotMood('talking');
-    setSpeechBubbleText(`Miau! Vamos testar o livro "${book.title}"! Boa sorte no desafio! 🐾`);
+    setSpeechBubbleText(`Miau! Desafio selecionado para "${book.title}"! Gerando perguntas com IA! 🐾`);
   };
 
-  // Student Identification Modal handler with cross-referencing code or name verification
+  // Student Identification Modal handler
   const handleIdentifyStudent = (e: React.FormEvent) => {
     e.preventDefault();
     setCodeError('');
 
     const rawInput = studentCodeInput.trim();
     if (!rawInput) {
-      setCodeError('Digite seu Código ou Nome de Aluno para entrar na Missão.');
+      setCodeError('Digite seu Código ou Nome de Aluno para entrar no Desafio.');
       return;
     }
 
-    const cleanInput = rawInput.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const cleanInput = rawInput.toLowerCase().replace(/^alu-/, '');
 
     const foundStudent = students.find((s) => {
-      const sCode = (s.studentCode || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-      const sId = (s.id || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      const sCode = (s.studentCode || '').trim().toLowerCase().replace(/^alu-/, '');
+      const sId = (s.id || '').trim().toLowerCase().replace(/^alu-/, '');
       const sName = (s.name || '').trim().toLowerCase();
       return (
         sCode === cleanInput ||
@@ -505,9 +597,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
 
     if (!foundStudent) {
       if (soundOn) playWrongSound();
-      setCodeError(
-        'Aluno não encontrado! Verifique o código ou nome digitado e tente novamente.'
-      );
+      setCodeError('Aluno não encontrado! Verifique o código ou nome digitado.');
       return;
     }
 
@@ -523,350 +613,215 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
     setLeaderboard(getTopSchoolRanking(foundStudent.studentCode));
   };
 
-  // Handle Close Modal: if student not active, return to home
   const handleCloseModal = () => {
     setIsCodeModalOpen(false);
-    if (!activeStudent) {
-      if (onBackToHome) {
-        onBackToHome();
-      }
+    if (!activeStudent && onBackToHome) {
+      onBackToHome();
     }
   };
 
+  // Remaining lives calculated out of 5 attempts
+  const remainingLives = Math.max(0, MAX_QUIZ_ATTEMPTS - (gameData.attemptsCount || 0));
+
   return (
-    <div
-      className={`min-h-[calc(100vh-80px)] py-4 px-3 sm:px-6 relative overflow-hidden transition-colors ${
-        isDark
-          ? 'bg-gradient-to-b from-[#0b102b] via-[#10133a] to-[#0a0e27] text-slate-100'
-          : 'bg-gradient-to-b from-[#181a4a] via-[#1a1e54] to-[#121438] text-white'
-      }`}
-    >
-      {/* Background Soft Stars Atmosphere */}
+    <div className="min-h-[calc(100vh-80px)] py-4 sm:py-6 px-3 sm:px-6 bg-[#0b1326] text-[#dae2fd] font-['Plus_Jakarta_Sans',sans-serif] selection:bg-[#ffd165] selection:text-[#0b1326] relative overflow-hidden">
+      {/* Neo-Arcade Ambient Stage Lighting Rails */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(#fbbf24_1px,transparent_1px)] [background-size:32px_32px]"
+        className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_50%_0%,rgba(6,182,212,0.25),transparent_70%)]"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute -top-32 -left-32 w-96 h-96 bg-[#ffd165]/10 rounded-full blur-3xl pointer-events-none"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#06b6d4]/10 rounded-full blur-3xl pointer-events-none"
         aria-hidden="true"
       />
 
-      <div className="max-w-6xl mx-auto relative z-10 flex flex-col gap-4 sm:gap-5">
+      {/* Main Game-Show Arena Shell */}
+      <div className="max-w-6xl mx-auto relative z-10 flex flex-col gap-5 sm:gap-6">
         {/* ========================================================================= */}
-        {/* 1. TOP HEADER BANNER: "RANKING DE LEITURA - Desafie-se • Leia • Conquiste Pontos!" */}
+        {/* 1. STAGE HUD TOP BAR: Logo / Title + LivroCoins + Lives + Combo Multiplier */}
         {/* ========================================================================= */}
-        <div className="relative flex flex-col items-center justify-center text-center pt-1 pb-1">
-          {/* Back to Home button */}
-          {onBackToHome && (
-            <div className="absolute left-0 top-0 flex items-center gap-2">
-              <button
-                id="btn-quiterio-back-home"
-                type="button"
-                onClick={onBackToHome}
-                title="Voltar para a Página Inicial"
-                className="px-3 py-1.5 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-md backdrop-blur-sm"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="hidden sm:inline">Início</span>
-              </button>
-            </div>
-          )}
+        <header className="p-4 sm:p-5 rounded-3xl bg-[#131b2e] border-2 border-[#334155] border-b-4 border-[#0b0f19] shadow-[0_12px_32px_rgba(0,0,0,0.5)] flex flex-col md:flex-row items-center justify-between gap-4">
+          {/* Left: Branding & Back Button */}
+          <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
+            <div className="flex items-center gap-2.5">
+              {onBackToHome && (
+                <button
+                  type="button"
+                  onClick={onBackToHome}
+                  title="Voltar ao início da Biblioteca"
+                  className="px-3 py-2 rounded-xl bg-[#171f33] hover:bg-[#222a3d] border-2 border-[#334155] border-b-4 border-[#060e20] text-[#dae2fd] text-xs font-['Rubik'] font-bold flex items-center gap-1.5 transition-all cursor-pointer active:translate-y-1 active:border-b-2"
+                >
+                  <ArrowLeft className="w-4 h-4 text-[#ffd165]" />
+                  <span className="hidden sm:inline">Início</span>
+                </button>
+              )}
 
-          {/* Sound & Student Profile button */}
-          <div className="absolute right-0 top-0 flex items-center gap-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded-full bg-[#eab308]/20 border border-[#ffd165]/40 text-[#ffd165] text-[10px] font-['Rubik'] font-black tracking-widest uppercase">
+                    Show de Saberes
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[11px] text-[#62f0b3] font-bold">
+                    <Bot className="w-3.5 h-3.5" />
+                    <span>Gemini 1.5</span>
+                  </span>
+                </div>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-['Rubik'] font-black uppercase tracking-tight text-[#f8fafc] drop-shadow-[0_2px_8px_rgba(255,209,101,0.2)]">
+                  Desafio Literário
+                </h1>
+              </div>
+            </div>
+
+            {/* Audio Toggle button */}
             <button
               id="btn-quiterio-sound-toggle"
+              type="button"
               onClick={() => {
                 const next = !soundOn;
                 setSoundOn(next);
                 setSoundEnabled(next);
               }}
-              title={soundOn ? 'Desativar Sons' : 'Ativar Sons'}
-              className={`p-2 rounded-full border transition-all cursor-pointer shadow-md ${
+              title={soundOn ? 'Desativar Efeitos' : 'Ativar Efeitos'}
+              className={`p-2.5 rounded-2xl border-2 border-b-4 transition-all cursor-pointer shadow-md active:translate-y-1 active:border-b-2 ${
                 soundOn
-                  ? 'bg-amber-400 text-amber-950 border-amber-300 hover:bg-amber-300 hover:scale-105'
-                  : 'bg-slate-700/80 text-slate-300 border-slate-600 hover:bg-slate-600'
+                  ? 'bg-[#ffd165] text-[#251a00] border-[#f7be1d] border-b-[#ca8a04]'
+                  : 'bg-[#171f33] text-[#94a3b8] border-[#334155] border-b-[#0b0f19]'
               }`}
             >
               {soundOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>
           </div>
 
-          {/* 3D Stylized Title Banner (Exact match to video) */}
-          <motion.div
-            initial={{ y: -16, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 280, damping: 20 }}
-            className="flex flex-col items-center"
-          >
-            <div className="flex items-center justify-center gap-2.5 sm:gap-4 flex-wrap">
-              <h1 className="text-3xl sm:text-5xl font-black uppercase tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 via-amber-300 to-amber-500 drop-shadow-[0_4px_12px_rgba(245,158,11,0.5)]">
-                Ranking de Leitura
-              </h1>
-
-              {/* 3D Countdown Timer beside "Ranking de Leitura" (20 Minutos) */}
-              <div
-                className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-2xl font-black text-xs sm:text-base border-2 border-b-4 transition-all shadow-md ${
-                  timeLeft <= 60
-                    ? 'bg-rose-600 border-rose-400 border-b-rose-900 text-white shadow-[0_3px_0_#4c0519] animate-pulse ring-2 ring-rose-400/60'
-                    : 'bg-gradient-to-r from-[#3b0764] via-[#4c1d95] to-[#1e1b4b] border-amber-300 border-b-purple-950 text-amber-300 shadow-[0_3px_0_#0f172a]'
-                }`}
-                title="Tempo do Desafio: 20 minutos"
-              >
-                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300" />
-                <span className="font-mono font-black tracking-wider">
-                  {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-                </span>
-              </div>
-            </div>
-
-            {/* Arched subtitle ribbon */}
-            <div className="mt-1 px-5 py-0.5 rounded-full bg-amber-400 text-amber-950 text-xs sm:text-sm font-black shadow-md tracking-wide flex items-center gap-1.5 border border-amber-300">
-              <Star className="w-3 h-3 fill-amber-950" />
-              <span>Desafie-se • Leia • Conquiste Pontos!</span>
-              <Star className="w-3 h-3 fill-amber-950" />
-            </div>
-          </motion.div>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* 2. TOP CARDS BAR: [Left: Sua Pontuação] [Right: Ranking da Escola] */}
-        {/* ========================================================================= */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-stretch">
-          {/* Top Left Card: Sua Pontuação (3D Tactile Card with Quitério Colors) */}
-          <motion.div
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            className="relative p-3.5 sm:p-4 rounded-2xl border-2 border-amber-400 border-b-4 border-amber-600 bg-gradient-to-r from-amber-500/20 via-orange-950/40 to-amber-900/30 backdrop-blur-md shadow-[0_4px_0_#9a3412] flex items-center justify-between gap-3"
-          >
-            <div className="flex items-center gap-3">
-              {/* Mascot Mini Portrait wearing graduation cap */}
-              <div
-                onClick={() => setIsCodeModalOpen(true)}
-                title="Trocar aluno"
-                className="relative w-12 h-12 rounded-2xl border-2 border-amber-300 border-b-3 border-amber-600 bg-gradient-to-br from-amber-400/30 to-orange-500/30 flex items-center justify-center overflow-hidden shadow-md flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
-              >
-                <QuiterioMascot size="sm" className="scale-65 -mt-3" />
-              </div>
-
-              <div>
-                <span className="text-[11px] font-black text-amber-300 uppercase tracking-wider block">
-                  Sua Pontuação
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-black text-white truncate max-w-[150px]">
-                    {activeStudent ? activeStudent.name : 'Aluno Convidado'}
-                  </span>
-                  <button
-                    onClick={() => setIsCodeModalOpen(true)}
-                    className="text-[10px] font-bold text-amber-300 hover:text-white underline cursor-pointer"
-                    title="Trocar Aluno"
-                  >
-                    Trocar
-                  </button>
-                </div>
-
-                {/* 🐾 Status de Empréstimos ou Tentativas */}
-                <div className="mt-1 flex items-center gap-1.5 flex-wrap">
-                  {studentLoans.length === 0 ? (
-                    <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-lg border bg-rose-500/30 text-rose-200 border-rose-400/60 flex items-center gap-1 shadow-xs">
-                      <span>📖</span>
-                      <span>Sem empréstimos</span>
-                    </span>
-                  ) : (
-                    <>
-                      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-lg border bg-emerald-500/25 text-emerald-200 border-emerald-400/50 flex items-center gap-1 shadow-xs">
-                        <BookOpen className="w-3 h-3" />
-                        <span>{studentBooks.length} livro(s) lido(s)</span>
-                      </span>
-                      <span
-                        className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-lg border flex items-center gap-1 shadow-xs ${
-                          (gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS
-                            ? 'bg-rose-500/30 text-rose-200 border-rose-400/60'
-                            : 'bg-amber-400/20 text-amber-300 border-amber-400/40'
-                        }`}
-                      >
-                        <span>🐾</span>
-                        <span>
-                          Tentativas: <strong>{gameData.attemptsCount || 0}/{MAX_QUIZ_ATTEMPTS}</strong>
-                          {(gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS ? ' (Fim)' : ''}
-                        </span>
-                      </span>
-                    </>
-                  )}
-
-                  {/* 5 mini paws */}
-                  <div
-                    className="flex items-center gap-0.5 bg-black/30 px-1.5 py-0.5 rounded-md border border-white/10"
-                    title={`${gameData.attemptsCount || 0} de ${MAX_QUIZ_ATTEMPTS} tentativas utilizadas`}
-                  >
-                    {[1, 2, 3, 4, 5].map((num) => (
-                      <span
-                        key={num}
-                        className={`text-[10px] transition-all ${
-                          num <= (gameData.attemptsCount || 0)
-                            ? 'opacity-100 scale-105'
-                            : 'opacity-25 grayscale'
-                        }`}
-                      >
-                        🐾
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Direct button to open per-book score */}
-                  <button
-                    type="button"
-                    onClick={() => setShowBookScoresView(true)}
-                    className="text-[10px] font-bold text-amber-200 hover:text-white underline cursor-pointer"
-                  >
-                    Ver por livro
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Score Big Display with 3D Golden Star Pill */}
-            <div className="flex items-center gap-2 bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 px-3.5 py-1.5 rounded-xl border-2 border-amber-200 border-b-3 border-amber-700 shadow-[0_2px_0_#b45309]">
-              <Star className="w-5 h-5 text-amber-950 fill-amber-950 drop-shadow-sm" />
-              <span className="text-2xl sm:text-3xl font-black tracking-tight">
-                {gameData.score}
-              </span>
-            </div>
-          </motion.div>
-
-          {/* Top Right Card: Ranking da Escola (3D Card) */}
-          <motion.div
-            initial={{ x: 20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            className="relative p-3.5 sm:p-4 rounded-2xl border-2 border-purple-400/80 border-b-4 border-purple-900 bg-gradient-to-r from-purple-950/60 via-indigo-950/50 to-purple-900/40 backdrop-blur-md shadow-[0_4px_0_#2e1065] flex flex-col justify-between gap-2"
-          >
-            {/* Top 3 List */}
-            <div className="grid grid-cols-3 gap-2">
-              {leaderboard.topThree && leaderboard.topThree.length > 0 ? (
-                leaderboard.topThree.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="p-1.5 rounded-xl bg-slate-900/70 border border-purple-400/30 border-b-2 border-purple-900 flex flex-col items-center text-center shadow-sm"
-                  >
-                    <span className="text-[11px] font-black text-amber-400 leading-tight">
-                      {idx === 0 ? '🥇 1º' : idx === 1 ? '🥈 2º' : '🥉 3º'}
-                    </span>
-                    <span className="text-xs font-bold text-white truncate max-w-[75px]">
-                      {item.studentName.split(' ')[0]}
-                    </span>
-                    <span className="text-[10px] font-mono text-amber-300 font-extrabold">
-                      {item.score}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <div className="col-span-3 py-2.5 px-3 text-center rounded-xl bg-slate-900/70 border border-purple-400/30 text-[11px] text-amber-200/90 font-semibold">
-                  🐾 Nenhum ponto registrado ainda!
-                </div>
-              )}
-            </div>
-
-            {/* Current Student Rank Pill (3D Amber Yellow Pill) */}
-            <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 text-xs font-black shadow-[0_2px_0_#b45309] border border-amber-200 border-b-2 border-amber-700">
-              <span className="flex items-center gap-1.5">
-                <span>🐾</span>
-                <span>
-                  {gameData.score > 0 ? (
-                    <>Você está em <strong>{leaderboard.currentRank}º lugar</strong>!</>
-                  ) : (
-                    <>Responda para entrar no <strong>Ranking</strong>!</>
-                  )}
-                </span>
-              </span>
-              <span className="text-[10px] font-mono text-amber-950 font-extrabold bg-amber-300/60 px-1.5 py-0.5 rounded-md">
-                {gameData.correctAnswers} acertos
-              </span>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* ========================================================================= */}
-        {/* 3. MAIN GAME QUIZ AREA: Quitério Mascot (Left) + 3D Cat Quiz Window (Right) */}
-        {/* ========================================================================= */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-center my-auto pt-2">
-          {/* Left Column: Mascot Quitério with Speech Bubble */}
-          <div className="lg:col-span-5 flex flex-col items-center justify-center order-2 lg:order-1">
-            <QuiterioMascot
-              mood={mascotMood}
-              size="lg"
-              showSpeechBubble={true}
-              speechText={speechBubbleText}
-              isMeowing={isMeowing}
-              onPetCat={handlePetQuiterio}
-            />
-          </div>
-
-          {/* Right Column: 3D Quiz Window Themed on Quitério the Cat */}
-          <div className="lg:col-span-7 order-1 lg:order-2">
-            <motion.div
-              layout
-              className="relative p-4 sm:p-6 md:p-7 rounded-[28px] sm:rounded-[36px] border-4 sm:border-[5px] border-[#ea580c] border-b-[8px] sm:border-b-[10px] border-[#9a3412] bg-gradient-to-b from-[#fffefc] via-[#fff9f2] to-[#ffedd5] text-[#2e1305] shadow-[0_12px_0_#7c2d12,0_20px_35px_rgba(0,0,0,0.45)] ring-2 sm:ring-4 ring-orange-300/60"
+          {/* Right: Stage HUD Status Badges (LivroCoins, Lives, Combo, Student Profile) */}
+          <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto justify-end flex-wrap">
+            {/* LivroCoins Status Pill */}
+            <div
+              className="px-3.5 sm:px-4 py-2 rounded-2xl bg-[#060e20] border-2 border-[#eab308] border-b-4 border-[#ca8a04] shadow-[0_0_20px_-4px_rgba(234,179,8,0.45)] flex items-center gap-2"
+              title="LivroCoins conquistados"
             >
-              {/* Cute Cat Badge Header on top of 3D Window with Interactive Tabs */}
-              <div className="flex items-center justify-center -mt-8 sm:-mt-10 mb-3 flex-wrap gap-2">
-                <div className="inline-flex items-center gap-1.5 p-1 rounded-full bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 shadow-[0_4px_0_#9a3412] border-2 border-amber-200 border-b-[3px] border-[#9a3412]">
-                  {!activeStudent ? (
-                    <span className="px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-black text-amber-100 flex items-center gap-1.5">
-                      <span>🐾</span>
-                      <span>Identificação do Aluno</span>
-                    </span>
-                  ) : studentLoans.length === 0 ? (
-                    <span className="px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-black bg-amber-400 text-amber-950 shadow-sm border border-amber-200 flex items-center gap-1.5">
-                      <span>📖</span>
-                      <span>Leitura Necessária</span>
-                    </span>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if ((gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS) {
-                            setSpeechBubbleText(
-                              'Miau! Você já completou suas 5 tentativas! Confira seus pontos por livro abaixo! 🐾'
-                            );
-                            return;
-                          }
-                          setShowBookScoresView(false);
-                        }}
-                        className={`px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-black transition-all cursor-pointer flex items-center gap-1.5 ${
-                          !showBookScoresView && (gameData.attemptsCount || 0) < MAX_QUIZ_ATTEMPTS
-                            ? 'bg-amber-400 text-amber-950 shadow-sm border border-amber-200'
-                            : 'text-amber-100 hover:text-white'
-                        }`}
-                      >
-                        <span>🐾</span>
-                        <span>
-                          {(gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS
-                            ? 'Desafio Finalizado (5/5)'
-                            : `Questão ${currentQuestionIndex + 1}/${currentQuestions.length}`}
-                        </span>
-                      </button>
+              <Coins className="w-5 h-5 text-[#ffd165] drop-shadow-sm animate-pulse" />
+              <div>
+                <span className="text-[9px] uppercase font-['Rubik'] font-black text-[#ffd165]/80 block leading-tight">
+                  LivroCoins
+                </span>
+                <span className="text-base sm:text-lg font-['Rubik'] font-black text-[#f8fafc] leading-none">
+                  {gameData.score.toLocaleString('pt-BR')}
+                </span>
+              </div>
+            </div>
 
-                      <button
-                        type="button"
-                        onClick={() => setShowBookScoresView(true)}
-                        className={`px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-black transition-all cursor-pointer flex items-center gap-1.5 ${
-                          showBookScoresView || (gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS
-                            ? 'bg-amber-400 text-amber-950 shadow-sm border border-amber-200'
-                            : 'text-amber-100 hover:text-white'
-                        }`}
-                      >
-                        <span>⭐</span>
-                        <span>Pontos por Livro</span>
-                        {Object.keys(gameData.bookScores || {}).length > 0 && (
-                          <span className="bg-amber-950 text-amber-300 text-[10px] px-1.5 py-0.2 rounded-full font-mono">
-                            {Object.keys(gameData.bookScores || {}).length}
-                          </span>
-                        )}
-                      </button>
-                    </>
-                  )}
+            {/* Lives / Attempts Monitor (Ruby Dramatic) */}
+            <div
+              className="px-3.5 py-2 rounded-2xl bg-[#060e20] border-2 border-[#dc2626]/80 border-b-4 border-[#991b1b] shadow-[0_0_20px_-4px_rgba(220,38,38,0.35)] flex items-center gap-2"
+              title={`${remainingLives} tentativa(s) restante(s) de ${MAX_QUIZ_ATTEMPTS}`}
+            >
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((n) => {
+                  const isAlive = n <= remainingLives;
+                  return (
+                    <Heart
+                      key={n}
+                      className={`w-3.5 h-3.5 transition-all ${
+                        isAlive
+                          ? 'text-[#dc2626] fill-[#dc2626] scale-105'
+                          : 'text-[#475569] fill-transparent opacity-30'
+                      }`}
+                    />
+                  );
+                })}
+              </div>
+              <span className="text-xs font-['Rubik'] font-black text-[#ffb4ab]">
+                {remainingLives}/{MAX_QUIZ_ATTEMPTS}
+              </span>
+            </div>
+
+            {/* Streak & Multiplier Badge */}
+            {streakCount > 0 && (
+              <div className="px-3 py-1.5 rounded-2xl bg-[#06b6d4]/20 border-2 border-[#06b6d4] border-b-4 border-[#0891b2] shadow-[0_0_16px_rgba(6,182,212,0.4)] flex items-center gap-1.5 text-xs font-['Rubik'] font-black text-[#06b6d4] animate-bounce">
+                <Zap className="w-4 h-4 fill-current" />
+                <span>COMBO x{streakCount}</span>
+              </div>
+            )}
+
+            {/* Student ID / Switch Pill */}
+            <button
+              type="button"
+              onClick={() => setIsCodeModalOpen(true)}
+              className="px-3 py-2 rounded-2xl bg-[#171f33] hover:bg-[#222a3d] border-2 border-[#334155] border-b-4 border-[#060e20] text-xs font-bold flex items-center gap-2 text-[#dae2fd] cursor-pointer transition-all active:translate-y-1 active:border-b-2"
+            >
+              <User className="w-3.5 h-3.5 text-[#ffd165]" />
+              <span className="truncate max-w-[100px] sm:max-w-[130px]">
+                {activeStudent ? activeStudent.name.split(' ')[0] : 'Identificar'}
+              </span>
+            </button>
+          </div>
+        </header>
+
+        {/* ========================================================================= */}
+        {/* 2. STAGE ARENA: 12-Column Grid (Main Quiz Board + Host Mascote Console) */}
+        {/* ========================================================================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+          {/* Main Quiz Board (8 Columns) */}
+          <main className="lg:col-span-8 flex flex-col gap-5">
+            <div className="p-5 sm:p-7 rounded-3xl bg-[#171f33] border-2 border-[#334155] border-b-6 border-[#060e20] shadow-[0_16px_40px_rgba(0,0,0,0.6)] relative overflow-hidden">
+              {/* Top Banner inside Stage Card */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#334155]/80">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-3 h-3 rounded-full bg-[#ffd165] shadow-[0_0_10px_#ffd165]" />
+                  <h2 className="text-lg sm:text-xl font-['Rubik'] font-bold text-[#f8fafc]">
+                    {showBookScoresView || (gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS
+                      ? 'Boletim da Missão Quitério'
+                      : 'Show de Saberes • Questão em Andamento'}
+                  </h2>
                 </div>
+
+                {/* Sub-Tabs: Quiz vs Boletim */}
+                {activeStudent && studentLoans.length > 0 && (
+                  <div className="flex items-center p-1 rounded-2xl bg-[#060e20] border border-[#334155]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if ((gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS) {
+                          setSpeechBubbleText(
+                            'Miau! Você já completou suas 5 tentativas! Confira seus pontos por livro abaixo! 🐾'
+                          );
+                          return;
+                        }
+                        setShowBookScoresView(false);
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-['Rubik'] font-bold transition-all cursor-pointer ${
+                        !showBookScoresView && (gameData.attemptsCount || 0) < MAX_QUIZ_ATTEMPTS
+                          ? 'bg-[#ffd165] text-[#251a00] shadow-sm'
+                          : 'text-[#94a3b8] hover:text-[#f8fafc]'
+                      }`}
+                    >
+                      Arena de Questões
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowBookScoresView(true)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-['Rubik'] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        showBookScoresView || (gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS
+                          ? 'bg-[#ffd165] text-[#251a00] shadow-sm'
+                          : 'text-[#94a3b8] hover:text-[#f8fafc]'
+                      }`}
+                    >
+                      <span>Boletim de Pontos</span>
+                      {Object.keys(gameData.bookScores || {}).length > 0 && (
+                        <span className="w-4 h-4 rounded-full bg-[#131b2e] text-[#ffd165] text-[10px] flex items-center justify-center font-bold">
+                          {Object.keys(gameData.bookScores || {}).length}
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* Floating +100 Points animated badge when user clicks right answer */}
+              {/* Floating +Pontos Burst on Correct Answer */}
               <AnimatePresence>
                 {floatingScore !== null && (
                   <motion.div
@@ -874,175 +829,123 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                     animate={{ opacity: 1, y: -45, scale: 1.25 }}
                     exit={{ opacity: 0, scale: 0.8 }}
                     transition={{ duration: 0.8 }}
-                    className="absolute top-4 right-6 sm:right-8 z-30 pointer-events-none px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 text-amber-950 font-black text-base sm:text-xl shadow-[0_4px_0_#9a3412] flex items-center gap-1.5 border-2 border-amber-200 border-b-3 border-orange-800"
+                    className="absolute top-4 right-6 sm:right-8 z-30 pointer-events-none px-4 py-2 rounded-2xl bg-gradient-to-r from-[#ffd165] to-[#f7be1d] text-[#251a00] font-['Rubik'] font-black text-base sm:text-lg shadow-[0_8px_25px_rgba(247,190,29,0.5)] flex items-center gap-1.5 border-2 border-[#fff] border-b-4 border-[#ca8a04]"
                   >
-                    <Sparkles className="w-5 h-5 text-amber-950 fill-amber-950" />
-                    +{floatingScore} PONTOS!
+                    <Sparkles className="w-5 h-5 text-[#251a00]" />
+                    +{floatingScore} LIVROCOINS!
                   </motion.div>
                 )}
               </AnimatePresence>
 
+              {/* State A: Aluno não identificado */}
               {!activeStudent ? (
-                /* Card de Acesso Bloqueado se não houver aluno identificado */
-                <div className="py-8 px-4 text-center flex flex-col items-center">
-                  <div className="w-16 h-16 rounded-3xl bg-amber-500/15 border-2 border-amber-500/30 flex items-center justify-center text-amber-600 mb-3 shadow-inner">
+                <div className="py-12 px-4 text-center flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-3xl bg-[#060e20] border-2 border-[#ffd165] flex items-center justify-center text-[#ffd165] mb-4 shadow-[0_0_20px_rgba(255,209,101,0.2)]">
                     <ShieldAlert className="w-8 h-8" />
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-black text-[#2e1305] mb-2">
-                    Acesso Restrito a Alunos Cadastrados
+                  <h3 className="text-xl sm:text-2xl font-['Rubik'] font-black text-[#f8fafc] mb-2">
+                    Acesso à Arena Bloqueado
                   </h3>
-                  <p className="text-xs sm:text-sm text-amber-900/80 max-w-md mx-auto mb-5 font-medium">
-                    Digite seu <strong>Código ou Nome de Aluno</strong> para cruzarmos seus empréstimos de livros e liberar o desafio!
+                  <p className="text-xs sm:text-sm text-[#94a3b8] max-w-md mx-auto mb-6">
+                    Digite seu <strong>Código ou Nome de Aluno</strong> para cruzarmos os livros que você retirou e liberar o quiz literário do Google AI Studio!
                   </p>
-                  <div className="flex flex-wrap items-center justify-center gap-3">
-                    {onBackToHome && (
-                      <button
-                        type="button"
-                        onClick={onBackToHome}
-                        className="px-5 py-2.5 rounded-2xl border-2 border-amber-300 bg-white text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer hover:bg-amber-50 text-amber-950 shadow-sm transition-all"
-                      >
-                        <ArrowLeft className="w-4 h-4" />
-                        <span>Voltar ao Início</span>
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setIsCodeModalOpen(true)}
-                      className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-amber-950 text-xs sm:text-sm font-black flex items-center gap-2 cursor-pointer shadow-[0_4px_0_#9a3412] border-2 border-amber-200 border-b-3 border-orange-800 active:translate-y-0.5 transition-all"
-                    >
-                      <User className="w-4 h-4" />
-                      <span>Identificar Aluno</span>
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsCodeModalOpen(true)}
+                    className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#ffd165] to-[#f7be1d] text-[#251a00] font-['Rubik'] font-black text-sm shadow-[0_4px_0_#ca8a04] border-2 border-[#fff] border-b-4 border-[#ca8a04] active:translate-y-1 active:border-b-2 cursor-pointer transition-all flex items-center gap-2"
+                  >
+                    <User className="w-4 h-4" />
+                    <span>Identificar Aluno Agora</span>
+                  </button>
                 </div>
               ) : studentLoans.length === 0 ? (
-                /* ========================================================================= */
-                /* BLOQUEIO DO ALUNO SEM EMPRÉSTIMO COM LETRAS GRANDES "POR FAVOR LEIA UM LIVRO" */
-                /* ========================================================================= */
-                <div className="py-8 sm:py-12 px-4 sm:px-6 text-center flex flex-col items-center justify-center">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-amber-300 via-orange-400 to-amber-500 p-1.5 shadow-[0_6px_0_#9a3412] flex items-center justify-center mb-3">
-                    <div className="w-full h-full rounded-full bg-white/95 flex items-center justify-center text-4xl sm:text-5xl">
+                /* State B: Aluno sem empréstimos na biblioteca escolar */
+                <div className="py-10 sm:py-14 px-4 sm:px-6 text-center flex flex-col items-center justify-center">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-br from-[#ffd165] to-[#f7be1d] p-1 shadow-[0_0_30px_rgba(247,190,29,0.3)] flex items-center justify-center mb-4">
+                    <div className="w-full h-full rounded-2xl bg-[#060e20] flex items-center justify-center text-4xl sm:text-5xl">
                       📖
                     </div>
                   </div>
 
-                  {/* EM LETRAS GRANDES CONFORME SOLICITADO */}
-                  <h2 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase text-[#2e1305] tracking-tight leading-tight my-2 drop-shadow-sm">
+                  <h2 className="text-2xl sm:text-4xl md:text-5xl font-['Rubik'] font-black uppercase text-[#ffd165] tracking-tight leading-tight my-2 drop-shadow-md">
                     Por favor Leia um Livro
                   </h2>
 
-                  <div className="max-w-xl mx-auto my-3 p-4 sm:p-5 rounded-2xl bg-amber-100/90 border-2 border-amber-300 border-b-4 border-amber-400 text-amber-950 text-sm sm:text-base font-medium shadow-sm">
-                    <p className="font-black text-base sm:text-lg text-orange-950 mb-1 flex items-center justify-center gap-1.5">
+                  <div className="max-w-xl mx-auto my-4 p-5 rounded-2xl bg-[#060e20] border-2 border-[#ffd165]/50 text-[#dae2fd] text-sm leading-relaxed shadow-lg">
+                    <p className="font-['Rubik'] font-extrabold text-base text-[#ffd165] mb-1 flex items-center justify-center gap-1.5">
                       <span>🐾</span>
                       <span>Olá, {activeStudent.name}!</span>
                     </p>
-                    <p className="text-xs sm:text-sm text-amber-900 leading-relaxed font-semibold">
+                    <p className="text-xs sm:text-sm text-[#94a3b8]">
                       Cruzamos seus dados com o registro de empréstimos da biblioteca e não encontramos nenhum livro retirado por você.
-                      Para poder participar do <strong>Desafio da Missão Quitério</strong>, você precisa primeiro retirar e ler um livro na biblioteca escolar! As perguntas são retiradas exclusivamente dos livros que você leu.
+                      Para participar do <strong>Desafio Literário</strong>, retire e leia um livro na biblioteca escolar! As perguntas são formuladas pelo Gemini com base exclusiva nas obras que você retirou.
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
+                  <div className="flex flex-wrap items-center justify-center gap-3 mt-3">
                     {onNavigateToCatalog && (
                       <button
                         type="button"
                         onClick={onNavigateToCatalog}
-                        className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500 hover:from-amber-300 hover:to-orange-400 text-amber-950 font-black text-sm flex items-center gap-2 border-2 border-amber-200 border-b-4 border-orange-800 shadow-[0_4px_0_#9a3412] active:translate-y-0.5 cursor-pointer transition-all"
+                        className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#ffd165] to-[#f7be1d] text-[#251a00] font-['Rubik'] font-black text-sm flex items-center gap-2 border-2 border-[#fff] border-b-4 border-[#ca8a04] shadow-[0_4px_0_#ca8a04] active:translate-y-1 active:border-b-2 cursor-pointer transition-all"
                       >
                         <BookOpen className="w-5 h-5" />
-                        <span>Ir para o Catálogo de Livros</span>
+                        <span>Ir para o Catálogo da Biblioteca</span>
                       </button>
                     )}
                     <button
                       type="button"
                       onClick={() => setIsCodeModalOpen(true)}
-                      className="px-5 py-3 rounded-2xl border-2 border-amber-300 bg-white hover:bg-amber-50 text-amber-950 font-bold text-sm flex items-center gap-2 cursor-pointer shadow-sm transition-all"
+                      className="px-5 py-3 rounded-2xl border-2 border-[#334155] border-b-4 border-[#060e20] bg-[#171f33] hover:bg-[#222a3d] text-[#dae2fd] font-bold text-sm flex items-center gap-2 cursor-pointer transition-all"
                     >
-                      <User className="w-4 h-4" />
+                      <User className="w-4 h-4 text-[#ffd165]" />
                       <span>Consultar Outro Aluno</span>
                     </button>
-                    {onBackToHome && (
-                      <button
-                        type="button"
-                        onClick={onBackToHome}
-                        className="px-4 py-3 rounded-2xl text-amber-900 hover:text-amber-950 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <ArrowLeft className="w-3.5 h-3.5" />
-                        <span>Voltar ao Início</span>
-                      </button>
-                    )}
                   </div>
                 </div>
               ) : showBookScoresView || (gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS ? (
-                /* ========================================================================= */
-                /* 🐾 BOLETIM DO QUITÉRIO: PONTUAÇÃO POR LIVRO (Cat's Book Scoreboard) */
-                /* ========================================================================= */
-                <div className="py-2 flex flex-col gap-3.5">
-                  {/* Top Header inside 3D Window */}
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 border-b-2 border-amber-300/80 pb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 border-2 border-amber-200 border-b-4 border-orange-800 flex items-center justify-center text-white shadow-md flex-shrink-0">
-                        <GraduationCap className="w-6 h-6 sm:w-7 sm:h-7" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-lg sm:text-xl font-black text-[#2e1305]">
-                            Boletim do Quitério
-                          </h3>
-                          <span className="text-[10px] sm:text-xs font-black bg-amber-200 text-amber-950 px-2.5 py-0.5 rounded-full border border-amber-300">
-                            Pontos por Livro
-                          </span>
-                        </div>
-                        <p className="text-xs text-amber-900/80 font-medium">
-                          Desempenho de <strong>{activeStudent ? activeStudent.name : 'Aluno'}</strong> em cada livro
-                        </p>
-                      </div>
+                /* State C: Boletim Detalhado por Livro */
+                <div className="pt-4 flex flex-col gap-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-[#334155]">
+                    <div>
+                      <span className="text-xs font-['Rubik'] font-bold uppercase text-[#ffd165]">
+                        Boletim Oficial de Leituras
+                      </span>
+                      <h3 className="text-lg font-['Rubik'] font-black text-[#f8fafc]">
+                        Desempenho de {activeStudent.name}
+                      </h3>
                     </div>
 
-                    {/* Attempts Status Pill */}
-                    <div
-                      className={`px-3 py-1.5 rounded-xl border-2 font-black text-xs flex items-center gap-1.5 shadow-sm ${
-                        (gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS
-                          ? 'bg-rose-100 text-rose-950 border-rose-400 border-b-3 border-rose-700'
-                          : 'bg-amber-100 text-amber-950 border-amber-300 border-b-3 border-amber-600'
-                      }`}
-                    >
-                      <span>🐾</span>
-                      <span>
-                        {(gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS
-                          ? '5 de 5 Tentativas Usadas (Finalizado)'
-                          : `${gameData.attemptsCount || 0} de ${MAX_QUIZ_ATTEMPTS} Tentativas Usadas`}
-                      </span>
+                    <div className="px-3.5 py-1.5 rounded-xl bg-[#060e20] border border-[#ffd165]/50 text-xs font-['Rubik'] font-bold text-[#ffd165]">
+                      Total: {gameData.score.toLocaleString('pt-BR')} LivroCoins
                     </div>
                   </div>
 
-                  {/* Warning Notice when 5 attempts are exhausted */}
+                  {/* Warning if 5 attempts limit reached */}
                   {(gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-100 via-orange-100 to-amber-200 border-2 border-amber-400 border-b-4 border-amber-600 text-amber-950 shadow-sm flex items-start sm:items-center gap-3"
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-amber-400 border border-amber-500 flex items-center justify-center text-xl flex-shrink-0 shadow-sm">
-                        🐱🎓
+                    <div className="p-4 rounded-2xl bg-[#060e20] border-2 border-[#ffd165] border-b-4 border-[#ca8a04] flex items-center gap-3">
+                      <span className="text-3xl flex-shrink-0">🎓</span>
+                      <div className="text-xs sm:text-sm">
+                        <strong className="font-['Rubik'] font-black text-[#ffd165] block">
+                          5 de 5 Tentativas Concluídas!
+                        </strong>
+                        <span className="text-[#94a3b8]">
+                          Conforme o regulamento do Desafio Literário, você atingiu o limite de 5 rodadas da Missão Quitério. Parabéns pelo esforço e dedicação à leitura!
+                        </span>
                       </div>
-                      <div className="text-xs sm:text-sm font-bold leading-snug">
-                        <span className="font-black text-orange-950">
-                          Miau! Limite de 5 tentativas concluído!
-                        </span>{' '}
-                        Você utilizou todas as suas 5 chances no quiz. Conforme as regras da missão, você não pode mais jogar novas partidas. Veja abaixo sua pontuação conquistada em cada livro! 🐾
-                      </div>
-                    </motion.div>
+                    </div>
                   )}
 
-                  {/* Books Scores List */}
-                  <div className="space-y-2.5 max-h-[340px] sm:max-h-[380px] overflow-y-auto pr-1">
+                  {/* List of book scores */}
+                  <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
                     {Object.keys(gameData.bookScores || {}).length === 0 ? (
-                      <div className="p-6 text-center rounded-2xl bg-white/70 border-2 border-amber-200 border-dashed flex flex-col items-center">
-                        <BookOpen className="w-10 h-10 text-amber-400 mb-2" />
-                        <h4 className="text-base font-black text-[#2e1305]">Nenhum livro pontuado ainda!</h4>
-                        <p className="text-xs text-amber-800/80 max-w-xs mt-1">
-                          Escolha um livro e responda às perguntas do Quitério para registrar seus primeiros pontos no boletim!
+                      <div className="p-8 text-center rounded-2xl bg-[#060e20] border border-dashed border-[#334155] flex flex-col items-center">
+                        <BookOpen className="w-10 h-10 text-[#475569] mb-2" />
+                        <h4 className="text-base font-['Rubik'] font-bold text-[#f8fafc]">
+                          Nenhum livro pontuado ainda
+                        </h4>
+                        <p className="text-xs text-[#94a3b8] max-w-xs mt-1">
+                          Inicie o desafio para responder às perguntas geradas e acumular LivroCoins!
                         </p>
                       </div>
                     ) : (
@@ -1057,16 +960,12 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                             : 0;
 
                         return (
-                          <motion.div
+                          <div
                             key={idx}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: idx * 0.06 }}
-                            className="p-3 sm:p-3.5 rounded-2xl bg-white/95 border-2 border-amber-300 border-b-4 border-amber-500 shadow-[0_3px_0_#d97706] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:border-amber-400 transition-all"
+                            className="p-4 rounded-2xl bg-[#131b2e] border-2 border-[#334155] border-b-4 border-[#060e20] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md"
                           >
-                            {/* Left: Book Cover + Details */}
-                            <div className="flex items-center gap-3 w-full sm:w-auto">
-                              <div className="w-12 h-16 sm:w-13 sm:h-17 rounded-xl border-2 border-amber-400 border-b-3 border-amber-600 shadow-md overflow-hidden bg-amber-100 flex-shrink-0 flex items-center justify-center">
+                            <div className="flex items-center gap-3">
+                              <div className="w-12 h-16 rounded-xl overflow-hidden bg-[#060e20] flex-shrink-0 border border-[#334155] flex items-center justify-center shadow-sm">
                                 {cover ? (
                                   <img
                                     src={cover}
@@ -1075,120 +974,70 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                                     referrerPolicy="no-referrer"
                                   />
                                 ) : (
-                                  <div className="w-full h-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white">
-                                    <BookOpen className="w-5 h-5 text-amber-100" />
-                                  </div>
+                                  <BookOpen className="w-5 h-5 text-[#94a3b8]" />
                                 )}
                               </div>
-
-                              <div className="truncate flex-1">
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className="text-[9px] font-black uppercase text-orange-700 bg-orange-100 px-2 py-0.5 rounded-md border border-orange-200">
-                                    Livro Desafiado
-                                  </span>
-                                  <span className="text-[10px] font-semibold text-amber-800 truncate">
-                                    {bookScore.bookAuthor || matchedBook.author || 'Literatura'}
-                                  </span>
-                                </div>
-                                <h4 className="text-sm sm:text-base font-black text-[#2e1305] truncate mt-0.5">
+                              <div className="truncate">
+                                <span className="text-[10px] font-['Rubik'] font-bold uppercase tracking-wider text-[#ffd165]">
+                                  {bookScore.bookAuthor || matchedBook.author}
+                                </span>
+                                <h4 className="text-sm sm:text-base font-['Rubik'] font-bold text-[#f8fafc] truncate">
                                   {bookScore.bookTitle}
                                 </h4>
-                                <p className="text-[11px] text-amber-900/90 font-bold mt-0.5 flex items-center gap-1">
-                                  <span>🐾</span>
-                                  <span>
-                                    {percentage === 100
-                                      ? '🏆 Miau! Acertou tudo! Leitor Nota 10!'
-                                      : percentage >= 60
-                                      ? '🌟 Muito bem! Você leu com bastante atenção!'
-                                      : '📖 Bom esforço! Continue explorando esta obra!'}
+                                <div className="flex items-center gap-2 mt-1">
+                                  <div className="w-24 h-2 rounded-full bg-[#060e20] overflow-hidden border border-[#334155]">
+                                    <div
+                                      className="h-full bg-gradient-to-r from-[#ffd165] to-[#62f0b3] rounded-full"
+                                      style={{ width: `${percentage}%` }}
+                                    />
+                                  </div>
+                                  <span className="text-[11px] font-bold text-[#62f0b3]">
+                                    {bookScore.correctAnswers}/{bookScore.totalQuestions} ({percentage}%)
                                   </span>
-                                </p>
+                                </div>
                               </div>
                             </div>
 
-                            {/* Right: Score and Accuracy Stats */}
-                            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-amber-200">
-                              {/* Accuracy */}
-                              <div className="px-2.5 py-1 rounded-xl bg-amber-50 border border-amber-200 text-center">
-                                <span className="text-[9px] uppercase font-extrabold text-amber-800 block">
-                                  Acertos
-                                </span>
-                                <span className="text-xs sm:text-sm font-black text-emerald-700">
-                                  {bookScore.correctAnswers}/{bookScore.totalQuestions} ({percentage}%)
-                                </span>
-                              </div>
-
-                              {/* Score Pill 3D */}
-                              <div className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 font-black text-sm sm:text-base border-2 border-amber-200 border-b-3 border-amber-700 shadow-[0_2px_0_#b45309] flex items-center gap-1.5">
-                                <Star className="w-4 h-4 fill-amber-950 text-amber-950" />
+                            <div className="flex items-center justify-end gap-2 flex-shrink-0">
+                              <div className="px-3.5 py-1.5 rounded-xl bg-[#060e20] border-2 border-[#eab308] text-[#ffd165] font-['Rubik'] font-black text-sm flex items-center gap-1.5 shadow-[0_0_12px_rgba(234,179,8,0.25)]">
+                                <Star className="w-4 h-4 fill-[#ffd165]" />
                                 <span>{bookScore.points} pts</span>
                               </div>
                             </div>
-                          </motion.div>
+                          </div>
                         );
                       })
                     )}
                   </div>
 
-                  {/* Summary & Actions inside 3D Window */}
-                  <div className="pt-2 border-t-2 border-amber-300/70 flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <div className="flex items-center gap-2.5 text-xs font-bold text-amber-950 flex-wrap">
-                      <span>
-                        Total Geral: <strong>{gameData.score} pts</strong>
-                      </span>
-                      <span>•</span>
-                      <span>
-                        Ranking: <strong>{gameData.score > 0 ? `${leaderboard.currentRank}º lugar` : 'A definir'}</strong>
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2 flex-wrap justify-end w-full sm:w-auto">
-                      {(gameData.attemptsCount || 0) < MAX_QUIZ_ATTEMPTS ? (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => setIsBookSelectorModalOpen(true)}
-                            className="px-3.5 py-2 rounded-xl border-2 border-amber-300 bg-white hover:bg-amber-50 text-amber-950 text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
-                          >
-                            <BookOpen className="w-3.5 h-3.5" />
-                            <span>Trocar Livro</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setShowBookScoresView(false);
-                              if (roundCompleted) restartQuiz();
-                            }}
-                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-xs shadow-[0_3px_0_#064e3b] border-2 border-emerald-300 border-b-3 border-emerald-800 active:translate-y-0.5 cursor-pointer flex items-center gap-1.5"
-                          >
-                            <span>Jogar Desafio ({MAX_QUIZ_ATTEMPTS - (gameData.attemptsCount || 0)} restantes)</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          {onNavigateToCatalog && (
-                            <button
-                              type="button"
-                              onClick={onNavigateToCatalog}
-                              className="px-4 py-2 rounded-xl border-2 border-amber-300 bg-white hover:bg-amber-50 text-amber-950 text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
-                            >
-                              <BookOpen className="w-3.5 h-3.5" />
-                              <span>Catálogo de Livros</span>
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </div>
+                  {/* Actions Footer */}
+                  <div className="pt-3 border-t border-[#334155] flex flex-wrap items-center justify-between gap-3">
+                    <span className="text-xs text-[#94a3b8]">
+                      Tentativas usadas: {gameData.attemptsCount || 0} de {MAX_QUIZ_ATTEMPTS}
+                    </span>
+                    {(gameData.attemptsCount || 0) < MAX_QUIZ_ATTEMPTS && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowBookScoresView(false);
+                          if (roundCompleted) restartQuiz();
+                        }}
+                        className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#ffd165] to-[#f7be1d] text-[#251a00] font-['Rubik'] font-black text-xs shadow-[0_3px_0_#ca8a04] border border-[#fff] border-b-3 border-[#ca8a04] active:translate-y-1 active:border-b-2 cursor-pointer transition-all flex items-center gap-1.5"
+                      >
+                        <span>Voltar para a Arena</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               ) : activeQuestion && !roundCompleted ? (
-                <>
-                  {/* Quiz Card Top Row: Book Badge & 3D Countdown Timer */}
-                  <div className="flex items-center justify-between gap-3 border-b-2 border-amber-200/80 pb-3">
-                    {/* Book Badge (3D Thumbnail + Title) */}
-                    <div className="flex items-center gap-2.5 sm:gap-3 max-w-[70%] sm:max-w-[75%]">
-                      <div className="w-10 h-13 sm:w-11 sm:h-15 rounded-xl border-2 border-amber-400 border-b-3 border-amber-600 shadow-md overflow-hidden bg-amber-100 flex-shrink-0 flex items-center justify-center relative">
+                /* State D: Arena de Questões (Stage Knowledge Quest) */
+                <div className="pt-4 flex flex-col gap-5">
+                  {/* Top Question Row: Book Spine Crease Card + Countdown + Level / Pts Badge */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#334155]">
+                    {/* Book Metadata */}
+                    <div className="flex items-center gap-3">
+                      <div className="w-11 h-15 rounded-xl overflow-hidden bg-[#060e20] flex-shrink-0 border-2 border-[#334155] shadow-md flex items-center justify-center relative">
                         {!coverHasError && activeQuestion.bookCover ? (
                           <img
                             src={activeQuestion.bookCover}
@@ -1198,122 +1047,139 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                             referrerPolicy="no-referrer"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-amber-400 to-orange-600 flex flex-col items-center justify-center p-1 text-white">
-                            <BookOpen className="w-4 h-4 text-amber-100" />
-                            <span className="text-[7px] font-black uppercase text-center mt-0.5 line-clamp-1">
-                              Livro
-                            </span>
-                          </div>
+                          <BookOpen className="w-5 h-5 text-[#ffd165]" />
                         )}
+                        {/* 3D Spine Crease Effect */}
+                        <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-r from-white/30 to-transparent pointer-events-none" />
                       </div>
 
                       <div className="truncate">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-orange-700 bg-orange-100 px-2 py-0.5 rounded-md border border-orange-200">
-                            Livro Lido
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-['Rubik'] font-bold uppercase px-2 py-0.5 rounded-md bg-[#06b6d4]/20 text-[#06b6d4] border border-[#06b6d4]/40">
+                            Nível {activeQuestion.nivel || currentQuestionIndex + 1}/5
                           </span>
-                          <span className="text-[10px] sm:text-[11px] font-semibold text-amber-900 truncate">
-                            {activeQuestion.bookAuthor || 'Literatura'}
+                          <span className="text-[10px] font-['Rubik'] font-bold uppercase px-2 py-0.5 rounded-md bg-[#eab308]/20 text-[#ffd165] border border-[#eab308]/40">
+                            +{activeQuestion.points || (currentQuestionIndex + 1) * 1000} Pts
                           </span>
-                          {studentBooks.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => setIsBookSelectorModalOpen(true)}
-                              className="text-[10px] font-bold text-amber-800 hover:text-amber-950 bg-amber-200/80 hover:bg-amber-300 px-2 py-0.5 rounded-md border border-amber-300 transition-all cursor-pointer flex items-center gap-1"
-                              title="Trocar para outro livro que você leu"
-                            >
-                              <BookOpen className="w-3 h-3" />
-                              <span>Trocar Livro ({studentBooks.length})</span>
-                            </button>
+                          {activeQuestion.capituloReferencia && (
+                            <span className="text-[11px] text-[#94a3b8] truncate">
+                              • {activeQuestion.capituloReferencia}
+                            </span>
                           )}
                         </div>
-                        <h3 className="text-sm sm:text-base md:text-lg font-black text-[#2e1305] truncate mt-0.5">
+                        <h3 className="text-base sm:text-lg font-['Rubik'] font-bold text-[#f8fafc] truncate mt-0.5">
                           {activeQuestion.bookTitle}
                         </h3>
+                        <span className="text-xs text-[#94a3b8] block truncate">
+                          {activeQuestion.bookAuthor}
+                        </span>
                       </div>
                     </div>
 
-                    {/* 3D Countdown Timer Pill (Quitério Purple & Gold) */}
+                    {/* 20-min Countdown Timer with Ruby Alert when <= 60s */}
                     <div
-                      className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-2xl font-black text-xs sm:text-sm border-2 border-b-4 transition-all shadow-md flex-shrink-0 ${
+                      className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl font-['Rubik'] font-black text-xs sm:text-sm border-2 border-b-4 shadow-md flex-shrink-0 ${
                         timeLeft <= 60
-                          ? 'bg-rose-600 border-rose-400 border-b-rose-900 text-white shadow-[0_3px_0_#4c0519] animate-pulse ring-2 ring-rose-400/60'
-                          : 'bg-gradient-to-r from-[#3b0764] via-[#4c1d95] to-[#1e1b4b] border-amber-300 border-b-purple-950 text-amber-300 shadow-[0_3px_0_#0f172a]'
+                          ? 'bg-[#dc2626] text-white border-[#f87171] border-b-[#991b1b] animate-pulse shadow-[0_0_20px_rgba(220,38,38,0.5)]'
+                          : 'bg-[#060e20] text-[#ffd165] border-[#ffd165]/50 border-b-[#ca8a04]'
                       }`}
-                      title="Tempo restante"
+                      title="Tempo restante: 20 minutos"
                     >
-                      <Clock className="w-3.5 h-3.5" />
-                      <span className="font-mono font-black">
+                      <Clock className="w-4 h-4 text-current" />
+                      <span className="font-mono">
                         {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
                       </span>
                     </div>
                   </div>
 
-                  {/* Question */}
-                  <div className="my-3.5 sm:my-5 p-3.5 sm:p-4 rounded-2xl bg-white/80 border-2 border-amber-200/90 border-b-3 border-amber-300 shadow-sm">
-                    <h2 className="text-sm sm:text-base md:text-lg font-black leading-snug text-[#2b1408]">
+                  {/* Question Box (Recessed Stage Floor Slab) */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#0b0f19] border-2 border-[#334155] border-b-4 border-[#060e20] shadow-[inset_0_2px_8px_rgba(0,0,0,0.5)] relative">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <span className="text-[11px] font-['Rubik'] font-bold text-[#06b6d4] uppercase tracking-wider">
+                        Questão {currentQuestionIndex + 1} de 5
+                      </span>
+                      {isAiLoading && (
+                        <span className="text-[10px] text-[#ffd165] font-bold flex items-center gap-1 animate-pulse">
+                          <RefreshCw className="w-3 h-3 animate-spin" />
+                          <span>Gemini gerando...</span>
+                        </span>
+                      )}
+                    </div>
+                    <h2 className="text-base sm:text-lg md:text-xl font-['Rubik'] font-bold text-[#f8fafc] leading-snug">
                       {activeQuestion.question}
                     </h2>
                   </div>
 
-                  {/* 3D Options Grid (A, B, C, D) - Optimized for Smartphone single-column & Tablet 2-column */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3.5">
+                  {/* Dica do Guru Accordion / Reveal Card */}
+                  {activeQuestion.dicaGuru && (
+                    <div className="p-3 rounded-2xl bg-[#eab308]/10 border border-[#ffd165]/30 flex items-start gap-2.5 text-xs text-[#ffd165]">
+                      <Lightbulb className="w-4 h-4 text-[#ffd165] flex-shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="font-['Rubik'] font-bold block text-[11px] uppercase tracking-wider text-[#ffd165]">
+                          Dica do Guru Literário:
+                        </strong>
+                        <span className="text-[#dae2fd]/90 font-medium">
+                          {activeQuestion.dicaGuru}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3D Tactile Answer Options Slabs (A, B, C, D) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
                     {activeQuestion.options.map((optionText, optIndex) => {
-                      const letter = String.fromCharCode(65 + optIndex); // A, B, C, D
+                      const letter = String.fromCharCode(65 + optIndex);
                       const isSelected = selectedOption === optIndex;
                       const isThisCorrect = optIndex === activeQuestion.correctIndex;
 
-                      // Visual styling with 3D depth and cat tabby colors
-                      let cardStyle =
-                        'bg-white hover:bg-amber-50/90 active:bg-amber-100 text-[#2b1408] border-2 border-amber-300 border-b-4 border-amber-500 shadow-[0_4px_0_#d97706] active:translate-y-1 active:border-b-2 active:shadow-[0_1px_0_#d97706]';
-                      let badgeStyle =
-                        'bg-gradient-to-br from-amber-400 to-orange-500 text-white border border-amber-200 border-b-2 border-orange-700';
+                      // Default Tactile Neo-Arcade Slab
+                      let slabStyle =
+                        'bg-[#131b2e] hover:bg-[#1a243c] text-[#f8fafc] border-2 border-[#334155] border-b-4 border-[#060e20] shadow-[0_4px_0_#060e20] active:translate-y-1 active:border-b-2';
+                      let letterStyle = 'bg-[#060e20] text-[#06b6d4] border border-[#06b6d4]/40';
 
                       if (isAnswered) {
                         if (isThisCorrect) {
-                          // Bright emerald green with 3D depth
-                          cardStyle =
-                            'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold border-2 border-emerald-300 border-b-4 border-emerald-800 shadow-[0_4px_0_#064e3b]';
-                          badgeStyle = 'bg-white text-emerald-700 border border-emerald-200';
+                          // Glowing Emerald Green on Triumph
+                          slabStyle =
+                            'bg-[#065f46] text-white border-2 border-[#34d399] border-b-4 border-[#047857] shadow-[0_0_24px_-4px_rgba(16,185,129,0.5)] font-bold';
+                          letterStyle = 'bg-[#10b981] text-[#064e3b] font-black';
                         } else if (isSelected && !isThisCorrect) {
-                          // Rose red on wrong choice with 3D depth
-                          cardStyle =
-                            'bg-rose-50 text-rose-950 font-bold border-2 border-rose-300 border-b-4 border-rose-600 shadow-[0_4px_0_#9f1239]';
-                          badgeStyle = 'bg-rose-600 text-white border border-rose-400';
+                          // Ruby Red Buzzer on Wrong
+                          slabStyle =
+                            'bg-[#7f1d1d] text-white border-2 border-[#f87171] border-b-4 border-[#991b1b] shadow-[0_0_24px_-4px_rgba(220,38,38,0.5)] font-bold';
+                          letterStyle = 'bg-[#dc2626] text-white font-black';
                         } else {
-                          cardStyle =
-                            'opacity-40 bg-amber-50/40 border-2 border-amber-200/70 border-b-2 border-amber-300 text-amber-900/60 shadow-none';
-                          badgeStyle = 'bg-amber-200 text-amber-700 border-transparent';
+                          slabStyle = 'opacity-35 bg-[#0b0f19] border-[#1e293b] text-[#64748b] shadow-none';
+                          letterStyle = 'bg-[#1e293b] text-[#64748b] border-transparent';
                         }
                       }
 
                       return (
                         <motion.button
                           key={optIndex}
-                          whileHover={!isAnswered ? { scale: 1.01 } : {}}
+                          whileHover={!isAnswered ? { y: -2 } : {}}
                           whileTap={!isAnswered ? { scale: 0.98 } : {}}
                           disabled={isAnswered}
                           onClick={() => handleSelectOption(optIndex)}
-                          className={`p-3 sm:p-3.5 rounded-2xl text-left transition-all flex items-center justify-between gap-2.5 cursor-pointer min-h-[52px] ${cardStyle}`}
+                          className={`p-3.5 sm:p-4 rounded-2xl text-left transition-all flex items-center justify-between gap-3 cursor-pointer min-h-[64px] ${slabStyle}`}
                         >
-                          <div className="flex items-center sm:items-start gap-2.5">
+                          <div className="flex items-center gap-3">
                             <span
-                              className={`font-black text-xs sm:text-sm w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm ${badgeStyle}`}
+                              className={`w-8 h-8 rounded-xl font-['Rubik'] font-black text-xs sm:text-sm flex items-center justify-center flex-shrink-0 shadow-sm ${letterStyle}`}
                             >
                               {letter}
                             </span>
-                            <span className="text-xs sm:text-sm font-bold leading-tight">
+                            <span className="text-xs sm:text-sm font-medium leading-snug">
                               {optionText}
                             </span>
                           </div>
 
-                          {/* Status Icon */}
                           {isAnswered && (
                             <div className="flex-shrink-0">
                               {isThisCorrect ? (
-                                <CheckCircle2 className="w-5 h-5 text-white fill-emerald-600 drop-shadow-sm" />
+                                <CheckCircle2 className="w-5 h-5 text-[#62f0b3] drop-shadow-md" />
                               ) : isSelected ? (
-                                <XCircle className="w-5 h-5 text-rose-600 drop-shadow-sm" />
+                                <XCircle className="w-5 h-5 text-[#ffb4ab] drop-shadow-md" />
                               ) : null}
                             </div>
                           )}
@@ -1322,299 +1188,225 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                     })}
                   </div>
 
-                  {/* Feedback & Next Button Row (3D Tactile Layout) */}
+                  {/* Pedagogical Explanation & Stage Next Step */}
                   {isAnswered && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="mt-4 pt-3.5 border-t-2 border-amber-300/60 flex flex-col sm:flex-row items-center justify-between gap-3"
+                      className="mt-2 pt-4 border-t border-[#334155] flex flex-col gap-3"
                     >
-                      <div className="flex items-center gap-2 w-full sm:w-auto">
-                        {/* +100 Pontos 3D Badge */}
-                        {isCorrect ? (
-                          <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 font-black text-xs sm:text-sm shadow-[0_3px_0_#b45309] border-2 border-amber-300 border-b-3 border-amber-700 flex-shrink-0">
-                            <Star className="w-4 h-4 fill-amber-950" />
-                            <span>+100 pontos!</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-slate-200 text-slate-700 font-bold text-xs shadow-sm border border-slate-300 flex-shrink-0">
-                            <span>0 pontos</span>
-                          </div>
-                        )}
-
-                        {/* Kitten cheer bubble pill */}
-                        <div className="flex-1 sm:flex-initial px-3 sm:px-3.5 py-2 rounded-2xl bg-gradient-to-r from-amber-100 to-orange-100 border-2 border-amber-300/80 border-b-3 border-amber-400 text-xs sm:text-sm text-amber-950 font-bold leading-tight flex items-center gap-2 shadow-sm">
-                          <span className="text-sm">🐾</span>
-                          <span>
-                            {isCorrect
-                              ? 'Você mandou bem! Continua lendo e acertando as perguntas!'
-                              : 'Quase lá! Continue lendo que você consegue!'}
-                          </span>
-                        </div>
+                      {/* Detailed Explanation Box */}
+                      <div className="p-3.5 rounded-2xl bg-[#060e20] border-2 border-[#334155] text-xs leading-relaxed">
+                        <span className="font-['Rubik'] font-bold text-[#ffd165] uppercase tracking-wider block mb-0.5">
+                          Explicação Literária:
+                        </span>
+                        <p className="text-[#dae2fd]/90 font-medium">
+                          {activeQuestion.explanation}
+                        </p>
                       </div>
 
-                      {/* 3D Next Button */}
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={handleNextQuestion}
-                        className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-white font-black text-xs sm:text-sm shadow-[0_4px_0_#064e3b] border-2 border-emerald-300 border-b-4 border-emerald-800 active:translate-y-1 active:border-b-2 active:shadow-[0_1px_0_#064e3b] flex items-center justify-center gap-2 cursor-pointer transition-all"
-                      >
-                        <span>
-                          {currentQuestionIndex < currentQuestions.length - 1
-                            ? 'Próxima Pergunta'
-                            : 'Ver Resultado'}
-                        </span>
-                        <ArrowRight className="w-4 h-4" />
-                      </motion.button>
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-[#62f0b3]">
+                            {isCorrect ? `✓ Acertou! +${activeQuestion.points || (currentQuestionIndex + 1) * 1000} LivroCoins` : '✗ Resposta incorreta'}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={handleNextQuestion}
+                          className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-[#ffd165] to-[#f7be1d] hover:from-[#f7be1d] hover:to-[#ffd165] text-[#251a00] font-['Rubik'] font-black text-xs sm:text-sm shadow-[0_4px_0_#ca8a04] border-2 border-[#fff] border-b-4 border-[#ca8a04] active:translate-y-1 active:border-b-2 flex items-center justify-center gap-2 cursor-pointer transition-all"
+                        >
+                          <span>
+                            {currentQuestionIndex < 4 ? 'Próxima Questão do Desafio' : 'Ver Resultado da Rodada'}
+                          </span>
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </div>
                     </motion.div>
                   )}
-                </>
+                </div>
               ) : (
-                /* ========================================================================= */
-                /* ROUND COMPLETED VIEW (With 5 Attempts Limit Check) */
-                /* ========================================================================= */
-                <div className="py-6 flex flex-col items-center text-center">
-                  <div className="w-16 h-16 rounded-3xl bg-amber-400/30 border-2 border-amber-400 border-b-4 border-amber-600 flex items-center justify-center text-amber-600 shadow-[0_4px_0_#b45309] mb-3">
+                /* State E: Rodada Concluída */
+                <div className="py-8 flex flex-col items-center text-center">
+                  <div className="w-16 h-16 rounded-3xl bg-[#060e20] border-2 border-[#ffd165] flex items-center justify-center text-[#ffd165] shadow-[0_0_25px_rgba(255,209,101,0.4)] mb-4">
                     <Trophy className="w-9 h-9" />
                   </div>
-                  <h3 className="text-2xl font-black text-[#2e1305]">
+                  <h3 className="text-2xl sm:text-3xl font-['Rubik'] font-black text-[#f8fafc]">
                     {(gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS
                       ? '5 de 5 Tentativas Concluídas! 🎓'
-                      : 'Missão Cumprida!'}
+                      : 'Show de Saberes Concluído! 🏆'}
                   </h3>
-                  <p className="text-sm text-amber-900/80 max-w-md mt-1 mb-5 font-medium">
-                    {(gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS ? (
-                      <span>
-                        Miau! Você atingiu o limite de <strong>5 tentativas</strong> na Missão do Quitério! Veja agora a sua pontuação para cada livro desafiado!
-                      </span>
-                    ) : (
-                      <span>
-                        Você completou o desafio do livro{' '}
-                        <strong className="text-orange-700">{selectedBookForQuiz.title}</strong>!
-                      </span>
-                    )}
+                  <p className="text-xs sm:text-sm text-[#94a3b8] max-w-md mt-1 mb-5">
+                    Você finalizou as 5 perguntas geradas para{' '}
+                    <strong className="text-[#ffd165]">{selectedBookForQuiz.title}</strong>!
                   </p>
 
-                  <div className="grid grid-cols-2 gap-3 max-w-xs w-full mb-5">
-                    <div className="p-3 rounded-2xl bg-white/90 border-2 border-amber-300 border-b-4 border-amber-500 shadow-[0_3px_0_#d97706]">
-                      <span className="text-[10px] uppercase font-black text-amber-700 block">
-                        Pontos Ganhos
+                  <div className="grid grid-cols-2 gap-3 max-w-xs w-full mb-6">
+                    <div className="p-3.5 rounded-2xl bg-[#060e20] border-2 border-[#eab308] text-center">
+                      <span className="text-[10px] uppercase font-['Rubik'] font-black text-[#ffd165] block">
+                        LivroCoins Ganhos
                       </span>
-                      <span className="text-xl font-black text-amber-600">
+                      <span className="text-xl font-['Rubik'] font-black text-[#ffd165]">
                         +{roundStats.pointsEarned}
                       </span>
                     </div>
-                    <div className="p-3 rounded-2xl bg-white/90 border-2 border-emerald-300 border-b-4 border-emerald-600 shadow-[0_3px_0_#059669]">
-                      <span className="text-[10px] uppercase font-black text-emerald-700 block">
-                        Acertos
+                    <div className="p-3.5 rounded-2xl bg-[#060e20] border-2 border-[#62f0b3] text-center">
+                      <span className="text-[10px] uppercase font-['Rubik'] font-black text-[#62f0b3] block">
+                        Acertos na Rodada
                       </span>
-                      <span className="text-xl font-black text-emerald-600">
-                        {roundStats.correct} / {currentQuestions.length}
+                      <span className="text-xl font-['Rubik'] font-black text-[#62f0b3]">
+                        {roundStats.correct} / 5
                       </span>
                     </div>
-                  </div>
-
-                  {/* Attempts summary badge */}
-                  <div className="mb-5 px-4 py-1.5 rounded-full bg-amber-200/90 border border-amber-300 text-amber-950 text-xs font-black">
-                    🐾 Tentativa {gameData.attemptsCount || 0} de {MAX_QUIZ_ATTEMPTS} finalizada
-                    {(gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS
-                      ? ' • Limite máximo alcançado'
-                      : ` • Restam ${MAX_QUIZ_ATTEMPTS - (gameData.attemptsCount || 0)} tentativa(s)`}
                   </div>
 
                   <div className="flex flex-wrap items-center justify-center gap-3">
                     {(gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => setShowBookScoresView(true)}
-                          className="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-amber-950 font-black text-sm flex items-center gap-2 border-2 border-amber-200 border-b-4 border-orange-800 shadow-[0_4px_0_#9a3412] active:translate-y-0.5 cursor-pointer transition-all"
-                        >
-                          <span>🐾 Ver Pontuação de Cada Livro</span>
-                          <ArrowRight className="w-4 h-4" />
-                        </button>
-                        {onNavigateToCatalog && (
-                          <button
-                            type="button"
-                            onClick={onNavigateToCatalog}
-                            className="px-5 py-3 rounded-2xl border-2 border-amber-300 bg-white hover:bg-amber-50 text-amber-900 font-bold text-sm flex items-center gap-2 cursor-pointer shadow-sm transition-all"
-                          >
-                            <BookOpen className="w-4 h-4" />
-                            <span>Ver Outros Livros</span>
-                          </button>
-                        )}
-                      </>
+                      <button
+                        type="button"
+                        onClick={() => setShowBookScoresView(true)}
+                        className="px-6 py-3 rounded-2xl bg-gradient-to-r from-[#ffd165] to-[#f7be1d] text-[#251a00] font-['Rubik'] font-black text-sm shadow-[0_4px_0_#ca8a04] border-2 border-[#fff] border-b-4 border-[#ca8a04] active:translate-y-1 active:border-b-2 cursor-pointer transition-all flex items-center gap-2"
+                      >
+                        <span>Ver Boletim Completo</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
                     ) : (
                       <>
                         <button
+                          type="button"
                           onClick={restartQuiz}
-                          className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-300 hover:to-orange-300 text-amber-950 font-black text-xs sm:text-sm flex items-center gap-2 border-2 border-amber-200 border-b-3 border-orange-700 shadow-[0_3px_0_#c2410c] active:translate-y-0.5 cursor-pointer transition-all"
+                          className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#ffd165] to-[#f7be1d] text-[#251a00] font-['Rubik'] font-black text-xs sm:text-sm shadow-[0_3px_0_#ca8a04] border border-[#fff] border-b-3 border-[#ca8a04] active:translate-y-1 active:border-b-2 cursor-pointer transition-all flex items-center gap-2"
                         >
                           <RotateCcw className="w-4 h-4" />
-                          <span>Jogar Novamente ({MAX_QUIZ_ATTEMPTS - (gameData.attemptsCount || 0)} restantes)</span>
+                          <span>Jogar Próxima Rodada</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => setIsBookSelectorModalOpen(true)}
-                          className="px-4 py-2.5 rounded-2xl border-2 border-amber-300 bg-white hover:bg-amber-50 text-amber-900 font-bold text-xs sm:text-sm flex items-center gap-2 cursor-pointer shadow-sm transition-all"
+                          className="px-4 py-2.5 rounded-2xl border-2 border-[#334155] border-b-4 border-[#060e20] bg-[#171f33] hover:bg-[#222a3d] text-[#dae2fd] font-bold text-xs sm:text-sm cursor-pointer transition-all"
                         >
-                          <BookOpen className="w-4 h-4" />
-                          <span>Trocar Livro</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setShowBookScoresView(true)}
-                          className="px-4 py-2.5 rounded-2xl bg-amber-100 hover:bg-amber-200 border border-amber-300 text-amber-950 font-black text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer transition-all"
-                        >
-                          <span>⭐ Pontos por Livro</span>
+                          Trocar Livro Lido
                         </button>
                       </>
                     )}
                   </div>
                 </div>
               )}
-            </motion.div>
-          </div>
-        </div>
+            </div>
+          </main>
 
-        {/* ========================================================================= */}
-        {/* 4. BOTTOM BAR: Responsive for Smartphone [Conquistas] [3 Step Pills] [Mês de Leitura] */}
-        {/* ========================================================================= */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 pb-4 border-t border-white/15">
-          {/* Left / Mobile Row: Conquistas 3D Button + Mobile Trophy */}
-          <div className="flex items-center justify-between w-full sm:w-auto gap-2 flex-wrap">
-            <button
-              type="button"
-              onClick={() => setIsBadgesModalOpen(true)}
-              className="px-4 py-2 rounded-2xl bg-gradient-to-r from-purple-700 to-indigo-800 hover:from-purple-600 hover:to-indigo-700 border-2 border-purple-400 border-b-4 border-purple-950 shadow-[0_3px_0_#1e1b4b] active:translate-y-0.5 active:border-b-2 text-white font-black text-xs flex items-center gap-2 cursor-pointer transition-all"
-            >
-              <Award className="w-4 h-4 text-amber-300" />
-              <span>Conquistas</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setShowBookScoresView(true)}
-              className="px-3.5 py-2 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 border-2 border-amber-300 border-b-4 border-orange-800 shadow-[0_3px_0_#9a3412] active:translate-y-0.5 active:border-b-2 text-amber-950 font-black text-xs flex items-center gap-1.5 cursor-pointer transition-all"
-            >
-              <span>🐾</span>
-              <span>Pontos por Livro</span>
-            </button>
-
-            {/* Mobile-only Mês de Leitura badge */}
-            <div className="flex sm:hidden items-center gap-2">
-              <div className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 font-black text-xs shadow-[0_2px_0_#b45309] border border-amber-200 border-b-2 border-amber-700 flex items-center gap-1.5">
-                <Star className="w-3 h-3 fill-amber-950" />
-                <span>Mês de Leitura</span>
+          {/* Right Console: Mascote Quitério Host + Pódio Escolar + AI Status (4 Columns) */}
+          <aside className="lg:col-span-4 flex flex-col gap-5">
+            {/* Stage Host Card (Quitério Mascote) */}
+            <div className="p-5 rounded-3xl bg-[#171f33] border-2 border-[#334155] border-b-6 border-[#060e20] shadow-[0_12px_32px_rgba(0,0,0,0.5)] flex flex-col items-center text-center relative overflow-hidden">
+              <div className="w-full flex items-center justify-between mb-2">
+                <span className="text-[10px] font-['Rubik'] font-black uppercase tracking-wider text-[#ffd165]">
+                  Apresentador do Show
+                </span>
+                <span className="text-[10px] font-bold text-[#62f0b3] bg-[#62f0b3]/15 px-2.5 py-0.5 rounded-full border border-[#62f0b3]/30">
+                  Gatinho Quitério
+                </span>
               </div>
-              <div className="w-8 h-8 rounded-full bg-amber-400/20 border-2 border-amber-400/60 flex items-center justify-center text-amber-400 shadow-sm">
-                <Trophy className="w-4 h-4" />
+
+              {/* Animated Mascot with speech bubble */}
+              <div className="py-1">
+                <QuiterioMascot
+                  mood={mascotMood}
+                  size="md"
+                  showSpeechBubble={true}
+                  speechText={speechBubbleText}
+                  isMeowing={isMeowing}
+                  onPetCat={handlePetQuiterio}
+                />
+              </div>
+
+              <span className="text-[10px] text-[#94a3b8] font-medium mt-1">
+                Toque no Quitério para comemorar com um Miau! 🐾
+              </span>
+            </div>
+
+            {/* School Leaderboard Card (Pódio da Escola) */}
+            <div className="p-5 rounded-3xl bg-[#171f33] border-2 border-[#334155] border-b-6 border-[#060e20] shadow-[0_12px_32px_rgba(0,0,0,0.5)] flex flex-col gap-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[#334155]">
+                <div>
+                  <h3 className="text-base font-['Rubik'] font-bold text-[#f8fafc]">
+                    Pódio do Show de Saberes
+                  </h3>
+                  <span className="text-xs text-[#94a3b8]">Colégio Maria Quitéria</span>
+                </div>
+                {onNavigateToRanking && (
+                  <button
+                    type="button"
+                    onClick={onNavigateToRanking}
+                    className="text-xs font-['Rubik'] font-bold text-[#ffd165] hover:underline cursor-pointer"
+                  >
+                    Ver ranking
+                  </button>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                {leaderboard.topThree && leaderboard.topThree.length > 0 ? (
+                  leaderboard.topThree.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className={`p-2.5 rounded-2xl border-2 border-b-3 flex items-center justify-between gap-2.5 ${
+                        idx === 0
+                          ? 'bg-[#eab308]/15 border-[#ffd165] border-b-[#ca8a04]'
+                          : idx === 1
+                          ? 'bg-[#131b2e] border-[#94a3b8] border-b-[#475569]'
+                          : 'bg-[#131b2e] border-[#b45309] border-b-[#78350f]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">
+                          {idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}
+                        </span>
+                        <div>
+                          <div className="text-xs font-['Rubik'] font-bold text-[#f8fafc] truncate max-w-[110px]">
+                            {item.studentName}
+                          </div>
+                          <span className="text-[10px] text-[#94a3b8]">
+                            {idx + 1}º colocado
+                          </span>
+                        </div>
+                      </div>
+
+                      <span className="text-xs font-['Rubik'] font-black text-[#ffd165]">
+                        {item.score.toLocaleString('pt-BR')} pts
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-4 text-center text-xs text-[#94a3b8]">
+                    🐾 Nenhum ponto registrado ainda!
+                  </div>
+                )}
               </div>
             </div>
-          </div>
 
-          {/* Center: 3 Connected Purple Pills (Responsive) */}
-          <div className="flex items-center justify-center gap-1 sm:gap-2 px-3 py-1.5 rounded-2xl bg-purple-950/70 border-2 border-purple-500/40 border-b-3 border-purple-950 text-white shadow-md w-full sm:w-auto text-center">
-            <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold text-slate-200">
-              <BookOpen className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
-              <span>Leia livros</span>
+            {/* AI Generator Integration Info Box */}
+            <div className="p-4 rounded-3xl bg-[#060e20] border-2 border-[#06b6d4]/40 border-b-4 border-[#0891b2] flex items-start gap-3 shadow-md">
+              <Bot className="w-5 h-5 text-[#06b6d4] flex-shrink-0 mt-0.5" />
+              <div className="text-xs">
+                <strong className="font-['Rubik'] font-bold text-[#06b6d4] block uppercase">
+                  Google AI Studio Integrado:
+                </strong>
+                <p className="text-[#94a3b8] mt-0.5 leading-relaxed">
+                  As perguntas são geradas sob demanda com o modelo <strong>Gemini 1.5</strong> via JSON estruturado, testando a compreensão real de leitura do aluno.
+                </p>
+              </div>
             </div>
-            <ChevronRight className="w-3 h-3 text-purple-400 flex-shrink-0" />
-            <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold text-slate-200">
-              <GraduationCap className="w-3.5 h-3.5 text-sky-400 flex-shrink-0" />
-              <span>Responda desafios</span>
-            </div>
-            <ChevronRight className="w-3 h-3 text-purple-400 flex-shrink-0" />
-            <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold text-slate-200">
-              <Trophy className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-              <span>Ganhe pontos</span>
-            </div>
-          </div>
-
-          {/* Right: Mês de Leitura Badge (Desktop) */}
-          <div className="hidden sm:flex items-center gap-2">
-            <div className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-amber-950 font-black text-xs shadow-[0_3px_0_#b45309] flex items-center gap-1.5 border-2 border-amber-300 border-b-3 border-amber-700">
-              <Star className="w-3 h-3 fill-amber-950" />
-              <span>Mês de Leitura</span>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-amber-400/20 border-2 border-amber-400/60 flex items-center justify-center text-amber-400 shadow-md">
-              <Trophy className="w-4 h-4" />
-            </div>
-          </div>
+          </aside>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 5. CONQUISTAS POPUP MODAL */}
+      {/* 3. MODALS (Identificação de Aluno + Escolha de Livro) */}
       {/* ========================================================================= */}
-      <AnimatePresence>
-        {isBadgesModalOpen && (
-          <div
-            onClick={() => setIsBadgesModalOpen(false)}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-sm border-2 rounded-3xl p-5 bg-[#0e1233] border-purple-500/50 text-white shadow-2xl"
-            >
-              <button
-                type="button"
-                onClick={() => setIsBadgesModalOpen(false)}
-                className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
 
-              <div className="flex items-center gap-2 mb-4">
-                <Trophy className="w-5 h-5 text-amber-400" />
-                <h3 className="font-extrabold text-base text-amber-300">
-                  Suas Conquistas
-                </h3>
-              </div>
-
-              <div className="space-y-2.5">
-                <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-indigo-600 border border-indigo-400 text-amber-300 flex items-center justify-center flex-shrink-0">
-                    <BookMarked className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-xs text-white">Leitor Dedicado</h4>
-                    <p className="text-[11px] text-slate-400">Acerte ao menos 1 pergunta no Quiz Literário</p>
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-amber-500 border border-amber-300 text-amber-950 flex items-center justify-center flex-shrink-0">
-                    <Star className="w-5 h-5 fill-current" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-xs text-white">Mestre das Histórias</h4>
-                    <p className="text-[11px] text-slate-400">Alcance mais de 500 pontos no ranking escolar</p>
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-rose-500 border border-rose-300 text-white flex items-center justify-center flex-shrink-0">
-                    <Flame className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-xs text-white">Desafio Ler Mais</h4>
-                    <p className="text-[11px] text-slate-400">Acerte 3 ou mais perguntas seguidas sem errar</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* ========================================================================= */}
-      {/* 6. STUDENT CODE INPUT MODAL (Prompt for Student Code) */}
-      {/* ========================================================================= */}
+      {/* Modal: Identificação do Aluno */}
       <AnimatePresence>
         {isCodeModalOpen && (
           <div
@@ -1622,50 +1414,42 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.92, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 0.92, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className={`relative w-full max-w-md border-2 rounded-3xl p-6 shadow-2xl ${
-                isDark ? 'bg-[#001424] border-[#163e5e]' : 'bg-white border-slate-200'
-              }`}
+              className="relative w-full max-w-md rounded-3xl p-6 sm:p-7 bg-[#131b2e] border-2 border-[#ffd165] border-b-6 border-[#ca8a04] shadow-[0_20px_60px_rgba(0,0,0,0.8)] text-[#dae2fd]"
             >
-              {/* Botão Fechar (X) - Retorna ao início se não houver aluno logado */}
               <button
-                id="btn-fechar-modal-aluno"
                 type="button"
                 onClick={handleCloseModal}
-                className={`absolute top-4 right-4 p-2 rounded-full transition-all cursor-pointer ${
-                  isDark
-                    ? 'text-slate-400 hover:text-white hover:bg-slate-800/80'
-                    : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100'
-                }`}
-                aria-label="Fechar janela"
+                className="absolute top-5 right-5 p-2 rounded-xl text-[#94a3b8] hover:text-[#f8fafc] hover:bg-[#171f33] transition-all cursor-pointer"
+                aria-label="Fechar"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              {/* Mascot welcome in the modal */}
               <div className="flex flex-col items-center text-center mb-5">
-                <QuiterioMascot size="sm" mood="talking" />
-                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mt-2">
-                  Entrar na Missão Quitério
+                <div className="w-14 h-14 rounded-2xl bg-[#060e20] border-2 border-[#ffd165] text-[#ffd165] flex items-center justify-center text-2xl mb-2 shadow-[0_0_20px_rgba(255,209,101,0.3)]">
+                  🐱
+                </div>
+                <h3 className="text-xl font-['Rubik'] font-black text-[#f8fafc]">
+                  Entrar no Desafio Literário
                 </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mt-1">
-                  Digite seu <strong>Código ou Nome de Aluno</strong> para cruzarmos os livros que você já
-                  leu e computar seus pontos no Ranking da Escola!
+                <p className="text-xs text-[#94a3b8] max-w-xs mt-1">
+                  Digite seu <strong>Código ou Nome de Aluno</strong> para cruzarmos os livros que você retirou na biblioteca escolar!
                 </p>
               </div>
 
               {codeError && (
-                <div className="mb-4 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs text-center font-medium">
+                <div className="mb-4 p-3 rounded-2xl bg-[#dc2626]/20 border border-[#dc2626] text-[#ffb4ab] text-xs text-center font-bold">
                   {codeError}
                 </div>
               )}
 
               <form onSubmit={handleIdentifyStudent} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">
+                  <label className="block text-xs font-['Rubik'] font-bold text-[#ffd165] mb-1.5 uppercase tracking-wider text-center">
                     Código ou Nome do Aluno
                   </label>
                   <input
@@ -1673,12 +1457,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                     value={studentCodeInput}
                     onChange={(e) => setStudentCodeInput(e.target.value)}
                     autoFocus
-                    placeholder="Ex: ALU001 ou código do aluno"
-                    className={`w-full px-4 py-3 rounded-2xl border text-sm font-semibold text-center focus:outline-none focus:ring-2 ${
-                      isDark
-                        ? 'bg-[#071828] border-[#163e5e] text-white focus:border-amber-400 focus:ring-amber-400/20'
-                        : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-amber-500 focus:ring-amber-500/20'
-                    }`}
+                    placeholder="Ex: 001 ou Nome do Aluno"
+                    className="w-full px-4 py-3 rounded-2xl border-2 border-[#334155] bg-[#060e20] text-sm font-['Rubik'] font-bold text-center text-[#f8fafc] focus:outline-none focus:border-[#ffd165] shadow-inner"
                   />
                 </div>
 
@@ -1686,17 +1466,13 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className={`px-4 py-3 rounded-2xl border text-xs font-bold transition-all cursor-pointer ${
-                      isDark
-                        ? 'border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white'
-                        : 'border-slate-300 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                    }`}
+                    className="px-4 py-3 rounded-2xl border-2 border-[#334155] bg-[#171f33] hover:bg-[#222a3d] text-xs font-bold text-[#dae2fd] transition-all cursor-pointer"
                   >
                     {activeStudent ? 'Cancelar' : 'Voltar ao Início'}
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-amber-950 font-black text-sm shadow-lg flex items-center justify-center gap-2 cursor-pointer transition-all"
+                    className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-[#ffd165] to-[#f7be1d] text-[#251a00] font-['Rubik'] font-black text-sm shadow-[0_4px_0_#ca8a04] border border-[#fff] border-b-4 border-[#ca8a04] active:translate-y-1 active:border-b-2 flex items-center justify-center gap-2 cursor-pointer transition-all"
                   >
                     <span>Verificar Empréstimos 🐾</span>
                     <ArrowRight className="w-4 h-4" />
@@ -1708,9 +1484,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
         )}
       </AnimatePresence>
 
-      {/* ========================================================================= */}
-      {/* 7. BOOK SELECTOR MODAL: Escolha de Livro Lido para Quiz */}
-      {/* ========================================================================= */}
+      {/* Modal: Escolha de Livro Lido */}
       <AnimatePresence>
         {isBookSelectorModalOpen && (
           <div
@@ -1718,44 +1492,38 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
             className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm"
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.92, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 0.92, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-lg max-h-[85vh] rounded-[28px] border-4 border-amber-500 border-b-[8px] border-orange-800 bg-gradient-to-b from-[#fffefc] to-[#ffedd5] text-[#2e1305] shadow-2xl p-4 sm:p-6 flex flex-col"
+              className="relative w-full max-w-lg max-h-[85vh] rounded-3xl p-5 sm:p-6 bg-[#131b2e] border-2 border-[#ffd165] border-b-6 border-[#ca8a04] shadow-[0_20px_60px_rgba(0,0,0,0.8)] text-[#dae2fd] flex flex-col"
             >
               <button
                 type="button"
                 onClick={() => setIsBookSelectorModalOpen(false)}
-                className="absolute top-4 right-4 p-1.5 rounded-full text-amber-900/60 hover:text-amber-950 hover:bg-amber-200/60 transition-all cursor-pointer"
+                className="absolute top-5 right-5 p-1.5 rounded-xl text-[#94a3b8] hover:text-[#f8fafc] hover:bg-[#171f33] transition-all cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
 
-              {/* Header */}
-              <div className="flex items-center gap-3 mb-3 border-b-2 border-amber-300/80 pb-3">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-400 border-2 border-amber-200 border-b-4 border-orange-700 flex items-center justify-center text-xl shadow-sm flex-shrink-0">
+              <div className="flex items-center gap-3 mb-4 pb-3 border-b border-[#334155]">
+                <div className="w-10 h-10 rounded-2xl bg-[#060e20] border border-[#ffd165] text-[#ffd165] flex items-center justify-center text-xl flex-shrink-0">
                   📚
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-black text-[#2e1305]">
-                    Livros Lidos por Você ({studentBooks.length})
+                  <h3 className="text-base sm:text-lg font-['Rubik'] font-bold text-[#f8fafc]">
+                    Obras Lidas por Você ({studentBooks.length})
                   </h3>
-                  <p className="text-xs text-amber-900/80 font-medium">
-                    As perguntas da Missão Quitério são retiradas exclusivamente dos livros que você retirou na biblioteca!
+                  <p className="text-xs text-[#94a3b8]">
+                    Selecione qual livro você deseja responder no Show de Saberes:
                   </p>
                 </div>
               </div>
 
-              {/* Book List Grid - Strictly Student's Borrowed/Read Books */}
-              <div className="flex-1 overflow-y-auto space-y-2 pr-1 my-1">
+              <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 my-1">
                 {studentBooks.length === 0 ? (
-                  <div className="p-6 text-center rounded-2xl bg-white/70 border-2 border-amber-200 border-dashed flex flex-col items-center">
-                    <BookOpen className="w-10 h-10 text-amber-400 mb-2" />
-                    <h4 className="text-base font-black text-[#2e1305]">Nenhum livro retirado ainda!</h4>
-                    <p className="text-xs text-amber-800/80 max-w-xs mt-1">
-                      Pegue um livro emprestado na biblioteca para poder participar do Desafio Quitério.
-                    </p>
+                  <div className="p-8 text-center rounded-2xl bg-[#060e20] border border-dashed border-[#334155]">
+                    <p className="text-xs text-[#94a3b8]">Nenhum livro retirado ainda.</p>
                   </div>
                 ) : (
                   studentBooks.map(({ book: b, loan }) => {
@@ -1768,14 +1536,14 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                       <div
                         key={b.id}
                         onClick={() => handleSelectBookForQuiz(b)}
-                        className={`p-2.5 sm:p-3 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                        className={`p-3 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between gap-3 ${
                           isCurrent
-                            ? 'bg-amber-200/90 border-amber-500 border-b-4 border-orange-700 shadow-[0_2px_0_#c2410c]'
-                            : 'bg-white/90 hover:bg-amber-50 border-amber-300/80 border-b-3 border-amber-400 shadow-xs'
+                            ? 'bg-[#eab308]/20 border-[#ffd165] shadow-sm'
+                            : 'bg-[#171f33] hover:bg-[#222a3d] border-[#334155]'
                         }`}
                       >
-                        <div className="flex items-center gap-2.5 truncate">
-                          <div className="w-10 h-14 rounded-lg overflow-hidden border border-amber-300 flex-shrink-0 bg-amber-100 flex items-center justify-center">
+                        <div className="flex items-center gap-3 truncate">
+                          <div className="w-10 h-14 rounded-lg overflow-hidden bg-[#060e20] flex-shrink-0 border border-[#334155] flex items-center justify-center">
                             {b.cover ? (
                               <img
                                 src={b.cover}
@@ -1784,85 +1552,50 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                                 referrerPolicy="no-referrer"
                               />
                             ) : (
-                              <BookOpen className="w-4 h-4 text-amber-500" />
+                              <BookOpen className="w-4 h-4 text-[#ffd165]" />
                             )}
                           </div>
                           <div className="truncate">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span
-                                className={`text-[9px] font-black uppercase px-1.5 py-0.2 rounded-md ${
-                                  loan.status === 'devolvido'
-                                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                                    : 'bg-amber-100 text-amber-800 border border-amber-200'
-                                }`}
-                              >
-                                {loan.status === 'devolvido' ? 'Devolvido (Lido)' : 'Empréstimo Ativo'}
-                              </span>
-                              {loan.loanDate && (
-                                <span className="text-[10px] text-amber-800/80 font-medium">
-                                  Retirado em {loan.loanDate}
-                                </span>
-                              )}
-                            </div>
-                            <h4 className="text-xs sm:text-sm font-black text-[#2e1305] truncate mt-0.5">
+                            <h4 className="text-xs sm:text-sm font-['Rubik'] font-bold text-[#f8fafc] truncate">
                               {b.title}
                             </h4>
-                            <span className="text-[11px] text-amber-900/80 font-medium block truncate">
+                            <span className="text-[11px] text-[#94a3b8] block truncate">
                               {b.author}
                             </span>
                             {bookScore && (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded-md mt-1">
-                                <span>✓ Pontuado:</span>
-                                <strong>{bookScore.points} pts</strong>
+                              <span className="text-[10px] font-bold text-[#62f0b3]">
+                                ✓ Pontuado: {bookScore.points} pts
                               </span>
                             )}
                           </div>
                         </div>
 
-                        <div className="flex-shrink-0">
-                          {isCurrent ? (
-                            <span className="text-[10px] sm:text-xs font-black bg-orange-600 text-white px-2.5 py-1 rounded-xl shadow-xs">
-                              Selecionado
-                            </span>
-                          ) : (
-                            <span className="text-[10px] sm:text-xs font-bold text-amber-900 bg-amber-100 px-2.5 py-1 rounded-xl hover:bg-amber-200">
-                              Desafiar
-                            </span>
-                          )}
-                        </div>
+                        <span
+                          className={`text-xs font-['Rubik'] font-bold px-3 py-1 rounded-xl flex-shrink-0 ${
+                            isCurrent
+                              ? 'bg-[#ffd165] text-[#251a00]'
+                              : 'bg-[#060e20] text-[#94a3b8]'
+                          }`}
+                        >
+                          {isCurrent ? 'Selecionado' : 'Escolher'}
+                        </span>
                       </div>
                     );
                   })
                 )}
               </div>
 
-              {/* Footer */}
-              <div className="pt-3 border-t-2 border-amber-300/80 flex flex-col sm:flex-row items-center justify-between gap-2">
-                <span className="text-xs font-bold text-amber-900">
-                  {studentBooks.length} livro(s) no seu histórico
+              <div className="pt-3 border-t border-[#334155] flex items-center justify-between gap-2">
+                <span className="text-xs text-[#94a3b8]">
+                  {studentBooks.length} livro(s) no seu acervo de leitura
                 </span>
-                <div className="flex items-center gap-2">
-                  {onNavigateToCatalog && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsBookSelectorModalOpen(false);
-                        onNavigateToCatalog();
-                      }}
-                      className="px-3 py-1.5 rounded-xl border border-amber-400 bg-white hover:bg-amber-50 text-amber-950 font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
-                    >
-                      <BookOpen className="w-3.5 h-3.5" />
-                      <span>Catálogo de Livros</span>
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setIsBookSelectorModalOpen(false)}
-                    className="px-4 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xs border border-amber-500 shadow-xs cursor-pointer"
-                  >
-                    Fechar
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsBookSelectorModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-[#171f33] hover:bg-[#222a3d] text-xs font-bold text-[#dae2fd] cursor-pointer"
+                >
+                  Fechar
+                </button>
               </div>
             </motion.div>
           </div>
