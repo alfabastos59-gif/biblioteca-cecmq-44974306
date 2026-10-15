@@ -125,13 +125,15 @@ export interface AuthorItem {
   period?: string;
   role?: string;
   tag?: string;
-  photoUrl: string;
-  featuredQuote: string;
+  photoUrl?: string;
+  featuredQuote?: string;
   quoteSource?: string;
   referenceUrl?: string;
   additionalQuotes?: AuthorQuote[];
   active?: boolean;
   createdAt?: string;
+  nationality?: string;
+  authorCode?: string;
 }
 
 export type ActiveTab =

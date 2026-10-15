@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-10-14T18:55:00.000Z",
+  "app": "Biblioteca Maria Quitéria (CECMQ)",
+  "descricao": "Ponto de restauração antes da implementação do módulo de cadastro e gerenciamento de autores brasileiros.",
+  "banco": "Supabase / Lovable Cloud + LocalStorage Fallback",
+  "colecoes_preservadas": [
+    "books",
+    "students",
+    "loans",
+    "suggestions",
+    "admin_users",
+    "audit_logs",
+    "authors"
+  ],
+  "status": "BACKUP_VALIDADO"
+}

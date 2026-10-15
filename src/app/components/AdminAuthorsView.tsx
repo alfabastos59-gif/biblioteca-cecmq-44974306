@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Feather,
   Plus,
@@ -23,6 +23,11 @@ import {
   Check,
   AlertTriangle,
   Image as ImageIcon,
+  Upload,
+  Download,
+  FileSpreadsheet,
+  Flag,
+  X,
 } from "lucide-react";
 import { AuthorItem } from "../types";
 import { useTheme } from "../context/ThemeContext";
@@ -35,6 +40,12 @@ import {
   calculateWeeklyAuthorData,
   subscribeToAuthorsUpdate,
   DEFAULT_AUTHORS,
+  normalizeAuthorName,
+  parseAuthorsCsv,
+  convertCsvRowToAuthorItem,
+  importAuthors,
+  BRAZILIAN_AUTHORS_INITIAL,
+  BRAZILIAN_AUTHORS_CSV_RAW,
 } from "../data/authorsData";
 import { FeaturedAuthor } from "./FeaturedAuthor";
 
@@ -57,6 +68,17 @@ export const AdminAuthorsView: React.FC = () => {
 
   const [notification, setNotification] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+
+  // Referência para upload de arquivo CSV
+  const csvInputRef = useRef<HTMLInputElement>(null);
+  const [importResultModal, setImportResultModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    added: number;
+    updated: number;
+    total: number;
+    errors: string[];
+  } | null>(null);
 
   useEffect(() => {
     const unsub = subscribeToAuthorsUpdate(() => {
@@ -86,50 +108,138 @@ export const AdminAuthorsView: React.FC = () => {
   }, [authors]);
 
   const filteredAuthors = useMemo(() => {
-    return authors.filter((author) => {
+    const list = authors.filter((author) => {
       // Filtro por tab
       if (activeFilter === "ativos" && author.active === false) return false;
       if (activeFilter === "inativos" && author.active !== false) return false;
       if (activeFilter === "destaque" && author.id !== weeklyInfo.author?.id) return false;
 
-      // Filtro por busca
+      // Filtro por busca com suporte completo a acentos e minúsculas
       if (!searchQuery.trim()) return true;
-      const q = searchQuery.toLowerCase();
+      const q = normalizeAuthorName(searchQuery);
 
-      const nameMatch = author.name.toLowerCase().includes(q);
-      const tagMatch = author.tag ? author.tag.toLowerCase().includes(q) : false;
-      const roleMatch = author.role && author.role.toLowerCase().includes(q);
-      const periodMatch = author.period && author.period.toLowerCase().includes(q);
-      const quoteMatch = author.featuredQuote.toLowerCase().includes(q);
-      const sourceMatch = author.quoteSource && author.quoteSource.toLowerCase().includes(q);
+      const nameMatch = normalizeAuthorName(author.name).includes(q);
+      const tagMatch = normalizeAuthorName(author.tag || "").includes(q);
+      const roleMatch = normalizeAuthorName(author.role || "").includes(q);
+      const natMatch = normalizeAuthorName(author.nationality || "").includes(q);
+      const periodMatch = normalizeAuthorName(author.period || "").includes(q);
+      const quoteMatch = normalizeAuthorName(author.featuredQuote || "").includes(q);
+      const sourceMatch = normalizeAuthorName(author.quoteSource || "").includes(q);
+      const codeMatch = author.authorCode
+        ? normalizeAuthorName(author.authorCode).includes(q)
+        : false;
       const additionalMatch = author.additionalQuotes?.some(
         (aq) =>
-          aq.text.toLowerCase().includes(q) || (aq.source && aq.source.toLowerCase().includes(q)),
+          normalizeAuthorName(aq.text).includes(q) ||
+          (aq.source && normalizeAuthorName(aq.source).includes(q)),
       );
 
       return (
         nameMatch ||
         tagMatch ||
         roleMatch ||
+        natMatch ||
         periodMatch ||
         quoteMatch ||
         sourceMatch ||
+        codeMatch ||
         additionalMatch
       );
     });
+
+    // Listar autores obrigatoriamente em ordem alfabética (pt-BR)
+    return list.sort((a, b) =>
+      a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }),
+    );
   }, [authors, searchQuery, activeFilter, weeklyInfo.author?.id]);
 
   const handleSaveAuthor = (author: AuthorItem) => {
-    const exists = authors.some((a) => a.id === author.id);
+    const norm = normalizeAuthorName(author.name);
+    const existingIndex = authors.findIndex(
+      (a) => a.id === author.id || normalizeAuthorName(a.name) === norm,
+    );
     let updated: AuthorItem[];
-    if (exists) {
-      updated = authors.map((a) => (a.id === author.id ? author : a));
+    if (existingIndex !== -1) {
+      updated = authors.map((a, i) =>
+        i === existingIndex ? { ...a, ...author, id: a.id } : a,
+      );
       showNotificationMsg(`Autor(a) "${author.name}" atualizado com sucesso!`);
     } else {
       updated = [author, ...authors];
       showNotificationMsg(`Autor(a) "${author.name}" cadastrado com sucesso!`);
     }
     saveStoredAuthors(updated);
+  };
+
+  const processCsvContent = (content: string, sourceName = "Arquivo CSV") => {
+    try {
+      const parsed = parseAuthorsCsv(content);
+      if (parsed.rows.length === 0) {
+        alert("Nenhum registro de autor válido foi encontrado no arquivo.");
+        return;
+      }
+      const converted = parsed.rows.map((r) => convertCsvRowToAuthorItem(r, authors));
+      const result = importAuthors(converted);
+      setImportResultModal({
+        isOpen: true,
+        title: `Importação Concluída (${sourceName})`,
+        added: result.added,
+        updated: result.updated,
+        total: result.total,
+        errors: parsed.errors,
+      });
+      showNotificationMsg(
+        `${result.added} novos autores cadastrados, ${result.updated} atualizados. Sem duplicidades!`,
+      );
+    } catch (err) {
+      console.error("Erro na importação CSV:", err);
+      alert("Erro ao processar o arquivo CSV. Verifique o formato.");
+    }
+  };
+
+  const handleCsvFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      processCsvContent(text, file.name);
+    };
+    reader.readAsText(file, "UTF-8");
+    if (csvInputRef.current) csvInputRef.current.value = "";
+  };
+
+  const handleImportOfficialBrazilians = () => {
+    processCsvContent(BRAZILIAN_AUTHORS_CSV_RAW, "86 Autores Brasileiros da CECMQ");
+  };
+
+  const handleExportCsv = () => {
+    const header = "id_autor;nome_autor;nacionalidade;status\n";
+    const sorted = [...authors].sort((a, b) =>
+      a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }),
+    );
+    const rows = sorted
+      .map((a, i) => {
+        const id = a.authorCode || String(i + 1).padStart(3, "0");
+        const status = a.active !== false ? "Ativo" : "Inativo";
+        const nat = a.nationality || "Brasileira";
+        return `${id};${a.name};${nat};${status}`;
+      })
+      .join("\n");
+
+    const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `autores_brasileiros_cecmq_${new Date().toISOString().slice(0, 10)}.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showNotificationMsg("Arquivo CSV exportado com sucesso!");
   };
 
   const handleDeleteAuthor = (id: string) => {

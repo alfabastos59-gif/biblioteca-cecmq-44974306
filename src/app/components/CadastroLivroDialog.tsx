@@ -25,6 +25,7 @@ import { supabase } from "../services/cloudClient";
 import type { Book } from "../types";
 import { toast } from "sonner";
 import { Upload, Loader2, Camera, X, RefreshCw } from "lucide-react";
+import { AuthorAutocompleteField } from "./AuthorAutocompleteField";
 
 // Janela com fundo azul claro: campos brancos e texto escuro para ficar legível.
 const FIELD =
@@ -317,16 +318,14 @@ export function CadastroLivroDialog({
               />
             </div>
             <div>
-              <Label htmlFor="autor" className={LABEL}>
-                Autor *
-              </Label>
-              <Input
+              <AuthorAutocompleteField
                 id="autor"
                 value={autor}
-                onChange={(e) => setAutor(e.target.value)}
-                maxLength={150}
+                onChange={(val) => setAutor(val)}
                 required
-                className={FIELD}
+                placeholder="Ex: Machado de Assis"
+                inputClassName={FIELD}
+                label="Autor *"
               />
             </div>
             <div className="grid grid-cols-3 gap-3">

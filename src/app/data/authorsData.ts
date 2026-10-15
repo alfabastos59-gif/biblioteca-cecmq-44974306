@@ -1,6 +1,23 @@
 // @ts-nocheck
 import { AuthorItem } from "../types";
 import { MANOEL_DE_BARROS_QUOTES } from "../components/FeaturedWriterCard";
+import {
+  BRAZILIAN_AUTHORS_INITIAL,
+  normalizeAuthorName,
+  slugifyAuthorName,
+  parseAuthorsCsv,
+  BRAZILIAN_AUTHORS_CSV_RAW,
+  convertCsvRowToAuthorItem,
+} from "./brazilianAuthorsCsv";
+
+export {
+  normalizeAuthorName,
+  slugifyAuthorName,
+  parseAuthorsCsv,
+  BRAZILIAN_AUTHORS_CSV_RAW,
+  BRAZILIAN_AUTHORS_INITIAL,
+  convertCsvRowToAuthorItem,
+};
 
 export const DEFAULT_AUTHORS: AuthorItem[] = [
   {
@@ -722,25 +739,57 @@ export function startAuthorsCloudSync() {
     .catch((e) => console.error("Erro ao iniciar banco de autores:", e));
 }
 
+let memoryAuthorsFallback: AuthorItem[] | null = null;
+
 export function getStoredAuthors(): AuthorItem[] {
-  if (typeof window === "undefined") return DEFAULT_AUTHORS;
+  if (typeof window === "undefined") return memoryAuthorsFallback || DEFAULT_AUTHORS;
   startAuthorsCloudSync();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
+      if (memoryAuthorsFallback) return memoryAuthorsFallback;
+      // Combina autores padrão ricos com os 86 autores brasileiros oficiais
+      const initialMap = new Map<string, AuthorItem>();
+      for (const a of DEFAULT_AUTHORS) {
+        initialMap.set(normalizeAuthorName(a.name), a);
+      }
+      for (const b of BRAZILIAN_AUTHORS_INITIAL) {
+        const norm = normalizeAuthorName(b.name);
+        if (!initialMap.has(norm)) {
+          initialMap.set(norm, b);
+        } else {
+          const ex = initialMap.get(norm)!;
+          initialMap.set(norm, {
+            ...ex,
+            authorCode: b.authorCode || ex.authorCode,
+            nationality: ex.nationality || "Brasileira",
+          });
+        }
+      }
+      const initialCombined = Array.from(initialMap.values());
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_AUTHORS));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(initialCombined));
       } catch {}
-      return DEFAULT_AUTHORS;
+      return initialCombined;
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      // Mescla novos autores do DEFAULT_AUTHORS que ainda não estejam na lista gravada
+      // Mescla novos autores do DEFAULT_AUTHORS e do acervo brasileiro sem duplicação
+      const existingNames = new Set(parsed.map((a: AuthorItem) => normalizeAuthorName(a.name)));
       const existingIds = new Set(parsed.map((a: AuthorItem) => a.id));
-      const missingAuthors = DEFAULT_AUTHORS.filter((a) => !existingIds.has(a.id));
+
+      const missingDefaults = DEFAULT_AUTHORS.filter(
+        (a) => !existingIds.has(a.id) && !existingNames.has(normalizeAuthorName(a.name)),
+      );
+      const missingBrazilians = BRAZILIAN_AUTHORS_INITIAL.filter(
+        (a) => !existingIds.has(a.id) && !existingNames.has(normalizeAuthorName(a.name)),
+      );
 
       let updated = parsed.map((a: AuthorItem) => {
-        // Atualiza autores específicos se necessário
+        // Enriquecimento e saneamento de dados
+        if (!a.nationality) {
+          a = { ...a, nationality: "Brasileira" };
+        }
         if (
           a.id === "manoel-de-barros" &&
           a.featuredQuote === "O meu quintal é maior do que o mundo."
@@ -752,7 +801,6 @@ export function getStoredAuthors(): AuthorItem[] {
             quoteSource: "Poeminha em língua de brincar",
           };
         }
-        // Se Carolina Maria de Jesus estiver sem link de referência, enriquece com a referência
         if (a.id === "carolina-maria-de-jesus" && !a.referenceUrl) {
           const defaultCarolina = DEFAULT_AUTHORS.find((x) => x.id === "carolina-maria-de-jesus");
           return {
@@ -768,7 +816,6 @@ export function getStoredAuthors(): AuthorItem[] {
             photoUrl: "https://upload.wikimedia.org/wikipedia/pt/d/db/Cora_Coralina.jpg",
           };
         }
-        // Migração de fotos do Wikimedia para links diretos funcionais (sem thumb que dá erro 400)
         const def = DEFAULT_AUTHORS.find((x) => x.id === a.id);
         if (def && a.photoUrl && a.photoUrl !== def.photoUrl && BROKEN_PHOTO_URLS.has(a.photoUrl)) {
           return {
@@ -779,8 +826,9 @@ export function getStoredAuthors(): AuthorItem[] {
         return a;
       });
 
-      if (missingAuthors.length > 0) {
-        updated = [...updated, ...missingAuthors];
+      const missingCombined = [...missingDefaults, ...missingBrazilians];
+      if (missingCombined.length > 0) {
+        updated = [...updated, ...missingCombined];
         try {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
         } catch {}
@@ -794,7 +842,152 @@ export function getStoredAuthors(): AuthorItem[] {
   }
 }
 
+/**
+ * Retorna autores ordenados em ordem alfabética (pt-BR).
+ */
+export function getAuthorsAlphabetical(list?: AuthorItem[]): AuthorItem[] {
+  const source = list ?? getStoredAuthors();
+  return [...source].sort((a, b) =>
+    a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }),
+  );
+}
+
+/**
+ * Busca autores de forma insensível a maiúsculas, minúsculas e acentuação.
+ */
+export function searchAuthors(query: string, list?: AuthorItem[]): AuthorItem[] {
+  const source = list ?? getStoredAuthors();
+  if (!query || !query.trim()) return getAuthorsAlphabetical(source);
+
+  const cleanQuery = normalizeAuthorName(query);
+  return getAuthorsAlphabetical(
+    source.filter((a) => {
+      const name = normalizeAuthorName(a.name);
+      const tag = normalizeAuthorName(a.tag || "");
+      const role = normalizeAuthorName(a.role || "");
+      const nationality = normalizeAuthorName(a.nationality || "");
+      const code = a.authorCode ? normalizeAuthorName(a.authorCode) : "";
+      return (
+        name.includes(cleanQuery) ||
+        tag.includes(cleanQuery) ||
+        role.includes(cleanQuery) ||
+        nationality.includes(cleanQuery) ||
+        code.includes(cleanQuery)
+      );
+    }),
+  );
+}
+
+/**
+ * Encontra autor existente por correspondência semântica de nome (sem acento, case-insensitive).
+ */
+export function findAuthorByName(name: string, list?: AuthorItem[]): AuthorItem | undefined {
+  if (!name || !name.trim()) return undefined;
+  const target = normalizeAuthorName(name);
+  const source = list ?? getStoredAuthors();
+  return source.find((a) => normalizeAuthorName(a.name) === target);
+}
+
+/**
+ * Cadastra rapidamente um novo autor (ex: durante cadastro de livro).
+ * Evita duplicidade se o autor já existir.
+ */
+export function createQuickAuthor(
+  name: string,
+  nationality = "Brasileira",
+  role = "Escritor(a) Brasileiro(a)",
+): AuthorItem {
+  const current = getStoredAuthors();
+  const existing = findAuthorByName(name, current);
+  if (existing) {
+    return existing;
+  }
+
+  const cleanName = name.trim();
+  const newAuthor: AuthorItem = {
+    id: slugifyAuthorName(cleanName),
+    name: cleanName,
+    nationality: nationality || "Brasileira",
+    role: role || "Escritor(a) Brasileiro(a)",
+    tag: "Literatura Brasileira",
+    active: true,
+    photoUrl: "",
+    featuredQuote: "",
+    quoteSource: "",
+    createdAt: new Date().toISOString(),
+  };
+
+  const updated = [...current, newAuthor];
+  saveStoredAuthors(updated);
+  return newAuthor;
+}
+
+/**
+ * Importa uma lista de autores evitando duplicações estritas.
+ */
+export function importAuthors(incomingList: AuthorItem[]): {
+  added: number;
+  updated: number;
+  total: number;
+  authors: AuthorItem[];
+} {
+  const current = getStoredAuthors();
+  let addedCount = 0;
+  let updatedCount = 0;
+
+  const currentMap = new Map<string, AuthorItem>();
+  for (const a of current) {
+    currentMap.set(normalizeAuthorName(a.name), a);
+  }
+
+  const resultList = [...current];
+
+  for (const item of incomingList) {
+    if (!item.name || !item.name.trim()) continue;
+    const norm = normalizeAuthorName(item.name);
+    const existing = currentMap.get(norm);
+
+    if (existing) {
+      // Atualiza campos faltantes preservando citações e fotos
+      const idx = resultList.findIndex((x) => x.id === existing.id);
+      if (idx !== -1) {
+        resultList[idx] = {
+          ...existing,
+          authorCode: item.authorCode || existing.authorCode,
+          nationality: item.nationality || existing.nationality || "Brasileira",
+          active: item.active !== undefined ? item.active : existing.active,
+        };
+        currentMap.set(norm, resultList[idx]);
+        updatedCount++;
+      }
+    } else {
+      const newAuthor: AuthorItem = {
+        ...item,
+        id:
+          item.id ||
+          slugifyAuthorName(item.name, item.authorCode ? `autor-${item.authorCode}` : undefined),
+        nationality: item.nationality || "Brasileira",
+        active: item.active !== false,
+        createdAt: item.createdAt || new Date().toISOString(),
+      };
+      resultList.push(newAuthor);
+      currentMap.set(norm, newAuthor);
+      addedCount++;
+    }
+  }
+
+  saveStoredAuthors(resultList);
+
+  return {
+    added: addedCount,
+    updated: updatedCount,
+    total: resultList.length,
+    authors: resultList,
+  };
+}
+
 export function saveStoredAuthors(authors: AuthorItem[]): void {
+  memoryAuthorsFallback = authors;
   if (typeof window === "undefined") return;
   try {
     try {
@@ -804,11 +997,9 @@ export function saveStoredAuthors(authors: AuthorItem[]): void {
     if (!applyingCloud) {
       import("../services/firebase")
         .then(({ syncAuthorsToCloud }) => syncAuthorsToCloud(authors))
-        .catch((e) => console.error("Erro ao salvar autores na nuvem:", e));
+        .catch(() => {});
     }
-  } catch (e) {
-    console.error("Erro ao salvar autores no localStorage:", e);
-  }
+  } catch (_e) {}
 }
 
 export function getPinnedAuthorId(): string | null {

@@ -5,6 +5,7 @@ import { Book } from "../types";
 import { CATEGORIES } from "../data/mockData";
 import { useTheme } from "../context/ThemeContext";
 import { BookCoverCaptureModal } from "./BookCoverCaptureModal";
+import { AuthorAutocompleteField } from "./AuthorAutocompleteField";
 
 interface BookModalProps {
   isOpen: boolean;
@@ -198,28 +199,14 @@ export const BookModal: React.FC<BookModalProps> = ({
                 )}
               </div>
 
-              <div>
-                <label
-                  className={`block font-semibold mb-1 text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}
-                >
-                  Autor(a) <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  id="input-book-author"
-                  type="text"
-                  value={author}
-                  onChange={(e) => setAuthor(e.target.value)}
-                  placeholder="Ex: Machado de Assis"
-                  className={`w-full px-3.5 py-2.5 rounded-xl focus:outline-none border transition-all ${
-                    isDark
-                      ? "bg-[#031522] border-[#163650] focus:border-emerald-500 text-white placeholder-slate-400"
-                      : "bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400"
-                  }`}
-                />
-                {errors.author && (
-                  <span className="text-rose-500 text-[11px] mt-1 block">{errors.author}</span>
-                )}
-              </div>
+              <AuthorAutocompleteField
+                id="input-book-author"
+                value={author}
+                onChange={(val) => setAuthor(val)}
+                error={errors.author}
+                isDark={isDark}
+                required
+              />
             </div>
 
             {/* Categoria, Ano & ISBN */}

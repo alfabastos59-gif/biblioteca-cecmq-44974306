@@ -66,6 +66,46 @@ import {
   pushAllLocalDataToCloud,
 } from "./services/firebase";
 
+const memoryFallbackStore = new Map<string, string>();
+
+function safeStorageSet(key: string, value: string): void {
+  memoryFallbackStore.set(key, value);
+  try {
+    sessionStorage.setItem(key, value);
+  } catch {
+    // Ignora restrições do sessionStorage
+  }
+  try {
+    localStorage.setItem(key, value);
+  } catch (_e) {
+    // Se cota do localStorage for excedida, limpa chaves volumosas não essenciais
+    try {
+      localStorage.removeItem("bmq_audit_logs");
+      localStorage.removeItem("bmq_intro_seen");
+      localStorage.setItem(key, value);
+    } catch {
+      // Falha silenciosa no armazenamento permanente:
+      // O estado em memória (memoryFallbackStore) e sessionStorage mantém a execução normal
+    }
+  }
+}
+
+function safeStorageGet(key: string): string | null {
+  try {
+    const val = localStorage.getItem(key);
+    if (val !== null) return val;
+  } catch {
+    // Ignora erro de leitura
+  }
+  try {
+    const sessVal = sessionStorage.getItem(key);
+    if (sessVal !== null) return sessVal;
+  } catch {
+    // Ignora erro de leitura
+  }
+  return memoryFallbackStore.get(key) ?? null;
+}
+
 export default function App() {
   const { isDark, isKinetic, isOcean, isPurple, isEmerald } = useTheme();
   const DB_VERSION = "bmq_db_v10_ordem_alfabetica";
@@ -77,7 +117,6 @@ export default function App() {
   const [lastCloudSyncTime, setLastCloudSyncTime] = useState<Date | null>(null);
 
   const [books, setBooks] = useState<Book[]>(() => {
-    const version = localStorage.getItem("bmq_db_version");
     const sortedInitBooks = [...INITIAL_BOOKS].sort((a, b) =>
       a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" }),
     );
@@ -85,74 +124,103 @@ export default function App() {
       a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }),
     );
 
-    if (version !== DB_VERSION) {
-      localStorage.setItem("bmq_db_version", DB_VERSION);
-      localStorage.setItem("bmq_books", JSON.stringify(sortedInitBooks));
-      localStorage.setItem("bmq_loans", JSON.stringify(INITIAL_LOANS));
-      localStorage.setItem("bmq_students", JSON.stringify(sortedInitStudents));
-      localStorage.setItem("bmq_suggestions", JSON.stringify(INITIAL_SUGGESTIONS));
-      localStorage.setItem("bmq_admin_users", JSON.stringify(INITIAL_ADMIN_USERS));
-      localStorage.setItem("bmq_audit_logs", JSON.stringify(INITIAL_AUDIT_LOGS));
+    try {
+      const version = safeStorageGet("bmq_db_version");
+      if (version !== DB_VERSION) {
+        safeStorageSet("bmq_db_version", DB_VERSION);
+        safeStorageSet("bmq_books", JSON.stringify(sortedInitBooks));
+        safeStorageSet("bmq_loans", JSON.stringify(INITIAL_LOANS));
+        safeStorageSet("bmq_students", JSON.stringify(sortedInitStudents));
+        safeStorageSet("bmq_suggestions", JSON.stringify(INITIAL_SUGGESTIONS));
+        safeStorageSet("bmq_admin_users", JSON.stringify(INITIAL_ADMIN_USERS));
+        safeStorageSet("bmq_audit_logs", JSON.stringify(INITIAL_AUDIT_LOGS));
+        return sortedInitBooks;
+      }
+      const saved = safeStorageGet("bmq_books");
+      const parsed: Book[] = saved ? JSON.parse(saved) : sortedInitBooks;
+      return parsed.sort((a, b) => a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" }));
+    } catch {
       return sortedInitBooks;
     }
-    const saved = localStorage.getItem("bmq_books");
-    const parsed: Book[] = saved ? JSON.parse(saved) : sortedInitBooks;
-    return parsed.sort((a, b) => a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" }));
   });
 
   const [loans, setLoans] = useState<Loan[]>(() => {
-    const version = localStorage.getItem("bmq_db_version");
-    if (version !== DB_VERSION) return INITIAL_LOANS;
-    const saved = localStorage.getItem("bmq_loans");
-    if (!saved) return INITIAL_LOANS;
-    const parsed: Loan[] = JSON.parse(saved);
-    return parsed.map((l) => ({
-      ...l,
-      studentCode: l.studentCode ? l.studentCode.replace(/^ALU-/, "") : undefined,
-    }));
+    try {
+      const version = safeStorageGet("bmq_db_version");
+      if (version !== DB_VERSION) return INITIAL_LOANS;
+      const saved = safeStorageGet("bmq_loans");
+      if (!saved) return INITIAL_LOANS;
+      const parsed: Loan[] = JSON.parse(saved);
+      return parsed.map((l) => ({
+        ...l,
+        studentCode: l.studentCode ? l.studentCode.replace(/^ALU-/, "") : undefined,
+      }));
+    } catch {
+      return INITIAL_LOANS;
+    }
   });
 
   const [students, setStudents] = useState<Student[]>(() => {
-    const version = localStorage.getItem("bmq_db_version");
     const sortedInitStudents = [...INITIAL_STUDENTS].sort((a, b) =>
       a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }),
     );
-    if (version !== DB_VERSION) return sortedInitStudents;
-    const saved = localStorage.getItem("bmq_students");
-    if (!saved) return sortedInitStudents;
-    const parsed: Student[] = JSON.parse(saved);
-    return parsed
-      .map((s) => ({
-        ...s,
-        studentCode: s.studentCode ? s.studentCode.replace(/^ALU-/, "") : s.studentCode,
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }));
+    try {
+      const version = safeStorageGet("bmq_db_version");
+      if (version !== DB_VERSION) return sortedInitStudents;
+      const saved = safeStorageGet("bmq_students");
+      if (!saved) return sortedInitStudents;
+      const parsed: Student[] = JSON.parse(saved);
+      return parsed
+        .map((s) => ({
+          ...s,
+          studentCode: s.studentCode ? s.studentCode.replace(/^ALU-/, "") : s.studentCode,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }));
+    } catch {
+      return sortedInitStudents;
+    }
   });
 
   const [suggestions, setSuggestions] = useState<Suggestion[]>(() => {
-    const version = localStorage.getItem("bmq_db_version");
-    if (version !== DB_VERSION) return INITIAL_SUGGESTIONS;
-    const saved = localStorage.getItem("bmq_suggestions");
-    return saved ? JSON.parse(saved) : INITIAL_SUGGESTIONS;
+    try {
+      const version = safeStorageGet("bmq_db_version");
+      if (version !== DB_VERSION) return INITIAL_SUGGESTIONS;
+      const saved = safeStorageGet("bmq_suggestions");
+      return saved ? JSON.parse(saved) : INITIAL_SUGGESTIONS;
+    } catch {
+      return INITIAL_SUGGESTIONS;
+    }
   });
 
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>(() => {
-    const version = localStorage.getItem("bmq_db_version");
-    if (version !== DB_VERSION) return INITIAL_ADMIN_USERS;
-    const saved = localStorage.getItem("bmq_admin_users");
-    return saved ? JSON.parse(saved) : INITIAL_ADMIN_USERS;
+    try {
+      const version = safeStorageGet("bmq_db_version");
+      if (version !== DB_VERSION) return INITIAL_ADMIN_USERS;
+      const saved = safeStorageGet("bmq_admin_users");
+      return saved ? JSON.parse(saved) : INITIAL_ADMIN_USERS;
+    } catch {
+      return INITIAL_ADMIN_USERS;
+    }
   });
 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(() => {
-    const version = localStorage.getItem("bmq_db_version");
-    if (version !== DB_VERSION) return INITIAL_AUDIT_LOGS;
-    const saved = localStorage.getItem("bmq_audit_logs");
-    return saved ? JSON.parse(saved) : INITIAL_AUDIT_LOGS;
+    try {
+      const version = safeStorageGet("bmq_db_version");
+      if (version !== DB_VERSION) return INITIAL_AUDIT_LOGS;
+      const saved = safeStorageGet("bmq_audit_logs");
+      return saved ? JSON.parse(saved) : INITIAL_AUDIT_LOGS;
+    } catch {
+      return INITIAL_AUDIT_LOGS;
+    }
   });
 
   const [favorites, setFavorites] = useState<string[]>(() => {
-    const saved = localStorage.getItem("bmq_favorites");
-    return saved ? JSON.parse(saved) : [INITIAL_BOOKS[0]?.id || ""];
+    try {
+      const saved = safeStorageGet("bmq_favorites");
+      return saved ? JSON.parse(saved) : [INITIAL_BOOKS[0]?.id || ""];
+    } catch {
+      return [INITIAL_BOOKS[0]?.id || ""];
+    }
   });
 
   // User Security & Auth Session (Sessão temporária por aba/navegador - fecha o navegador, encerra o login)
@@ -197,33 +265,33 @@ export default function App() {
     import("./data/authorsData").then((m) => m.startAuthorsCloudSync());
   }, []);
 
-  // Persist state to localStorage
+  // Persist state to localStorage safely
   useEffect(() => {
-    localStorage.setItem("bmq_books", JSON.stringify(books));
+    safeStorageSet("bmq_books", JSON.stringify(books));
   }, [books]);
 
   useEffect(() => {
-    localStorage.setItem("bmq_loans", JSON.stringify(loans));
+    safeStorageSet("bmq_loans", JSON.stringify(loans));
   }, [loans]);
 
   useEffect(() => {
-    localStorage.setItem("bmq_students", JSON.stringify(students));
+    safeStorageSet("bmq_students", JSON.stringify(students));
   }, [students]);
 
   useEffect(() => {
-    localStorage.setItem("bmq_suggestions", JSON.stringify(suggestions));
+    safeStorageSet("bmq_suggestions", JSON.stringify(suggestions));
   }, [suggestions]);
 
   useEffect(() => {
-    localStorage.setItem("bmq_admin_users", JSON.stringify(adminUsers));
+    safeStorageSet("bmq_admin_users", JSON.stringify(adminUsers));
   }, [adminUsers]);
 
   useEffect(() => {
-    localStorage.setItem("bmq_audit_logs", JSON.stringify(auditLogs));
+    safeStorageSet("bmq_audit_logs", JSON.stringify(auditLogs));
   }, [auditLogs]);
 
   useEffect(() => {
-    localStorage.setItem("bmq_favorites", JSON.stringify(favorites));
+    safeStorageSet("bmq_favorites", JSON.stringify(favorites));
   }, [favorites]);
 
   useEffect(() => {
@@ -823,9 +891,7 @@ export default function App() {
     }
     const updatedList = [newAdmin, ...adminUsers];
     setAdminUsers(updatedList);
-    try {
-      localStorage.setItem("bmq_admin_users", JSON.stringify(updatedList));
-    } catch (e) {}
+    safeStorageSet("bmq_admin_users", JSON.stringify(updatedList));
     saveAdminUserToCloud(newAdmin).catch(console.error);
 
     logAuditEvent(
@@ -845,9 +911,7 @@ export default function App() {
     // Atualiza a lista de administradores e persiste imediatamente para invalidar a senha antiga
     const updatedList = adminUsers.map((a) => (a.id === updatedAdmin.id ? updatedAdmin : a));
     setAdminUsers(updatedList);
-    try {
-      localStorage.setItem("bmq_admin_users", JSON.stringify(updatedList));
-    } catch (e) {}
+    safeStorageSet("bmq_admin_users", JSON.stringify(updatedList));
     saveAdminUserToCloud(updatedAdmin).catch(console.error);
 
     // Se o administrador atual da sessão foi o alterado, atualiza o perfil em tempo real
@@ -874,9 +938,7 @@ export default function App() {
     const targetAdmin = adminUsers.find((a) => a.id === adminId);
     const updatedList = adminUsers.filter((a) => a.id !== adminId);
     setAdminUsers(updatedList);
-    try {
-      localStorage.setItem("bmq_admin_users", JSON.stringify(updatedList));
-    } catch (e) {}
+    safeStorageSet("bmq_admin_users", JSON.stringify(updatedList));
     deleteAdminUserFromCloud(adminId).catch(console.error);
 
     if (session.admin && session.admin.id === adminId) {

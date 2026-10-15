@@ -17,9 +17,15 @@ import {
   ChevronUp,
   Eye,
   Link as LinkIcon,
+  Flag,
 } from "lucide-react";
 import { AuthorItem } from "../types";
 import { useTheme } from "../context/ThemeContext";
+import {
+  getStoredAuthors,
+  normalizeAuthorName,
+  slugifyAuthorName,
+} from "../data/authorsData";
 
 interface QuoteEntry {
   id: string;
@@ -80,6 +86,7 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("");
+  const [nationality, setNationality] = useState("Brasileira");
   const [period, setPeriod] = useState("");
   const [role, setRole] = useState("");
   const [tag, setTag] = useState("");
@@ -97,6 +104,7 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
   useEffect(() => {
     if (authorToEdit) {
       setName(authorToEdit.name || "");
+      setNationality(authorToEdit.nationality || "Brasileira");
       setPeriod(authorToEdit.period || "");
       setRole(authorToEdit.role || "");
       setTag(authorToEdit.tag || "");
@@ -131,8 +139,9 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
       setQuotes(initialQuotes);
     } else {
       setName("");
+      setNationality("Brasileira");
       setPeriod("");
-      setRole("");
+      setRole("Escritor(a) Brasileiro(a)");
       setTag("Literatura Brasileira");
       setPhotoUrl("");
       setReferenceUrl("");
@@ -179,8 +188,7 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
 
   const handleRemoveQuote = (index: number) => {
     if (quotes.length <= 1) {
-      // Limpa os campos da única frase em vez de remover
-      setQuotes([{ id: quotes[0].id, text: "", source: "" }]);
+      setQuotes([{ id: quotes[0]?.id || "q-1", text: "", source: "" }]);
       return;
     }
     setQuotes((prev) => prev.filter((_, i) => i !== index));
@@ -189,7 +197,9 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
   const handleQuoteChange = (index: number, field: "text" | "source", value: string) => {
     setQuotes((prev) => {
       const copy = [...prev];
-      copy[index] = { ...copy[index], [field]: value };
+      if (copy[index]) {
+        copy[index] = { ...copy[index], [field]: value };
+      }
       return copy;
     });
   };
@@ -198,6 +208,7 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
     if (index === 0) return;
     setQuotes((prev) => {
       const item = prev[index];
+      if (!item) return prev;
       const rest = prev.filter((_, i) => i !== index);
       return [item, ...rest];
     });
@@ -205,14 +216,19 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
-    if (!name.trim()) newErrors.name = "Nome do escritor é obrigatório";
-    if (!period.trim()) newErrors.period = "Período ou anos do escritor é obrigatório";
-    if (!photoUrl.trim())
-      newErrors.photo = "A foto do escritor é obrigatória para aparecer no HeroBanner";
-
-    const validQuotes = quotes.filter((q) => q.text.trim().length > 0);
-    if (validQuotes.length === 0) {
-      newErrors.quotes = "Cadastre pelo menos 1 frase semanal para o escritor";
+    const cleanName = name.trim();
+    if (!cleanName) {
+      newErrors.name = "O nome do escritor é obrigatório.";
+    } else {
+      // Verificação de duplicidade por nome normalizado (sem acento, case-insensitive)
+      const norm = normalizeAuthorName(cleanName);
+      const allAuthors = getStoredAuthors();
+      const duplicate = allAuthors.find(
+        (a) => normalizeAuthorName(a.name) === norm && (!authorToEdit || a.id !== authorToEdit.id),
+      );
+      if (duplicate) {
+        newErrors.name = `Já existe um autor cadastrado com o nome "${duplicate.name}". Para evitar duplicações, edite o cadastro existente ou informe um diferencial.`;
+      }
     }
 
     setErrors(newErrors);
@@ -231,17 +247,19 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
     }));
 
     const newAuthor: AuthorItem = {
-      id: authorToEdit?.id || `author-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+      id: authorToEdit?.id || slugifyAuthorName(name.trim()),
       name: name.trim(),
-      period: period.trim(),
-      role: role.trim() || "Autor(a) em Destaque",
-      tag: tag.trim() || "Literatura",
-      photoUrl: photoUrl.trim(),
-      featuredQuote: primaryQuote.text.trim(),
-      quoteSource: primaryQuote.source.trim() || "",
+      nationality: nationality.trim() || "Brasileira",
+      period: period.trim() || undefined,
+      role: role.trim() || "Escritor(a) Brasileiro(a)",
+      tag: tag.trim() || "Literatura Brasileira",
+      photoUrl: photoUrl.trim() || "",
+      featuredQuote: primaryQuote?.text?.trim() || "",
+      quoteSource: primaryQuote?.source?.trim() || "",
       referenceUrl: referenceUrl.trim() || undefined,
       additionalQuotes: otherQuotes,
       active,
+      authorCode: authorToEdit?.authorCode,
       createdAt: authorToEdit?.createdAt || new Date().toISOString(),
     };
 
@@ -375,7 +393,7 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
           {/* Seção 1: Foto do Autor (Upload ou URL) */}
           <div className="space-y-3">
             <label className="block text-xs font-black uppercase tracking-wider text-emerald-400">
-              1. Foto do Autor <span className="text-red-500">*</span>
+              1. Foto do Autor (Opcional - Usada no HeroBanner)
             </label>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-2xl border bg-black/15">
@@ -520,7 +538,7 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: Manoel de Barros"
+                  placeholder="Ex: Machado de Assis"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className={`w-full px-3.5 py-2.5 rounded-xl text-sm border ${
@@ -533,12 +551,55 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5">
-                  Período / Anos de Vida <span className="text-red-500">*</span>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <Flag className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Nacionalidade</span>
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: 1916 – 2014"
+                  placeholder="Ex: Brasileira"
+                  value={nationality}
+                  onChange={(e) => setNationality(e.target.value)}
+                  className={`w-full px-3.5 py-2.5 rounded-xl text-sm border ${
+                    isDark
+                      ? "bg-black/30 border-white/15 text-white"
+                      : "bg-white border-slate-300 text-slate-900"
+                  }`}
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5">
+                  Status no Catálogo
+                </label>
+                <div className="flex items-center gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setActive(!active)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
+                      active
+                        ? "bg-emerald-500/20 text-[#00e676] border-emerald-500/40"
+                        : "bg-rose-500/20 text-rose-400 border-rose-500/40"
+                    }`}
+                  >
+                    <span
+                      className={`w-2.5 h-2.5 rounded-full ${active ? "bg-[#00e676]" : "bg-rose-500"}`}
+                    />
+                    <span>{active ? "Ativo (Disponível)" : "Inativo (Pausado)"}</span>
+                  </button>
+                  <span className="text-[11px] text-slate-400">
+                    {active ? "Autor visível para buscas e empréstimos" : "Autor temporariamente inativo"}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1.5">
+                  Período / Anos de Vida (Opcional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: 1839 – 1908"
                   value={period}
                   onChange={(e) => setPeriod(e.target.value)}
                   className={`w-full px-3.5 py-2.5 rounded-xl text-sm border ${
@@ -556,7 +617,7 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: Poeta Pantaneiro • Prêmio Jabuti"
+                  placeholder="Ex: Escritor Clássico • Patrono da ABL"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
                   className={`w-full px-3.5 py-2.5 rounded-xl text-sm border ${
@@ -573,7 +634,7 @@ export const AuthorModal: React.FC<AuthorModalProps> = ({
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: Poesia Pantaneira, Modernismo, Clássico"
+                  placeholder="Ex: Literatura Brasileira, Realismo"
                   value={tag}
                   onChange={(e) => setTag(e.target.value)}
                   className={`w-full px-3.5 py-2.5 rounded-xl text-sm border ${
