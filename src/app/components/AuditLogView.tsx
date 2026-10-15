@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 import {
   History,
   Search,
@@ -17,10 +17,10 @@ import {
   FileSpreadsheet,
   CheckCircle2,
   Trash2,
-  AlertCircle
-} from 'lucide-react';
-import { AuditLog, AuditActionCategory, AdminUser } from '../types';
-import { useTheme } from '../context/ThemeContext';
+  AlertCircle,
+} from "lucide-react";
+import { AuditLog, AuditActionCategory, AdminUser } from "../types";
+import { useTheme } from "../context/ThemeContext";
 
 interface AuditLogViewProps {
   logs: AuditLog[];
@@ -28,16 +28,12 @@ interface AuditLogViewProps {
   onClearLogs?: () => void;
 }
 
-export const AuditLogView: React.FC<AuditLogViewProps> = ({
-  logs,
-  adminUsers,
-  onClearLogs,
-}) => {
+export const AuditLogView: React.FC<AuditLogViewProps> = ({ logs, adminUsers, onClearLogs }) => {
   const { isDark } = useTheme();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedAdminId, setSelectedAdminId] = useState<string>('all');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedAdminId, setSelectedAdminId] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isConfirmClearOpen, setIsConfirmClearOpen] = useState(false);
 
   // Filtered Logs
@@ -51,8 +47,8 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
         (log.targetName && log.targetName.toLowerCase().includes(q)) ||
         log.timestamp.toLowerCase().includes(q);
 
-      const matchesAdmin = selectedAdminId === 'all' || log.adminId === selectedAdminId;
-      const matchesCategory = selectedCategory === 'all' || log.actionCategory === selectedCategory;
+      const matchesAdmin = selectedAdminId === "all" || log.adminId === selectedAdminId;
+      const matchesCategory = selectedCategory === "all" || log.actionCategory === selectedCategory;
 
       return matchesSearch && matchesAdmin && matchesCategory;
     });
@@ -60,55 +56,78 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
 
   const getCategoryConfig = (category: AuditActionCategory) => {
     switch (category) {
-      case 'livros':
+      case "livros":
         return {
-          label: 'Acervo / Livros',
+          label: "Acervo / Livros",
           icon: BookOpen,
-          bg: isDark ? 'bg-blue-500/15 border-blue-500/30 text-blue-400' : 'bg-blue-100 border-blue-300 text-blue-900',
+          bg: isDark
+            ? "bg-blue-500/15 border-blue-500/30 text-blue-400"
+            : "bg-blue-100 border-blue-300 text-blue-900",
         };
-      case 'alunos':
+      case "alunos":
         return {
-          label: 'Alunos / Estudantes',
+          label: "Alunos / Estudantes",
           icon: Users,
-          bg: isDark ? 'bg-purple-500/15 border-purple-500/30 text-purple-400' : 'bg-purple-100 border-purple-300 text-purple-900',
+          bg: isDark
+            ? "bg-purple-500/15 border-purple-500/30 text-purple-400"
+            : "bg-purple-100 border-purple-300 text-purple-900",
         };
-      case 'emprestimos':
+      case "emprestimos":
         return {
-          label: 'Empréstimos',
+          label: "Empréstimos",
           icon: BookmarkCheck,
-          bg: isDark ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400' : 'bg-emerald-100 border-emerald-300 text-emerald-900',
+          bg: isDark
+            ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
+            : "bg-emerald-100 border-emerald-300 text-emerald-900",
         };
-      case 'sugestoes':
+      case "sugestoes":
         return {
-          label: 'Sugestões',
+          label: "Sugestões",
           icon: Lightbulb,
-          bg: isDark ? 'bg-amber-500/15 border-amber-500/30 text-amber-400' : 'bg-amber-100 border-amber-300 text-amber-900',
+          bg: isDark
+            ? "bg-amber-500/15 border-amber-500/30 text-amber-400"
+            : "bg-amber-100 border-amber-300 text-amber-900",
         };
-      case 'usuarios_adm':
+      case "usuarios_adm":
         return {
-          label: 'Gestão de ADM',
+          label: "Gestão de ADM",
           icon: Shield,
-          bg: isDark ? 'bg-rose-500/15 border-rose-500/30 text-rose-400' : 'bg-rose-100 border-rose-300 text-rose-900',
+          bg: isDark
+            ? "bg-rose-500/15 border-rose-500/30 text-rose-400"
+            : "bg-rose-100 border-rose-300 text-rose-900",
         };
-      case 'acesso':
+      case "acesso":
         return {
-          label: 'Login / Acesso',
+          label: "Login / Acesso",
           icon: Clock,
-          bg: isDark ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400' : 'bg-cyan-100 border-cyan-300 text-cyan-900',
+          bg: isDark
+            ? "bg-cyan-500/15 border-cyan-500/30 text-cyan-400"
+            : "bg-cyan-100 border-cyan-300 text-cyan-900",
         };
-      case 'sistema':
+      case "sistema":
       default:
         return {
-          label: 'Sistema / Backup',
+          label: "Sistema / Backup",
           icon: Layers,
-          bg: isDark ? 'bg-slate-500/15 border-slate-500/30 text-slate-400' : 'bg-slate-100 border-slate-300 text-slate-900',
+          bg: isDark
+            ? "bg-slate-500/15 border-slate-500/30 text-slate-400"
+            : "bg-slate-100 border-slate-300 text-slate-900",
         };
     }
   };
 
   // Export CSV Handler
   const handleExportCSV = () => {
-    const headers = ['ID', 'Data/Hora', 'Administrador', 'Cargo', 'Categoria', 'Ação', 'Detalhes', 'Alvo'];
+    const headers = [
+      "ID",
+      "Data/Hora",
+      "Administrador",
+      "Cargo",
+      "Categoria",
+      "Ação",
+      "Detalhes",
+      "Alvo",
+    ];
     const rows = filteredLogs.map((l) => [
       `"${l.id}"`,
       `"${l.timestamp}"`,
@@ -117,14 +136,16 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
       `"${l.actionCategory}"`,
       `"${l.title.replace(/"/g, '""')}"`,
       `"${l.details.replace(/"/g, '""')}"`,
-      `"${(l.targetName || '').replace(/"/g, '""')}"`,
+      `"${(l.targetName || "").replace(/"/g, '""')}"`,
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const csvContent =
+      "data:text/csv;charset=utf-8,\uFEFF" +
+      [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
     const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `auditoria_biblioteca_maria_quiteria_${Date.now()}.csv`);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `auditoria_biblioteca_maria_quiteria_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -132,10 +153,11 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
 
   // Export JSON Handler
   const handleExportJSON = () => {
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(filteredLogs, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `auditoria_backup_${Date.now()}.json`);
+    const dataStr =
+      "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(filteredLogs, null, 2));
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `auditoria_backup_${Date.now()}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -147,8 +169,8 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
       <div
         className={`p-6 rounded-3xl border ${
           isDark
-            ? 'bg-gradient-to-r from-[#092032] via-[#0b273d] to-[#092032] border-[#163650]'
-            : 'bg-gradient-to-r from-slate-50 via-white to-slate-50 border-slate-200 shadow-sm'
+            ? "bg-gradient-to-r from-[#092032] via-[#0b273d] to-[#092032] border-[#163650]"
+            : "bg-gradient-to-r from-slate-50 via-white to-slate-50 border-slate-200 shadow-sm"
         }`}
       >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -157,11 +179,12 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
               <History className="w-6 h-6" />
             </div>
             <div>
-              <h2 className={`text-xl font-extrabold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              <h2 className={`text-xl font-extrabold ${isDark ? "text-white" : "text-slate-900"}`}>
                 Histórico & Auditoria de Administradores
               </h2>
-              <p className={`text-xs mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Rastreabilidade transparente: saiba exatamente qual Administrador acessou, cadastrou ou alterou dados na Biblioteca Maria Quitéria.
+              <p className={`text-xs mt-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                Rastreabilidade transparente: saiba exatamente qual Administrador acessou, cadastrou
+                ou alterou dados na Biblioteca Maria Quitéria.
               </p>
             </div>
           </div>
@@ -171,8 +194,8 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
               onClick={handleExportCSV}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all cursor-pointer ${
                 isDark
-                  ? 'bg-[#00101c] hover:bg-[#163650] text-slate-200 border-[#163650]'
-                  : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300 shadow-sm'
+                  ? "bg-[#00101c] hover:bg-[#163650] text-slate-200 border-[#163650]"
+                  : "bg-white hover:bg-slate-50 text-slate-700 border-slate-300 shadow-sm"
               }`}
             >
               <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
@@ -183,8 +206,8 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
               onClick={handleExportJSON}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border transition-all cursor-pointer ${
                 isDark
-                  ? 'bg-[#00101c] hover:bg-[#163650] text-slate-200 border-[#163650]'
-                  : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300 shadow-sm'
+                  ? "bg-[#00101c] hover:bg-[#163650] text-slate-200 border-[#163650]"
+                  : "bg-white hover:bg-slate-50 text-slate-700 border-slate-300 shadow-sm"
               }`}
             >
               <Download className="w-4 h-4 text-blue-500" />
@@ -196,8 +219,8 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
                 onClick={() => setIsConfirmClearOpen(true)}
                 className={`p-2 rounded-xl border transition-colors cursor-pointer ${
                   isDark
-                    ? 'bg-[#00101c] hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border-[#163650]'
-                    : 'bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 border-slate-300'
+                    ? "bg-[#00101c] hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border-[#163650]"
+                    : "bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 border-slate-300"
                 }`}
                 title="Limpar Histórico Antigo"
               >
@@ -211,7 +234,7 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
       {/* Search and Filters Bar */}
       <div
         className={`p-4 sm:p-5 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-          isDark ? 'bg-[#071828] border-[#163650]' : 'bg-white border-slate-200 shadow-sm'
+          isDark ? "bg-[#071828] border-[#163650]" : "bg-white border-slate-200 shadow-sm"
         }`}
       >
         <div className="relative flex-1">
@@ -223,8 +246,8 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
             placeholder="Pesquisar por ação, livro, aluno, administrador ou detalhe..."
             className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-cyan-500 ${
               isDark
-                ? 'bg-[#001424] border-[#163650] text-white placeholder-slate-500'
-                : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400'
+                ? "bg-[#001424] border-[#163650] text-white placeholder-slate-500"
+                : "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400"
             }`}
           />
         </div>
@@ -235,7 +258,9 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
             value={selectedAdminId}
             onChange={(e) => setSelectedAdminId(e.target.value)}
             className={`px-3 py-2.5 rounded-xl border text-xs font-semibold focus:outline-none focus:border-cyan-500 cursor-pointer ${
-              isDark ? 'bg-[#001424] border-[#163650] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'
+              isDark
+                ? "bg-[#001424] border-[#163650] text-slate-300"
+                : "bg-slate-50 border-slate-200 text-slate-700"
             }`}
           >
             <option value="all">Todos os Administradores</option>
@@ -251,7 +276,9 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
             className={`px-3 py-2.5 rounded-xl border text-xs font-semibold focus:outline-none focus:border-cyan-500 cursor-pointer ${
-              isDark ? 'bg-[#001424] border-[#163650] text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'
+              isDark
+                ? "bg-[#001424] border-[#163650] text-slate-300"
+                : "bg-slate-50 border-slate-200 text-slate-700"
             }`}
           >
             <option value="all">Todas as Categorias</option>
@@ -269,21 +296,23 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
       {/* Activity Timeline List */}
       <div
         className={`rounded-3xl border overflow-hidden ${
-          isDark ? 'bg-[#071828] border-[#163650]' : 'bg-white border-slate-200 shadow-sm'
+          isDark ? "bg-[#071828] border-[#163650]" : "bg-white border-slate-200 shadow-sm"
         }`}
       >
-        <div className={`px-6 py-4 border-b flex items-center justify-between ${
-          isDark ? 'bg-[#001424] border-[#163650]' : 'bg-slate-50 border-slate-200'
-        }`}>
+        <div
+          className={`px-6 py-4 border-b flex items-center justify-between ${
+            isDark ? "bg-[#001424] border-[#163650]" : "bg-slate-50 border-slate-200"
+          }`}
+        >
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-cyan-500" />
-            <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+            <span
+              className={`text-xs font-bold uppercase tracking-wider ${isDark ? "text-slate-300" : "text-slate-700"}`}
+            >
               Registro de Operações ({filteredLogs.length})
             </span>
           </div>
-          <span className="text-xs text-slate-400">
-            Atualizado automaticamente em tempo real
-          </span>
+          <span className="text-xs text-slate-400">Atualizado automaticamente em tempo real</span>
         </div>
 
         <div className="divide-y divide-slate-100 dark:divide-[#163650]/60">
@@ -295,7 +324,7 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
               <div
                 key={log.id}
                 className={`p-5 transition-colors flex flex-col sm:flex-row sm:items-start justify-between gap-4 ${
-                  isDark ? 'hover:bg-[#001424]/60' : 'hover:bg-slate-50/80'
+                  isDark ? "hover:bg-[#001424]/60" : "hover:bg-slate-50/80"
                 }`}
               >
                 {/* Left: Avatar + Details */}
@@ -313,10 +342,14 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
 
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-sm font-extrabold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      <span
+                        className={`text-sm font-extrabold ${isDark ? "text-white" : "text-slate-900"}`}
+                      >
                         {log.adminName}
                       </span>
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${cat.bg}`}>
+                      <span
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${cat.bg}`}
+                      >
                         {cat.label}
                       </span>
                       <span className="text-[11px] font-medium text-slate-400">
@@ -324,19 +357,25 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
                       </span>
                     </div>
 
-                    <h4 className={`text-sm font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                    <h4
+                      className={`text-sm font-bold ${isDark ? "text-emerald-400" : "text-emerald-700"}`}
+                    >
                       {log.title}
                     </h4>
 
-                    <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                    <p
+                      className={`text-xs leading-relaxed ${isDark ? "text-slate-300" : "text-slate-600"}`}
+                    >
                       {log.details}
                     </p>
 
                     {log.targetName && (
                       <div className="pt-0.5">
-                        <span className={`inline-block text-[11px] px-2 py-0.5 rounded-md font-mono ${
-                          isDark ? 'bg-[#00101c] text-cyan-300' : 'bg-slate-100 text-slate-700'
-                        }`}>
+                        <span
+                          className={`inline-block text-[11px] px-2 py-0.5 rounded-md font-mono ${
+                            isDark ? "bg-[#00101c] text-cyan-300" : "bg-slate-100 text-slate-700"
+                          }`}
+                        >
                           Alvo: {log.targetName}
                         </span>
                       </div>
@@ -361,10 +400,14 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
           {filteredLogs.length === 0 && (
             <div className="p-12 text-center">
               <History className="w-12 h-12 mx-auto mb-3 text-slate-400 opacity-40" />
-              <h3 className={`text-base font-bold mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              <h3
+                className={`text-base font-bold mb-1 ${isDark ? "text-white" : "text-slate-900"}`}
+              >
                 Nenhum registro de auditoria encontrado
               </h3>
-              <p className={`text-xs max-w-md mx-auto ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              <p
+                className={`text-xs max-w-md mx-auto ${isDark ? "text-slate-400" : "text-slate-500"}`}
+              >
                 Tente alterar os termos de pesquisa ou os filtros de administrador e categoria.
               </p>
             </div>
@@ -377,7 +420,7 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div
             className={`w-full max-w-md p-6 rounded-3xl border shadow-2xl ${
-              isDark ? 'bg-[#001424] border-[#163650]' : 'bg-white border-slate-200'
+              isDark ? "bg-[#001424] border-[#163650]" : "bg-white border-slate-200"
             }`}
           >
             <div className="flex items-center gap-3 mb-4">
@@ -385,10 +428,10 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
                 <AlertCircle className="w-6 h-6" />
               </div>
               <div>
-                <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                <h3 className={`text-lg font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
                   Limpar Histórico de Auditoria?
                 </h3>
-                <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                   Recomendamos exportar um backup antes de limpar os registros.
                 </p>
               </div>
@@ -398,7 +441,7 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({
               <button
                 onClick={() => setIsConfirmClearOpen(false)}
                 className={`px-4 py-2.5 rounded-xl text-xs font-semibold ${
-                  isDark ? 'bg-[#092032] text-slate-300' : 'bg-slate-100 text-slate-700'
+                  isDark ? "bg-[#092032] text-slate-300" : "bg-slate-100 text-slate-700"
                 }`}
               >
                 Cancelar

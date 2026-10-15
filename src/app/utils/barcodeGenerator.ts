@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Student } from '../types';
+import { Student } from "../types";
 
 export interface BarcodeBar {
   x: number;
@@ -13,20 +13,23 @@ export interface BarcodeResult {
 
 export function formatStudentRegistration(student: Student): string {
   if (student.studentCode) {
-    const raw = student.studentCode.replace(/\D/g, '');
+    const raw = student.studentCode.replace(/\D/g, "");
     if (raw.length >= 6) {
       return `${raw.slice(0, 4)}.${raw.slice(4)}`;
     }
-    return student.studentCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    return student.studentCode.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
   }
-  return student.id ? student.id.slice(0, 8).toUpperCase() : '0000.00';
+  return student.id ? student.id.slice(0, 8).toUpperCase() : "0000.00";
 }
 
 export function getStudentBarcodeCode(student: Student): string {
   if (student.studentCode) {
-    return student.studentCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+    return student.studentCode.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
   }
-  return `ALU${(student.id || '000000').replace(/[^a-zA-Z0-9]/g, '').slice(0, 6).toUpperCase()}`;
+  return `ALU${(student.id || "000000")
+    .replace(/[^a-zA-Z0-9]/g, "")
+    .slice(0, 6)
+    .toUpperCase()}`;
 }
 
 /**
@@ -46,11 +49,11 @@ export function generateBarcodeBars(code: string): BarcodeResult {
   for (let i = 0; i < code.length; i++) {
     const charCode = code.charCodeAt(i);
     const pattern = [
-      (charCode & 1) ? 2 : 1,
-      (charCode & 2) ? 1 : 2,
-      (charCode & 4) ? 2 : 1,
-      (charCode & 8) ? 1 : 2,
-      (charCode & 16) ? 2 : 1,
+      charCode & 1 ? 2 : 1,
+      charCode & 2 ? 1 : 2,
+      charCode & 4 ? 2 : 1,
+      charCode & 8 ? 1 : 2,
+      charCode & 16 ? 2 : 1,
     ];
 
     for (let p = 0; p < pattern.length; p++) {

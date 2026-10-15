@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React from 'react';
+import React from "react";
 import {
   Trophy,
   TrendingUp,
@@ -11,10 +11,10 @@ import {
   Star,
   Users,
   GraduationCap,
-  Bookmark
-} from 'lucide-react';
-import { Book, Loan, Student } from '../types';
-import { useTheme } from '../context/ThemeContext';
+  Bookmark,
+} from "lucide-react";
+import { Book, Loan, Student } from "../types";
+import { useTheme } from "../context/ThemeContext";
 
 interface HomeRankingWidgetProps {
   books: Book[];
@@ -40,9 +40,18 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
       .map((student) => {
         // Count actual loans for this student
         const studentLoans = loans.filter((l) => {
-          const nameMatch = l.studentName && student.name && l.studentName.trim().toLowerCase() === student.name.trim().toLowerCase();
-          const emailMatch = l.studentEmail && student.email && l.studentEmail.trim().toLowerCase() === student.email.trim().toLowerCase();
-          const codeMatch = l.studentCode && student.studentCode && l.studentCode.trim().toLowerCase() === student.studentCode.trim().toLowerCase();
+          const nameMatch =
+            l.studentName &&
+            student.name &&
+            l.studentName.trim().toLowerCase() === student.name.trim().toLowerCase();
+          const emailMatch =
+            l.studentEmail &&
+            student.email &&
+            l.studentEmail.trim().toLowerCase() === student.email.trim().toLowerCase();
+          const codeMatch =
+            l.studentCode &&
+            student.studentCode &&
+            l.studentCode.trim().toLowerCase() === student.studentCode.trim().toLowerCase();
           return nameMatch || emailMatch || codeMatch;
         });
 
@@ -69,7 +78,10 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
       .map((book) => {
         const bookLoans = loans.filter((l) => {
           const idMatch = l.bookId && l.bookId === book.id;
-          const titleMatch = l.bookTitle && book.title && l.bookTitle.trim().toLowerCase() === book.title.trim().toLowerCase();
+          const titleMatch =
+            l.bookTitle &&
+            book.title &&
+            l.bookTitle.trim().toLowerCase() === book.title.trim().toLowerCase();
           return idMatch || titleMatch;
         });
 
@@ -109,13 +121,14 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
           </div>
           <h2
             className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${
-              isDark ? 'text-white' : 'text-slate-900'
+              isDark ? "text-white" : "text-slate-900"
             }`}
           >
             Líderes de Leitura & Obras em Alta
           </h2>
-          <p className={`text-sm mt-1 max-w-2xl ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            Acompanhe o engajamento dos alunos e os livros mais requisitados da nossa biblioteca em tempo real.
+          <p className={`text-sm mt-1 max-w-2xl ${isDark ? "text-slate-400" : "text-slate-600"}`}>
+            Acompanhe o engajamento dos alunos e os livros mais requisitados da nossa biblioteca em
+            tempo real.
           </p>
         </div>
 
@@ -124,10 +137,10 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
           onClick={onViewFullRanking}
           className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-sm shrink-0 border ${
             isPurple
-              ? 'bg-[#240f47] hover:bg-[#32145e] text-[#c084fc] border-[#3e196e] hover:border-[#a855f7]'
+              ? "bg-[#240f47] hover:bg-[#32145e] text-[#c084fc] border-[#3e196e] hover:border-[#a855f7]"
               : isDark
-              ? 'bg-[#092032] hover:bg-[#0f2e46] text-emerald-400 border-[#163650] hover:border-emerald-500/50'
-              : 'bg-white hover:bg-slate-50 text-emerald-700 border-slate-200 hover:border-emerald-300'
+                ? "bg-[#092032] hover:bg-[#0f2e46] text-emerald-400 border-[#163650] hover:border-emerald-500/50"
+                : "bg-white hover:bg-slate-50 text-emerald-700 border-slate-200 hover:border-emerald-300"
           }`}
         >
           <Trophy className="w-4 h-4 text-amber-400" />
@@ -146,12 +159,12 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
             id="card-top-aluno-destaque"
             className={`relative rounded-2xl p-6 border transition-all duration-300 overflow-hidden shadow-lg ${
               isEmerald
-                ? 'bg-gradient-to-br from-[#062438] via-[#083049] to-[#041c2c] border-amber-500/40 shadow-amber-500/5'
+                ? "bg-gradient-to-br from-[#062438] via-[#083049] to-[#041c2c] border-amber-500/40 shadow-amber-500/5"
                 : isPurple
-                ? 'bg-gradient-to-br from-[#240f47] via-[#2f135b] to-[#1e0a3c] border-amber-500/40 shadow-amber-500/5'
-                : isDark
-                ? 'bg-gradient-to-br from-[#061b2b] via-[#092237] to-[#041320] border-amber-500/40 shadow-amber-500/5'
-                : 'bg-gradient-to-br from-amber-50/70 via-white to-amber-50/40 border-amber-300 shadow-sm'
+                  ? "bg-gradient-to-br from-[#240f47] via-[#2f135b] to-[#1e0a3c] border-amber-500/40 shadow-amber-500/5"
+                  : isDark
+                    ? "bg-gradient-to-br from-[#061b2b] via-[#092237] to-[#041320] border-amber-500/40 shadow-amber-500/5"
+                    : "bg-gradient-to-br from-amber-50/70 via-white to-amber-50/40 border-amber-300 shadow-sm"
             }`}
           >
             {/* Ambient gold glow decoration */}
@@ -167,8 +180,8 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                 <span
                   className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${
                     isDark
-                      ? 'bg-[#001424]/80 border-amber-500/30 text-amber-300'
-                      : 'bg-white border-amber-200 text-amber-800'
+                      ? "bg-[#001424]/80 border-amber-500/30 text-amber-300"
+                      : "bg-white border-amber-200 text-amber-800"
                   }`}
                 >
                   🥇 1º Lugar no Ranking
@@ -184,9 +197,10 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                       src={topStudent.avatar}
                       alt={topStudent.name}
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/personas/svg?seed=${encodeURIComponent(
-                          topStudent.name
-                        )}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+                        (e.target as HTMLImageElement).src =
+                          `https://api.dicebear.com/7.x/personas/svg?seed=${encodeURIComponent(
+                            topStudent.name,
+                          )}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
                       }}
                       className="w-full h-full object-cover rounded-xl bg-slate-800 student-avatar-zoom transition-transform duration-300 ease-out hover:scale-150 cursor-pointer shadow-md hover:shadow-2xl hover:z-40 relative"
                     />
@@ -200,7 +214,7 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                 <div className="flex-1 min-w-0">
                   <h3
                     className={`text-lg sm:text-xl font-bold truncate ${
-                      isDark ? 'text-white' : 'text-slate-900'
+                      isDark ? "text-white" : "text-slate-900"
                     }`}
                   >
                     {topStudent.name}
@@ -208,11 +222,13 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <span
                       className={`inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-md font-medium ${
-                        isDark ? 'bg-[#0d2a42] text-slate-300' : 'bg-slate-100 text-slate-700'
+                        isDark ? "bg-[#0d2a42] text-slate-300" : "bg-slate-100 text-slate-700"
                       }`}
                     >
                       <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Turma: <strong>{topStudent.class}</strong></span>
+                      <span>
+                        Turma: <strong>{topStudent.class}</strong>
+                      </span>
                     </span>
                   </div>
 
@@ -221,8 +237,10 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                     <span className="text-2xl sm:text-3xl font-black text-amber-400 leading-none">
                       {topStudent.totalCount}
                     </span>
-                    <span className={`text-xs font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                      {topStudent.totalCount === 1 ? 'livro emprestado' : 'livros emprestados'}
+                    <span
+                      className={`text-xs font-semibold ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                    >
+                      {topStudent.totalCount === 1 ? "livro emprestado" : "livros emprestados"}
                     </span>
                   </div>
                 </div>
@@ -231,15 +249,15 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
               {/* Footer status / message */}
               <div
                 className={`mt-4 pt-3 border-t flex items-center justify-between text-xs ${
-                  isDark ? 'border-[#163650] text-slate-400' : 'border-amber-200/80 text-slate-600'
+                  isDark ? "border-[#163650] text-slate-400" : "border-amber-200/80 text-slate-600"
                 }`}
               >
                 <span className="flex items-center gap-1.5 font-medium text-amber-400">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Leitor Mais Ativo da Biblioteca</span>
                 </span>
-                <span className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Membro desde {topStudent.joinedDate || '2026'}
+                <span className={`text-[11px] ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                  Membro desde {topStudent.joinedDate || "2026"}
                 </span>
               </div>
             </div>
@@ -252,12 +270,12 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
             id="card-top-livro-destaque"
             className={`relative rounded-2xl p-6 border transition-all duration-300 overflow-hidden shadow-lg ${
               isEmerald
-                ? 'bg-gradient-to-br from-[#052924] via-[#083832] to-[#031d1a] border-[#00e676]/40 shadow-[0_10px_30px_rgba(0,230,118,0.1)]'
+                ? "bg-gradient-to-br from-[#052924] via-[#083832] to-[#031d1a] border-[#00e676]/40 shadow-[0_10px_30px_rgba(0,230,118,0.1)]"
                 : isPurple
-                ? 'bg-gradient-to-br from-[#240c49] via-[#320f5c] to-[#1a0733] border-purple-500/40 shadow-purple-500/5'
-                : isDark
-                ? 'bg-gradient-to-br from-[#061e27] via-[#082a35] to-[#04151b] border-emerald-500/40 shadow-emerald-500/5'
-                : 'bg-gradient-to-br from-emerald-50/70 via-white to-emerald-50/40 border-emerald-300 shadow-sm'
+                  ? "bg-gradient-to-br from-[#240c49] via-[#320f5c] to-[#1a0733] border-purple-500/40 shadow-purple-500/5"
+                  : isDark
+                    ? "bg-gradient-to-br from-[#061e27] via-[#082a35] to-[#04151b] border-emerald-500/40 shadow-emerald-500/5"
+                    : "bg-gradient-to-br from-emerald-50/70 via-white to-emerald-50/40 border-emerald-300 shadow-sm"
             }`}
           >
             {/* Ambient emerald glow decoration */}
@@ -273,8 +291,8 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                 <span
                   className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${
                     isDark
-                      ? 'bg-[#001424]/80 border-emerald-500/30 text-emerald-300'
-                      : 'bg-white border-emerald-200 text-emerald-800'
+                      ? "bg-[#001424]/80 border-emerald-500/30 text-emerald-300"
+                      : "bg-white border-emerald-200 text-emerald-800"
                   }`}
                 >
                   🔥 Campeão de Leituras
@@ -294,7 +312,7 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                       alt={topBook.title}
                       onError={(e) => {
                         (e.target as HTMLImageElement).src =
-                          'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&auto=format&fit=crop&q=80';
+                          "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&auto=format&fit=crop&q=80";
                       }}
                       className="w-full h-full object-cover"
                     />
@@ -309,19 +327,23 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                   <h3
                     onClick={() => onSelectBook(topBook)}
                     className={`text-lg sm:text-xl font-bold truncate cursor-pointer hover:underline ${
-                      isDark ? 'text-white hover:text-emerald-400' : 'text-slate-900 hover:text-emerald-600'
+                      isDark
+                        ? "text-white hover:text-emerald-400"
+                        : "text-slate-900 hover:text-emerald-600"
                     }`}
                   >
                     {topBook.title}
                   </h3>
-                  <p className={`text-xs font-medium truncate mt-0.5 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                  <p
+                    className={`text-xs font-medium truncate mt-0.5 ${isDark ? "text-slate-300" : "text-slate-600"}`}
+                  >
                     Por <strong className="text-emerald-400">{topBook.author}</strong>
                   </p>
 
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
                     <span
                       className={`text-[11px] px-2 py-0.5 rounded-md font-medium ${
-                        isDark ? 'bg-[#0d2a42] text-slate-300' : 'bg-slate-100 text-slate-700'
+                        isDark ? "bg-[#0d2a42] text-slate-300" : "bg-slate-100 text-slate-700"
                       }`}
                     >
                       {topBook.category}
@@ -337,8 +359,12 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                     <span className="text-2xl sm:text-3xl font-black text-emerald-400 leading-none">
                       {topBook.totalLoans}
                     </span>
-                    <span className={`text-xs font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                      {topBook.totalLoans === 1 ? 'empréstimo registrado' : 'empréstimos registrados'}
+                    <span
+                      className={`text-xs font-semibold ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                    >
+                      {topBook.totalLoans === 1
+                        ? "empréstimo registrado"
+                        : "empréstimos registrados"}
                     </span>
                   </div>
                 </div>
@@ -347,12 +373,14 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
               {/* Footer action button */}
               <div
                 className={`mt-4 pt-3 border-t flex items-center justify-between text-xs ${
-                  isDark ? 'border-[#163650]' : 'border-emerald-200/80'
+                  isDark ? "border-[#163650]" : "border-emerald-200/80"
                 }`}
               >
-                <span className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                <span className={`text-[11px] ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                   {topBook.availableCopies > 0 ? (
-                    <strong className="text-emerald-400">● {topBook.availableCopies} disponíveis</strong>
+                    <strong className="text-emerald-400">
+                      ● {topBook.availableCopies} disponíveis
+                    </strong>
                   ) : (
                     <strong className="text-amber-400">● Em circulação</strong>
                   )}
@@ -360,7 +388,9 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                 <button
                   onClick={() => onSelectBook(topBook)}
                   className={`font-bold flex items-center gap-1 text-xs transition-colors cursor-pointer ${
-                    isDark ? 'text-emerald-400 hover:text-emerald-300' : 'text-emerald-700 hover:text-emerald-800'
+                    isDark
+                      ? "text-emerald-400 hover:text-emerald-300"
+                      : "text-emerald-700 hover:text-emerald-800"
                   }`}
                 >
                   <span>Ver Detalhes do Livro</span>
@@ -383,19 +413,19 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
           id="ranking-de-leitores-card"
           className={`rounded-2xl p-4 sm:p-6 border transition-all shadow-md ${
             isEmerald
-              ? 'bg-[#062438] border-[#0c4061]'
+              ? "bg-[#062438] border-[#0c4061]"
               : isPurple
-              ? 'bg-[#1c0b3d] border-[#3e196e]'
-              : isDark
-              ? 'bg-[#001424] border-[#163650]'
-              : 'bg-white border-slate-200'
+                ? "bg-[#1c0b3d] border-[#3e196e]"
+                : isDark
+                  ? "bg-[#001424] border-[#163650]"
+                  : "bg-white border-slate-200"
           }`}
         >
           {/* Header matching image: 🏆 Ranking de leitores */}
           <div className="flex items-center justify-between mb-5">
             <h3
               className={`text-xl sm:text-2xl font-serif font-bold tracking-tight flex items-center gap-2.5 ${
-                isDark ? 'text-white' : 'text-slate-900'
+                isDark ? "text-white" : "text-slate-900"
               }`}
             >
               <span className="text-xl sm:text-2xl">🏆</span>
@@ -404,12 +434,12 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
             <span
               className={`text-xs px-2.5 py-1 rounded-full font-medium ${
                 isEmerald
-                  ? 'bg-[#0c4061] text-[#00e676] border border-[#00e676]/30'
+                  ? "bg-[#0c4061] text-[#00e676] border border-[#00e676]/30"
                   : isPurple
-                  ? 'bg-[#2e105e] text-purple-300 border border-[#a855f7]/40'
-                  : isDark
-                  ? 'bg-[#092032] text-slate-400 border border-[#163650]'
-                  : 'bg-slate-100 text-slate-600'
+                    ? "bg-[#2e105e] text-purple-300 border border-[#a855f7]/40"
+                    : isDark
+                      ? "bg-[#092032] text-slate-400 border border-[#163650]"
+                      : "bg-slate-100 text-slate-600"
               }`}
             >
               Top Leitores
@@ -431,40 +461,49 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                   className={`flex items-center justify-between p-3 rounded-2xl transition-all duration-200 border ${
                     isEmerald
                       ? isFirst
-                        ? 'bg-[#0a3550] border-amber-500/40 shadow-sm shadow-amber-500/5'
-                        : 'bg-[#041a29]/80 border-[#0a2e46] hover:bg-[#08283f] hover:border-[#0c4061]'
+                        ? "bg-[#0a3550] border-amber-500/40 shadow-sm shadow-amber-500/5"
+                        : "bg-[#041a29]/80 border-[#0a2e46] hover:bg-[#08283f] hover:border-[#0c4061]"
                       : isPurple
-                      ? isFirst
-                        ? 'bg-[#291054] border-amber-500/40 shadow-sm shadow-amber-500/10'
-                        : 'bg-[#210c44]/80 border-[#381665] hover:bg-[#2b1057] hover:border-[#a855f7]/50'
-                      : isDark
-                      ? isFirst
-                        ? 'bg-[#09263a]/90 border-amber-500/40 shadow-sm shadow-amber-500/5'
-                        : 'bg-[#051a2a]/80 border-[#122e44] hover:bg-[#092237] hover:border-[#1a4464]'
-                      : isFirst
-                      ? 'bg-amber-50/80 border-amber-200'
-                      : 'bg-slate-50 border-slate-200/80 hover:bg-slate-100'
+                        ? isFirst
+                          ? "bg-[#291054] border-amber-500/40 shadow-sm shadow-amber-500/10"
+                          : "bg-[#210c44]/80 border-[#381665] hover:bg-[#2b1057] hover:border-[#a855f7]/50"
+                        : isDark
+                          ? isFirst
+                            ? "bg-[#09263a]/90 border-amber-500/40 shadow-sm shadow-amber-500/5"
+                            : "bg-[#051a2a]/80 border-[#122e44] hover:bg-[#092237] hover:border-[#1a4464]"
+                          : isFirst
+                            ? "bg-amber-50/80 border-amber-200"
+                            : "bg-slate-50 border-slate-200/80 hover:bg-slate-100"
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {/* Position Medal / Number */}
                     <div className="w-7 sm:w-8 flex items-center justify-center shrink-0">
                       {isFirst ? (
-                        <span className="text-xl sm:text-2xl leading-none select-none" title="1º Lugar">
+                        <span
+                          className="text-xl sm:text-2xl leading-none select-none"
+                          title="1º Lugar"
+                        >
                           🥇
                         </span>
                       ) : isSecond ? (
-                        <span className="text-xl sm:text-2xl leading-none select-none" title="2º Lugar">
+                        <span
+                          className="text-xl sm:text-2xl leading-none select-none"
+                          title="2º Lugar"
+                        >
                           🥈
                         </span>
                       ) : isThird ? (
-                        <span className="text-xl sm:text-2xl leading-none select-none" title="3º Lugar">
+                        <span
+                          className="text-xl sm:text-2xl leading-none select-none"
+                          title="3º Lugar"
+                        >
                           🥉
                         </span>
                       ) : (
                         <span
                           className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                            isDark ? 'text-slate-400 bg-[#092032]' : 'text-slate-500 bg-slate-200'
+                            isDark ? "text-slate-400 bg-[#092032]" : "text-slate-500 bg-slate-200"
                           }`}
                         >
                           {position}
@@ -478,16 +517,17 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                         src={st.avatar}
                         alt={st.name}
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/personas/svg?seed=${encodeURIComponent(
-                            st.name
-                          )}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+                          (e.target as HTMLImageElement).src =
+                            `https://api.dicebear.com/7.x/personas/svg?seed=${encodeURIComponent(
+                              st.name,
+                            )}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
                         }}
                         className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border student-avatar-zoom transition-transform duration-300 ease-out hover:scale-150 hover:shadow-2xl hover:z-40 cursor-pointer relative ${
                           isFirst
-                            ? 'border-amber-400 ring-2 ring-amber-400/30'
+                            ? "border-amber-400 ring-2 ring-amber-400/30"
                             : isDark
-                            ? 'border-[#163650] bg-slate-800'
-                            : 'border-slate-200 bg-white'
+                              ? "border-[#163650] bg-slate-800"
+                              : "border-slate-200 bg-white"
                         }`}
                       />
                     </div>
@@ -496,12 +536,12 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                     <div className="min-w-0">
                       <h4
                         className={`text-sm font-semibold truncate ${
-                          isDark ? 'text-slate-100' : 'text-slate-900'
-                        } ${isFirst ? 'font-bold' : ''}`}
+                          isDark ? "text-slate-100" : "text-slate-900"
+                        } ${isFirst ? "font-bold" : ""}`}
                       >
                         {st.name}
                       </h4>
-                      <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                         {st.class}
                       </p>
                     </div>
@@ -512,13 +552,13 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                     <span
                       className={`text-xs font-bold ${
                         isFirst
-                          ? 'text-amber-400 font-extrabold'
+                          ? "text-amber-400 font-extrabold"
                           : isDark
-                          ? 'text-slate-300'
-                          : 'text-slate-700'
+                            ? "text-slate-300"
+                            : "text-slate-700"
                       }`}
                     >
-                      {st.totalCount} {st.totalCount === 1 ? 'livro' : 'livros'}
+                      {st.totalCount} {st.totalCount === 1 ? "livro" : "livros"}
                     </span>
                   </div>
                 </div>
@@ -534,33 +574,35 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
           id="mais-lidos-card"
           className={`rounded-2xl p-4 sm:p-6 border transition-all shadow-md ${
             isEmerald
-              ? 'bg-[#062438] border-[#0c4061]'
+              ? "bg-[#062438] border-[#0c4061]"
               : isPurple
-              ? 'bg-[#1c0b3d] border-[#3e196e]'
-              : isDark
-              ? 'bg-[#001424] border-[#163650]'
-              : 'bg-white border-slate-200'
+                ? "bg-[#1c0b3d] border-[#3e196e]"
+                : isDark
+                  ? "bg-[#001424] border-[#163650]"
+                  : "bg-white border-slate-200"
           }`}
         >
           {/* Header matching image: 📈 Mais lidos */}
           <div className="flex items-center justify-between mb-5">
             <h3
               className={`text-xl sm:text-2xl font-serif font-bold tracking-tight flex items-center gap-2.5 ${
-                isDark ? 'text-white' : 'text-slate-900'
+                isDark ? "text-white" : "text-slate-900"
               }`}
             >
-              <TrendingUp className={`w-5 h-5 sm:w-6 sm:h-6 ${isEmerald ? 'text-[#00e676]' : isPurple ? 'text-[#c084fc]' : 'text-emerald-400'}`} />
+              <TrendingUp
+                className={`w-5 h-5 sm:w-6 sm:h-6 ${isEmerald ? "text-[#00e676]" : isPurple ? "text-[#c084fc]" : "text-emerald-400"}`}
+              />
               <span>Mais lidos</span>
             </h3>
             <span
               className={`text-xs px-2.5 py-1 rounded-full font-medium ${
                 isEmerald
-                  ? 'bg-[#0c4061] text-[#00e676] border border-[#00e676]/30'
+                  ? "bg-[#0c4061] text-[#00e676] border border-[#00e676]/30"
                   : isPurple
-                  ? 'bg-[#2e105e] text-purple-300 border border-[#a855f7]/40'
-                  : isDark
-                  ? 'bg-[#092032] text-slate-400 border border-[#163650]'
-                  : 'bg-slate-100 text-slate-600'
+                    ? "bg-[#2e105e] text-purple-300 border border-[#a855f7]/40"
+                    : isDark
+                      ? "bg-[#092032] text-slate-400 border border-[#163650]"
+                      : "bg-slate-100 text-slate-600"
               }`}
             >
               Top Livros
@@ -581,19 +623,19 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                   className={`flex items-center justify-between p-3 rounded-2xl transition-all duration-200 border cursor-pointer group ${
                     isEmerald
                       ? isFirst
-                        ? 'bg-[#052924] border-[#00e676]/40 shadow-sm shadow-[#00e676]/10 hover:border-[#00e676]'
-                        : 'bg-[#041a29]/80 border-[#0a2e46] hover:bg-[#08283f] hover:border-[#0c4061]'
+                        ? "bg-[#052924] border-[#00e676]/40 shadow-sm shadow-[#00e676]/10 hover:border-[#00e676]"
+                        : "bg-[#041a29]/80 border-[#0a2e46] hover:bg-[#08283f] hover:border-[#0c4061]"
                       : isPurple
-                      ? isFirst
-                        ? 'bg-[#2d0f52] border-purple-500/40 shadow-sm shadow-purple-500/10 hover:border-[#a855f7]'
-                        : 'bg-[#210c44]/80 border-[#381665] hover:bg-[#2b1057] hover:border-[#a855f7]/50'
-                      : isDark
-                      ? isFirst
-                        ? 'bg-[#06242a]/90 border-emerald-500/40 shadow-sm shadow-emerald-500/5 hover:border-emerald-400'
-                        : 'bg-[#051a2a]/80 border-[#122e44] hover:bg-[#092237] hover:border-[#1a4464]'
-                      : isFirst
-                      ? 'bg-emerald-50/80 border-emerald-200 hover:bg-emerald-100/70'
-                      : 'bg-slate-50 border-slate-200/80 hover:bg-slate-100'
+                        ? isFirst
+                          ? "bg-[#2d0f52] border-purple-500/40 shadow-sm shadow-purple-500/10 hover:border-[#a855f7]"
+                          : "bg-[#210c44]/80 border-[#381665] hover:bg-[#2b1057] hover:border-[#a855f7]/50"
+                        : isDark
+                          ? isFirst
+                            ? "bg-[#06242a]/90 border-emerald-500/40 shadow-sm shadow-emerald-500/5 hover:border-emerald-400"
+                            : "bg-[#051a2a]/80 border-[#122e44] hover:bg-[#092237] hover:border-[#1a4464]"
+                          : isFirst
+                            ? "bg-emerald-50/80 border-emerald-200 hover:bg-emerald-100/70"
+                            : "bg-slate-50 border-slate-200/80 hover:bg-slate-100"
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
@@ -602,10 +644,10 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                       <span
                         className={`text-xs sm:text-sm font-bold ${
                           isFirst
-                            ? 'text-emerald-400 font-extrabold text-base'
+                            ? "text-emerald-400 font-extrabold text-base"
                             : isDark
-                            ? 'text-slate-400'
-                            : 'text-slate-500'
+                              ? "text-slate-400"
+                              : "text-slate-500"
                         }`}
                       >
                         {position}
@@ -616,12 +658,16 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                     <div className="min-w-0 pr-2">
                       <h4
                         className={`text-sm font-semibold truncate group-hover:underline ${
-                          isDark ? 'text-slate-100 group-hover:text-emerald-400' : 'text-slate-900 group-hover:text-emerald-700'
-                        } ${isFirst ? 'font-bold' : ''}`}
+                          isDark
+                            ? "text-slate-100 group-hover:text-emerald-400"
+                            : "text-slate-900 group-hover:text-emerald-700"
+                        } ${isFirst ? "font-bold" : ""}`}
                       >
                         {bk.title}
                       </h4>
-                      <p className={`text-xs truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      <p
+                        className={`text-xs truncate ${isDark ? "text-slate-400" : "text-slate-500"}`}
+                      >
                         {bk.author}
                       </p>
                     </div>
@@ -632,13 +678,13 @@ export const HomeRankingWidget: React.FC<HomeRankingWidgetProps> = ({
                     <span
                       className={`text-xs font-semibold whitespace-nowrap ${
                         isFirst
-                          ? 'text-emerald-400 font-bold'
+                          ? "text-emerald-400 font-bold"
                           : isDark
-                          ? 'text-slate-300'
-                          : 'text-slate-700'
+                            ? "text-slate-300"
+                            : "text-slate-700"
                       }`}
                     >
-                      {bk.totalLoans} {bk.totalLoans === 1 ? 'empr.' : 'empr.'}
+                      {bk.totalLoans} {bk.totalLoans === 1 ? "empr." : "empr."}
                     </span>
                   </div>
                 </div>

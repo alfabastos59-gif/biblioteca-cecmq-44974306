@@ -141,13 +141,17 @@ export function QuiterioChat() {
       const q = content.toLowerCase();
       let reply = "Miau! 🐱 Que ótima pergunta! ";
       if (q.includes("aventura") || q.includes("ação")) {
-        reply += "Se você curte aventura, recomendo fortemente **'Capitães da Areia'** de Jorge Amado ou a saga de **'Harry Potter'** no nosso acervo escolar! São cheios de reviravoltas.";
+        reply +=
+          "Se você curte aventura, recomendo fortemente **'Capitães da Areia'** de Jorge Amado ou a saga de **'Harry Potter'** no nosso acervo escolar! São cheios de reviravoltas.";
       } else if (q.includes("curto") || q.includes("rápido") || q.includes("hoje")) {
-        reply += "Para uma leitura rápida e marcante hoje mesmo, pegue **'A Hora da Estrela'** de Clarice Lispector ou **'O Pequeno Príncipe'**! São livros envolventes e de leitura ágil.";
+        reply +=
+          "Para uma leitura rápida e marcante hoje mesmo, pegue **'A Hora da Estrela'** de Clarice Lispector ou **'O Pequeno Príncipe'**! São livros envolventes e de leitura ágil.";
       } else if (q.includes("clássico")) {
-        reply += "De clássico da nossa literatura, você não pode deixar de conferir **'Dom Casmurro'** de Machado de Assis ou **'Grande Sertão: Veredas'** de Guimarães Rosa!";
+        reply +=
+          "De clássico da nossa literatura, você não pode deixar de conferir **'Dom Casmurro'** de Machado de Assis ou **'Grande Sertão: Veredas'** de Guimarães Rosa!";
       } else if (q.includes("romance") || q.includes("amor")) {
-        reply += "Para quem ama romance, temos disponíveis obras emocionantes como **'A Menina que Roubava Livros'** e clássicos da literatura brasileira em nossas estantes.";
+        reply +=
+          "Para quem ama romance, temos disponíveis obras emocionantes como **'A Menina que Roubava Livros'** e clássicos da literatura brasileira em nossas estantes.";
       } else {
         reply += `Para quem se interessa por esse tema, dê uma olhada em **'Torto Arado'** (Itamar Vieira Junior) ou **'Vidas Secas'** (Graciliano Ramos). Você pode consultar os detalhes e a localização na aba **Catálogo**! 📚`;
       }
@@ -181,9 +185,7 @@ export function QuiterioChat() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-display font-bold text-sm leading-tight text-white">Quitério</p>
-              <p className="text-[11px] text-emerald-300 leading-tight">
-                Seu guia de leitura 🐱
-              </p>
+              <p className="text-[11px] text-emerald-300 leading-tight">Seu guia de leitura 🐱</p>
             </div>
             <button
               onClick={closeAndReset}
@@ -248,8 +250,17 @@ export function QuiterioChat() {
               disabled={loading}
               className="flex-1 bg-white text-slate-900 border-emerald-600 placeholder:text-slate-400 focus-visible:ring-emerald-500"
             />
-            <Button type="submit" size="icon" className="bg-emerald-600 text-white hover:bg-emerald-500 shadow-sm" disabled={loading || !input.trim()}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            <Button
+              type="submit"
+              size="icon"
+              className="bg-emerald-600 text-white hover:bg-emerald-500 shadow-sm"
+              disabled={loading || !input.trim()}
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </Button>
           </form>
         </div>

@@ -1,8 +1,12 @@
 // @ts-nocheck
-import React from 'react';
-import { Student } from '../types';
-import { generateBarcodeBars, formatStudentRegistration, getStudentBarcodeCode } from '../utils/barcodeGenerator';
-import { MapPin, Globe, Instagram, BookOpen, Quote } from 'lucide-react';
+import React from "react";
+import { Student } from "../types";
+import {
+  generateBarcodeBars,
+  formatStudentRegistration,
+  getStudentBarcodeCode,
+} from "../utils/barcodeGenerator";
+import { MapPin, Globe, Instagram, BookOpen, Quote } from "lucide-react";
 
 interface StudentCardProps {
   student: Student;
@@ -14,8 +18,8 @@ interface StudentCardProps {
 
 export const StudentCard: React.FC<StudentCardProps> = ({
   student,
-  issueDate = '27/05/2025',
-  className = '',
+  issueDate = "27/05/2025",
+  className = "",
   scale = 1,
   printMode = false,
 }) => {
@@ -29,8 +33,8 @@ export const StudentCard: React.FC<StudentCardProps> = ({
       className={`relative w-[380px] h-[550px] bg-white text-slate-900 rounded-[24px] overflow-hidden shadow-2xl border border-slate-300 flex flex-col justify-between select-none print:shadow-none print:border-slate-400 print:rounded-2xl ${className}`}
       style={{
         transform: scale !== 1 ? `scale(${scale})` : undefined,
-        transformOrigin: 'top center',
-        pageBreakInside: 'avoid',
+        transformOrigin: "top center",
+        pageBreakInside: "avoid",
       }}
     >
       {/* 1. TOP HEADER - Deep Forest Green with Watermark */}
@@ -56,7 +60,7 @@ export const StudentCard: React.FC<StudentCardProps> = ({
                 />
               </defs>
               <circle cx="50" cy="50" r="48" fill="#012b1a" stroke="#22c55e" strokeWidth="1.5" />
-              
+
               {/* Inner 4-piece puzzle emblem */}
               <g transform="translate(18, 18) scale(0.64)">
                 {/* Top-Left: Orange */}
@@ -81,15 +85,30 @@ export const StudentCard: React.FC<StudentCardProps> = ({
                 />
                 {/* Icons inside puzzle */}
                 {/* Brush */}
-                <g transform="translate(18, 14) scale(0.65)" stroke="#FFFFFF" strokeWidth="2.2" fill="none">
+                <g
+                  transform="translate(18, 14) scale(0.65)"
+                  stroke="#FFFFFF"
+                  strokeWidth="2.2"
+                  fill="none"
+                >
                   <path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.375-9.375z" />
                 </g>
                 {/* Flask */}
-                <g transform="translate(62, 13) scale(0.65)" stroke="#FFFFFF" strokeWidth="2.2" fill="none">
+                <g
+                  transform="translate(62, 13) scale(0.65)"
+                  stroke="#FFFFFF"
+                  strokeWidth="2.2"
+                  fill="none"
+                >
                   <path d="M10 2v7.5L4.5 20a1.5 1.5 0 0 0 1.3 2.2h12.4a1.5 1.5 0 0 0 1.3-2.2L14 9.5V2" />
                 </g>
                 {/* Molecule */}
-                <g transform="translate(18, 58) scale(0.65)" stroke="#FFFFFF" strokeWidth="2.2" fill="none">
+                <g
+                  transform="translate(18, 58) scale(0.65)"
+                  stroke="#FFFFFF"
+                  strokeWidth="2.2"
+                  fill="none"
+                >
                   <circle cx="12" cy="5" r="3.5" fill="#FFF" />
                   <circle cx="5" cy="17" r="3.5" fill="#FFF" />
                   <circle cx="19" cy="17" r="3.5" fill="#FFF" />
@@ -97,9 +116,18 @@ export const StudentCard: React.FC<StudentCardProps> = ({
                   <line x1="12" y1="8.5" x2="17.5" y2="14" stroke="#FFF" />
                 </g>
                 {/* Ball */}
-                <g transform="translate(62, 58) scale(0.65)" stroke="#FFFFFF" strokeWidth="2" fill="none">
+                <g
+                  transform="translate(62, 58) scale(0.65)"
+                  stroke="#FFFFFF"
+                  strokeWidth="2"
+                  fill="none"
+                >
                   <circle cx="12" cy="12" r="10" />
-                  <polygon points="12 7, 16 10, 14.5 15, 9.5 15, 8 10" fill="#FFF" fillOpacity="0.5" />
+                  <polygon
+                    points="12 7, 16 10, 14.5 15, 9.5 15, 8 10"
+                    fill="#FFF"
+                    fillOpacity="0.5"
+                  />
                 </g>
               </g>
             </svg>
@@ -143,14 +171,7 @@ export const StudentCard: React.FC<StudentCardProps> = ({
                 shapeRendering="crispEdges"
               >
                 {barcodeData.bars.map((bar, idx) => (
-                  <rect
-                    key={idx}
-                    x={bar.x}
-                    y={0}
-                    width={bar.width}
-                    height={32}
-                    fill="#000000"
-                  />
+                  <rect key={idx} x={bar.x} y={0} width={bar.width} height={32} fill="#000000" />
                 ))}
               </svg>
               <span className="text-[8.5px] font-mono font-bold tracking-widest text-slate-900 mt-0.5">
@@ -168,7 +189,7 @@ export const StudentCard: React.FC<StudentCardProps> = ({
               <h3 className="text-[14px] font-black text-slate-950 uppercase leading-tight line-clamp-2 mt-0.5">
                 {student.name}
               </h3>
-              
+
               <div className="w-full h-[1.5px] bg-slate-200 my-1.5" />
 
               <div className="space-y-1 text-[11px] font-medium text-slate-800">
@@ -193,7 +214,9 @@ export const StudentCard: React.FC<StudentCardProps> = ({
                 <BookOpen className="w-3.5 h-3.5" />
               </div>
               <div className="text-[8.5px] font-extrabold text-[#023d24] leading-tight uppercase">
-                LER TRANSFORMA.<br />CONHECER LIBERTA.
+                LER TRANSFORMA.
+                <br />
+                CONHECER LIBERTA.
               </div>
             </div>
 
@@ -296,7 +319,9 @@ export const StudentCard: React.FC<StudentCardProps> = ({
               </svg>
             </div>
             <span className="text-[7px] font-extrabold text-slate-900 tracking-tight leading-tight uppercase">
-              ACESSE NOSSA<br />BIBLIOTECA DIGITAL
+              ACESSE NOSSA
+              <br />
+              BIBLIOTECA DIGITAL
             </span>
           </div>
         </div>
@@ -308,7 +333,9 @@ export const StudentCard: React.FC<StudentCardProps> = ({
         <div className="flex items-center gap-1">
           <MapPin className="w-3 h-3 text-[#023d24] shrink-0" />
           <span className="leading-tight text-[7.5px]">
-            Distrito de Maria Quitéria<br />Feira de Santana - BA
+            Distrito de Maria Quitéria
+            <br />
+            Feira de Santana - BA
           </span>
         </div>
 
@@ -326,7 +353,9 @@ export const StudentCard: React.FC<StudentCardProps> = ({
 
         {/* Right Label */}
         <div className="text-right text-[7.5px] font-extrabold text-[#023d24] leading-tight">
-          TEMPO INTEGRAL<br />FEIRA DE SANTANA - BA
+          TEMPO INTEGRAL
+          <br />
+          FEIRA DE SANTANA - BA
         </div>
       </div>
     </div>

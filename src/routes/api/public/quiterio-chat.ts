@@ -5,14 +5,16 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 async function carregarAcervo(): Promise<string> {
   const url = process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"];
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"] || process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
+  const key =
+    process.env["SUPABASE_PUBLISHABLE_KEY"] || process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
   if (!url || !key) return "";
   const sb = createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: {
       fetch: (input, init) => {
         const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
+        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`)
+          h.delete("Authorization");
         h.set("apikey", key);
         return fetch(input, { ...init, headers: h });
       },
@@ -20,7 +22,11 @@ async function carregarAcervo(): Promise<string> {
   });
   const linhas: string[] = [];
   for (let from = 0; from < 3000; from += 1000) {
-    const { data, error } = await sb.from("records").select("data").eq("collection", "books").range(from, from + 999);
+    const { data, error } = await sb
+      .from("records")
+      .select("data")
+      .eq("collection", "books")
+      .range(from, from + 999);
     if (error) break;
     for (const r of data ?? []) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -28,8 +34,12 @@ async function carregarAcervo(): Promise<string> {
       const t = String(d.title ?? "").trim();
       if (!t) continue;
       const disp = Number(d.availableCopies ?? 1) > 0 ? "disponível" : "emprestado";
-      const sin = String(d.synopsis ?? "").replace(/Cadastrado por:.*$/s, "").slice(0, 120);
-      linhas.push(`"${t}" — ${d.author ?? ""} | ${d.category ?? ""} | ${disp}${sin ? ` | ${sin}` : ""}`);
+      const sin = String(d.synopsis ?? "")
+        .replace(/Cadastrado por:.*$/s, "")
+        .slice(0, 120);
+      linhas.push(
+        `"${t}" — ${d.author ?? ""} | ${d.category ?? ""} | ${disp}${sin ? ` | ${sin}` : ""}`,
+      );
     }
     if (!data || data.length < 1000) break;
   }
@@ -37,19 +47,28 @@ async function carregarAcervo(): Promise<string> {
 }
 
 const json = (status: number, error: string) =>
-  new Response(JSON.stringify({ error }), { status, headers: { "Content-Type": "application/json" } });
+  new Response(JSON.stringify({ error }), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
 
 export const Route = createFileRoute("/api/public/quiterio-chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
         const apiKey = process.env["LOVABLE_API_KEY"];
-        if (!apiKey) return json(500, "Quitério não configurado");
+        const geminiApiKey = process.env["GEMINI_API_KEY"];
+        if (!apiKey && !geminiApiKey) {
+          return json(500, "Quitério não configurado");
+        }
         let messages: Msg[] = [];
         try {
           const body = await request.json();
           messages = (Array.isArray(body?.messages) ? body.messages : [])
-            .filter((m: Msg) => (m?.role === "user" || m?.role === "assistant") && typeof m.content === "string")
+            .filter(
+              (m: Msg) =>
+                (m?.role === "user" || m?.role === "assistant") && typeof m.content === "string",
+            )
             .slice(-20)
             .map((m: Msg) => ({ role: m.role, content: m.content.slice(0, 2000) }));
         } catch {
@@ -71,9 +90,60 @@ REGRAS:
 ACERVO ATUAL:
 ${acervo || "(acervo vazio no momento)"}`;
 
+        if (!apiKey && geminiApiKey) {
+          try {
+            const { GoogleGenAI } = await import("@google/genai");
+            const ai = new GoogleGenAI({ apiKey: geminiApiKey });
+            const contents = messages.map((m) => ({
+              role: m.role === "assistant" ? "model" : "user",
+              parts: [{ text: m.content }],
+            }));
+
+            const responseStream = await ai.models.generateContentStream({
+              model: "gemini-3.8-flash",
+              contents,
+              config: {
+                systemInstruction: systemPrompt,
+              },
+            });
+
+            const stream = new ReadableStream({
+              async start(controller) {
+                const encoder = new TextEncoder();
+                try {
+                  for await (const chunk of responseStream) {
+                    const text = chunk.text;
+                    if (text) {
+                      const payload = JSON.stringify({
+                        choices: [{ delta: { content: text } }],
+                      });
+                      controller.enqueue(encoder.encode(`data: ${payload}\n\n`));
+                    }
+                  }
+                  controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+                  controller.close();
+                } catch (err) {
+                  controller.error(err);
+                }
+              },
+            });
+
+            return new Response(stream, {
+              headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-store" },
+            });
+          } catch (error) {
+            console.error("Gemini Quiterio error:", error);
+            return json(500, "Erro ao conectar com Quitério");
+          }
+        }
+
         const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
-          headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json", "X-Lovable-AIG-SDK": "fetch" },
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+            "X-Lovable-AIG-SDK": "fetch",
+          },
           body: JSON.stringify({
             model: "openai/gpt-6-astra",
             reasoning_effort: "low",
@@ -88,7 +158,9 @@ ${acervo || "(acervo vazio no momento)"}`;
           if (resp.status === 402) return json(402, "Créditos de IA esgotados.");
           return json(resp.status >= 400 ? resp.status : 500, "Erro no Quitério");
         }
-        return new Response(resp.body, { headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-store" } });
+        return new Response(resp.body, {
+          headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-store" },
+        });
       },
     },
   },

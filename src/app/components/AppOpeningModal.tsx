@@ -1,6 +1,6 @@
 // @ts-nocheck
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   Play,
   Pause,
@@ -13,8 +13,8 @@ import {
   X,
   Film,
   CheckCircle2,
-} from 'lucide-react';
-import { Logo } from './Logo';
+} from "lucide-react";
+import { Logo } from "./Logo";
 
 interface AppOpeningModalProps {
   isOpen: boolean;
@@ -38,8 +38,8 @@ export const AppOpeningModal: React.FC<AppOpeningModalProps> = ({
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   // Video source paths
-  const videoSrc = '/assets/abertura_cecmq.mp4';
-  const posterSrc = '/assets/abertura_cecmq_poster.jpg';
+  const videoSrc = "/assets/abertura_cecmq.mp4";
+  const posterSrc = "/assets/abertura_cecmq_poster.jpg";
 
   useEffect(() => {
     if (isOpen) {
@@ -94,7 +94,10 @@ export const AppOpeningModal: React.FC<AppOpeningModalProps> = ({
       videoRef.current.pause();
       setIsPlaying(false);
     } else {
-      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+      videoRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch(() => {});
     }
   };
 
@@ -108,7 +111,10 @@ export const AppOpeningModal: React.FC<AppOpeningModalProps> = ({
   const handleRestart = () => {
     if (!videoRef.current) return;
     videoRef.current.currentTime = 0;
-    videoRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+    videoRef.current
+      .play()
+      .then(() => setIsPlaying(true))
+      .catch(() => {});
     setProgress(0);
     setCurrentTime(0);
   };
@@ -116,7 +122,7 @@ export const AppOpeningModal: React.FC<AppOpeningModalProps> = ({
   const handleClose = () => {
     if (dontShowAgain) {
       try {
-        localStorage.setItem('bmq_suppress_intro', 'true');
+        localStorage.setItem("bmq_suppress_intro", "true");
       } catch {
         // ignore
       }
@@ -136,7 +142,7 @@ export const AppOpeningModal: React.FC<AppOpeningModalProps> = ({
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ duration: 0.35, ease: 'easeOut' }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
           className="relative w-full max-w-5xl max-h-[92vh] flex flex-col rounded-3xl overflow-hidden border border-cyan-500/30 shadow-[0_0_80px_rgba(6,182,212,0.25)] bg-gradient-to-b from-[#061826] via-[#04101c] to-[#020912]"
         >
           {/* Top Bar / Header */}
@@ -310,7 +316,7 @@ export const AppOpeningModal: React.FC<AppOpeningModalProps> = ({
                   id="btn-opening-toggle-play"
                   onClick={togglePlay}
                   className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-colors cursor-pointer"
-                  title={isPlaying ? 'Pausar' : 'Reproduzir'}
+                  title={isPlaying ? "Pausar" : "Reproduzir"}
                 >
                   {isPlaying ? (
                     <Pause className="w-4 h-4 fill-white" />
@@ -335,10 +341,10 @@ export const AppOpeningModal: React.FC<AppOpeningModalProps> = ({
                   onClick={toggleMute}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
                     isMuted
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
-                      : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
+                      ? "bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30"
+                      : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30"
                   }`}
-                  title={isMuted ? 'Ativar som' : 'Desativar som'}
+                  title={isMuted ? "Ativar som" : "Desativar som"}
                 >
                   {isMuted ? (
                     <>

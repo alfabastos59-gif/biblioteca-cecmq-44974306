@@ -6,7 +6,11 @@ export function QuiterioAgentMascot({ size = 56, mood = "idle", className = "" }
   const cls = mood === "talking" ? "is-talking" : mood === "happy" ? "is-happy" : "";
 
   return (
-    <div className={`quiterio-agent ${className}`} style={{ width: size, height: size }} aria-hidden="true">
+    <div
+      className={`quiterio-agent ${className}`}
+      style={{ width: size, height: size }}
+      aria-hidden="true"
+    >
       <img
         src={gatinhoQuiterioImg}
         alt="Quitério Mascote - Gatinho digitando e tomando café"

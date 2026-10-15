@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from "react";
 import {
   X,
   Printer,
@@ -16,11 +16,11 @@ import {
   CreditCard,
   Calendar,
   RotateCcw,
-  CheckCircle2
-} from 'lucide-react';
-import { Student } from '../types';
-import { StudentCard } from './StudentCard';
-import { useTheme } from '../context/ThemeContext';
+  CheckCircle2,
+} from "lucide-react";
+import { Student } from "../types";
+import { StudentCard } from "./StudentCard";
+import { useTheme } from "../context/ThemeContext";
 
 interface StudentCardModalProps {
   isOpen: boolean;
@@ -36,7 +36,7 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
   initialSelectedStudent = null,
 }) => {
   const { isDark } = useTheme();
-  
+
   // Selection state
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>(() => {
     if (initialSelectedStudent) {
@@ -47,26 +47,26 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
 
   // Highlighted student for live preview in split view
   const [previewStudentId, setPreviewStudentId] = useState<string>(() => {
-    return initialSelectedStudent?.id || students[0]?.id || '';
+    return initialSelectedStudent?.id || students[0]?.id || "";
   });
 
   // UI View Mode: 'list' (Selection List + Preview) or 'grid' (Visual Cards Gallery)
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [showOnlySelected, setShowOnlySelected] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedClass, setSelectedClass] = useState<string>('all');
-  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedClass, setSelectedClass] = useState<string>("all");
+
   // Custom emission date
   const [issueDate, setIssueDate] = useState<string>(() => {
     const now = new Date();
-    const d = String(now.getDate()).padStart(2, '0');
-    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, "0");
+    const m = String(now.getMonth() + 1).padStart(2, "0");
     const y = now.getFullYear();
     return `${d}/${m}/${y}`;
   });
 
   // Layout mode for printing
-  const [printLayout, setPrintLayout] = useState<'grid2' | 'single' | 'grid4'>('grid2');
+  const [printLayout, setPrintLayout] = useState<"grid2" | "single" | "grid4">("grid2");
 
   // Update selection if initialSelectedStudent changes
   useEffect(() => {
@@ -79,14 +79,14 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
   // Extract unique classes
   const availableClasses = useMemo(() => {
     const classes = Array.from(new Set(students.map((s) => s.class).filter(Boolean)));
-    return ['all', ...classes.sort()];
+    return ["all", ...classes.sort()];
   }, [students]);
 
   // Filter students based on search query, class, and showOnlySelected toggle
   const filteredStudents = useMemo(() => {
     return students
       .filter((s) => {
-        const matchClass = selectedClass === 'all' || s.class === selectedClass;
+        const matchClass = selectedClass === "all" || s.class === selectedClass;
         const matchQuery =
           !searchQuery.trim() ||
           s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -95,19 +95,21 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
         const matchOnlySelected = !showOnlySelected || selectedStudentIds.includes(s.id);
         return matchClass && matchQuery && matchOnlySelected;
       })
-      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+      .sort((a, b) => a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }));
   }, [students, selectedClass, searchQuery, showOnlySelected, selectedStudentIds]);
 
   // Student currently displayed in the live preview panel
   const previewStudent = useMemo(() => {
-    return students.find((s) => s.id === previewStudentId) || filteredStudents[0] || students[0] || null;
+    return (
+      students.find((s) => s.id === previewStudentId) || filteredStudents[0] || students[0] || null
+    );
   }, [students, previewStudentId, filteredStudents]);
 
   // Students that will actually be printed
   const studentsToPrint = useMemo(() => {
     return students
       .filter((s) => selectedStudentIds.includes(s.id))
-      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
+      .sort((a, b) => a.name.localeCompare(b.name, "pt-BR", { sensitivity: "base" }));
   }, [students, selectedStudentIds]);
 
   if (!isOpen) return null;
@@ -115,7 +117,7 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
   // Selection handlers
   const handleToggleStudent = (id: string) => {
     setSelectedStudentIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
     setPreviewStudentId(id);
   };
@@ -131,7 +133,7 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
   };
 
   const handleSelectOnlyClass = (className: string) => {
-    if (className === 'all') {
+    if (className === "all") {
       setSelectedStudentIds(students.map((s) => s.id));
     } else {
       setSelectedStudentIds(students.filter((s) => s.class === className).map((s) => s.id));
@@ -159,7 +161,7 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
 
   const handlePrint = () => {
     if (studentsToPrint.length === 0) {
-      alert('Selecione pelo menos uma carteira para imprimir.');
+      alert("Selecione pelo menos uma carteira para imprimir.");
       return;
     }
     window.print();
@@ -219,7 +221,9 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
       {/* Main Modal Container */}
       <div
         className={`relative w-full max-w-6xl max-h-[94vh] flex flex-col rounded-2xl border shadow-2xl overflow-hidden no-print ${
-          isDark ? 'bg-[#001726] border-[#163e5e] text-white' : 'bg-white border-slate-200 text-slate-900'
+          isDark
+            ? "bg-[#001726] border-[#163e5e] text-white"
+            : "bg-white border-slate-200 text-slate-900"
         }`}
       >
         {/* 1. MODAL TOP HEADER */}
@@ -238,7 +242,8 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-emerald-100/90 font-medium">
-                Selecione quais alunos terão suas carteirinhas impressas com código de barras próprio e avatar.
+                Selecione quais alunos terão suas carteirinhas impressas com código de barras
+                próprio e avatar.
               </p>
             </div>
           </div>
@@ -251,14 +256,12 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
               disabled={studentsToPrint.length === 0}
               className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg transition-all cursor-pointer active:scale-95 ${
                 studentsToPrint.length > 0
-                  ? 'bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 shadow-emerald-950/40'
-                  : 'bg-slate-700 text-slate-400 cursor-not-allowed opacity-60'
+                  ? "bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 shadow-emerald-950/40"
+                  : "bg-slate-700 text-slate-400 cursor-not-allowed opacity-60"
               }`}
             >
               <Printer className="w-4 h-4" />
-              <span>
-                Imprimir Selecionadas ({studentsToPrint.length})
-              </span>
+              <span>Imprimir Selecionadas ({studentsToPrint.length})</span>
             </button>
 
             <button
@@ -273,17 +276,17 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
         {/* 2. MODAL CONTROLS TOOLBAR & SELECTION SHORTCUTS */}
         <div
           className={`px-5 py-3 border-b flex flex-wrap items-center justify-between gap-3 text-xs ${
-            isDark ? 'bg-[#001424] border-[#163e5e]' : 'bg-slate-50 border-slate-200'
+            isDark ? "bg-[#001424] border-[#163e5e]" : "bg-slate-50 border-slate-200"
           }`}
         >
           {/* View Mode Toggle: List + Preview vs Grid Gallery */}
           <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-200/60 dark:bg-[#001f35] border border-slate-300/40 dark:border-[#163e5e]">
             <button
-              onClick={() => setViewMode('list')}
+              onClick={() => setViewMode("list")}
               className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                viewMode === 'list'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                viewMode === "list"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               <Users className="w-3.5 h-3.5" />
@@ -291,11 +294,11 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
             </button>
 
             <button
-              onClick={() => setViewMode('grid')}
+              onClick={() => setViewMode("grid")}
               className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                viewMode === 'grid'
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                viewMode === "grid"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -309,9 +312,9 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
               className={`px-3 py-1 rounded-lg font-bold text-xs flex items-center gap-1.5 ${
                 studentsToPrint.length > 0
                   ? isDark
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                  : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                    : "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                  : "bg-rose-500/10 text-rose-400 border border-rose-500/30"
               }`}
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
@@ -329,7 +332,9 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
                 onChange={(e) => setIssueDate(e.target.value)}
                 placeholder="DD/MM/AAAA"
                 className={`w-28 px-2.5 py-1 rounded-lg text-center font-mono font-semibold border text-xs ${
-                  isDark ? 'bg-[#001726] border-[#163e5e] text-white' : 'bg-white border-slate-300 text-slate-900'
+                  isDark
+                    ? "bg-[#001726] border-[#163e5e] text-white"
+                    : "bg-white border-slate-300 text-slate-900"
                 }`}
               />
             </div>
@@ -339,7 +344,7 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
         {/* 3. FILTERS & QUICK SELECTION BAR */}
         <div
           className={`px-5 py-2.5 border-b flex flex-wrap items-center justify-between gap-3 text-xs ${
-            isDark ? 'bg-[#001726] border-[#163e5e]/80' : 'bg-white border-slate-200'
+            isDark ? "bg-[#001726] border-[#163e5e]/80" : "bg-white border-slate-200"
           }`}
         >
           {/* Search & Turma Filter */}
@@ -352,7 +357,9 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Pesquisar por nome ou código..."
                 className={`w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border focus:outline-none focus:border-emerald-500 ${
-                  isDark ? 'bg-[#001424] border-[#163e5e] text-white' : 'bg-slate-50 border-slate-200 text-slate-900'
+                  isDark
+                    ? "bg-[#001424] border-[#163e5e] text-white"
+                    : "bg-slate-50 border-slate-200 text-slate-900"
                 }`}
               />
             </div>
@@ -363,12 +370,14 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
                 value={selectedClass}
                 onChange={(e) => setSelectedClass(e.target.value)}
                 className={`px-2.5 py-1.5 rounded-xl text-xs border ${
-                  isDark ? 'bg-[#001424] border-[#163e5e] text-white' : 'bg-slate-50 border-slate-200 text-slate-900'
+                  isDark
+                    ? "bg-[#001424] border-[#163e5e] text-white"
+                    : "bg-slate-50 border-slate-200 text-slate-900"
                 }`}
               >
                 <option value="all">Todas as turmas</option>
                 {availableClasses
-                  .filter((c) => c !== 'all')
+                  .filter((c) => c !== "all")
                   .map((cls) => (
                     <option key={cls} value={cls}>
                       {cls}
@@ -422,13 +431,13 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
 
         {/* 4. MODAL BODY */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5">
-          {viewMode === 'list' ? (
+          {viewMode === "list" ? (
             /* ================= VIEW 1: SELECTION LIST + SIDE-BY-SIDE PREVIEW ================= */
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               {/* Left Column: Interactive Checkbox List */}
               <div
                 className={`lg:col-span-6 p-4 rounded-2xl border flex flex-col gap-3 ${
-                  isDark ? 'bg-[#001424] border-[#163e5e]' : 'bg-slate-50 border-slate-200'
+                  isDark ? "bg-[#001424] border-[#163e5e]" : "bg-slate-50 border-slate-200"
                 }`}
               >
                 <div className="flex items-center justify-between pb-2 border-b border-slate-700/40">
@@ -460,12 +469,12 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
                           className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 transition-all ${
                             isSelected
                               ? isDark
-                                ? 'bg-emerald-950/20 border-emerald-500/50 shadow-xs'
-                                : 'bg-emerald-50/70 border-emerald-300 shadow-xs'
+                                ? "bg-emerald-950/20 border-emerald-500/50 shadow-xs"
+                                : "bg-emerald-50/70 border-emerald-300 shadow-xs"
                               : isDark
-                              ? 'bg-[#001726] border-[#163e5e]/60 hover:border-slate-500/50 opacity-70 hover:opacity-100'
-                              : 'bg-white border-slate-200 hover:border-slate-300 opacity-75 hover:opacity-100'
-                          } ${isPreviewing ? 'ring-2 ring-emerald-500/60' : ''}`}
+                                ? "bg-[#001726] border-[#163e5e]/60 hover:border-slate-500/50 opacity-70 hover:opacity-100"
+                                : "bg-white border-slate-200 hover:border-slate-300 opacity-75 hover:opacity-100"
+                          } ${isPreviewing ? "ring-2 ring-emerald-500/60" : ""}`}
                         >
                           {/* Checkbox and Student Info */}
                           <div
@@ -475,8 +484,8 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
                             <div
                               className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all shrink-0 ${
                                 isSelected
-                                  ? 'bg-emerald-600 border-emerald-500 text-white shadow-xs'
-                                  : 'bg-transparent border-slate-400'
+                                  ? "bg-emerald-600 border-emerald-500 text-white shadow-xs"
+                                  : "bg-transparent border-slate-400"
                               }`}
                             >
                               {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
@@ -489,12 +498,16 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
                             />
 
                             <div className="min-w-0 flex-1">
-                              <p className={`text-xs font-bold truncate leading-tight ${isSelected ? 'text-emerald-400 dark:text-emerald-300' : ''}`}>
+                              <p
+                                className={`text-xs font-bold truncate leading-tight ${isSelected ? "text-emerald-400 dark:text-emerald-300" : ""}`}
+                              >
                                 {student.name}
                               </p>
                               <p className="text-[10px] text-slate-400 truncate mt-0.5">
-                                <span className="font-semibold text-slate-300">{student.class}</span> • Cód:{' '}
-                                {student.studentCode || student.registration || 'S/C'}
+                                <span className="font-semibold text-slate-300">
+                                  {student.class}
+                                </span>{" "}
+                                • Cód: {student.studentCode || student.registration || "S/C"}
                               </p>
                             </div>
                           </div>
@@ -507,8 +520,8 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
                               onClick={() => setPreviewStudentId(student.id)}
                               className={`p-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                                 isPreviewing
-                                  ? 'bg-emerald-500/20 text-emerald-400'
-                                  : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
+                                  ? "bg-emerald-500/20 text-emerald-400"
+                                  : "text-slate-400 hover:text-white hover:bg-slate-700/50"
                               }`}
                               title="Visualizar Carteirinha"
                             >
@@ -560,15 +573,19 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
                       className="shadow-2xl ring-1 ring-black/20"
                     />
                     <div className="mt-3 text-center text-xs text-slate-400">
-                      Carteira de <strong className="text-white">{previewStudent.name}</strong> • Turma{' '}
-                      <strong className="text-emerald-400">{previewStudent.class}</strong>
+                      Carteira de <strong className="text-white">{previewStudent.name}</strong> •
+                      Turma <strong className="text-emerald-400">{previewStudent.class}</strong>
                     </div>
                   </div>
                 ) : (
                   <div className="w-[380px] h-[550px] rounded-2xl border border-dashed border-slate-600 flex flex-col items-center justify-center text-slate-400 p-6 text-center">
                     <CreditCard className="w-12 h-12 mb-2 opacity-30 text-emerald-400" />
-                    <p className="text-sm font-semibold">Nenhuma carteira selecionada para visualização</p>
-                    <p className="text-xs text-slate-500 mt-1">Marque um aluno na lista ao lado para ver a prévia oficial.</p>
+                    <p className="text-sm font-semibold">
+                      Nenhuma carteira selecionada para visualização
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Marque um aluno na lista ao lado para ver a prévia oficial.
+                    </p>
                   </div>
                 )}
               </div>
@@ -578,7 +595,8 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
             <div className="space-y-4">
               <div className="flex items-center justify-between px-1">
                 <p className="text-xs text-slate-400">
-                  Clique em qualquer carteirinha ou no botão de seleção para marcar/desmarcar para impressão.
+                  Clique em qualquer carteirinha ou no botão de seleção para marcar/desmarcar para
+                  impressão.
                 </p>
                 <span className="text-xs font-bold text-emerald-400">
                   {studentsToPrint.length} carteirinhas selecionadas para impressão
@@ -595,8 +613,8 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
                       key={student.id}
                       className={`relative flex flex-col items-center p-3 rounded-2xl border transition-all ${
                         isSelected
-                          ? 'ring-2 ring-emerald-500 bg-emerald-500/5 border-emerald-500/50 shadow-lg'
-                          : 'opacity-40 grayscale hover:grayscale-0 hover:opacity-90 border-slate-300/30'
+                          ? "ring-2 ring-emerald-500 bg-emerald-500/5 border-emerald-500/50 shadow-lg"
+                          : "opacity-40 grayscale hover:grayscale-0 hover:opacity-90 border-slate-300/30"
                       }`}
                     >
                       {/* Top Bar on Card with Checkbox & Print Action */}
@@ -609,8 +627,8 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
                           <div
                             className={`w-5 h-5 rounded-md flex items-center justify-center border transition-colors ${
                               isSelected
-                                ? 'bg-emerald-600 border-emerald-500 text-white'
-                                : 'bg-transparent border-slate-400'
+                                ? "bg-emerald-600 border-emerald-500 text-white"
+                                : "bg-transparent border-slate-400"
                             }`}
                           >
                             {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
@@ -653,7 +671,7 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
         {/* 5. MODAL BOTTOM FOOTER */}
         <div
           className={`px-5 py-3.5 border-t flex flex-col sm:flex-row items-center justify-between gap-3 text-xs ${
-            isDark ? 'bg-[#001424] border-[#163e5e]' : 'bg-slate-50 border-slate-200'
+            isDark ? "bg-[#001424] border-[#163e5e]" : "bg-slate-50 border-slate-200"
           }`}
         >
           <div className="flex items-center gap-2 text-slate-400">
@@ -666,8 +684,8 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
               onClick={onClose}
               className={`px-4 py-2 rounded-xl font-semibold border cursor-pointer transition-colors ${
                 isDark
-                  ? 'border-[#163e5e] hover:bg-[#001f35] text-slate-300'
-                  : 'border-slate-300 hover:bg-slate-100 text-slate-700'
+                  ? "border-[#163e5e] hover:bg-[#001f35] text-slate-300"
+                  : "border-slate-300 hover:bg-slate-100 text-slate-700"
               }`}
             >
               Fechar
@@ -679,8 +697,8 @@ export const StudentCardModal: React.FC<StudentCardModalProps> = ({
               disabled={studentsToPrint.length === 0}
               className={`px-5 py-2 rounded-xl font-extrabold flex items-center gap-2 shadow-lg cursor-pointer active:scale-95 transition-all ${
                 studentsToPrint.length > 0
-                  ? 'bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 shadow-emerald-950/40'
-                  : 'bg-slate-700 text-slate-400 cursor-not-allowed opacity-60'
+                  ? "bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 shadow-emerald-950/40"
+                  : "bg-slate-700 text-slate-400 cursor-not-allowed opacity-60"
               }`}
             >
               <Printer className="w-4 h-4" />

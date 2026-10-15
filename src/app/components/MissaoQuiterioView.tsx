@@ -1,7 +1,7 @@
 // @ts-nocheck
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import confetti from 'canvas-confetti';
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import confetti from "canvas-confetti";
 import {
   Trophy,
   Star,
@@ -34,11 +34,11 @@ import {
   Bot,
   RefreshCw,
   Coins,
-} from 'lucide-react';
-import { Book, Loan, Student, UserSession } from '../types';
-import { useTheme } from '../context/ThemeContext';
-import { QuiterioMascot, MascotMood } from './QuiterioMascot';
-import { getQuestionsForBook, QuizQuestion } from '../data/quizQuestions';
+} from "lucide-react";
+import { Book, Loan, Student, UserSession } from "../types";
+import { useTheme } from "../context/ThemeContext";
+import { QuiterioMascot, MascotMood } from "./QuiterioMascot";
+import { getQuestionsForBook, QuizQuestion } from "../data/quizQuestions";
 import {
   getStudentGameData,
   addGamePoints,
@@ -47,7 +47,7 @@ import {
   MAX_QUIZ_ATTEMPTS,
   StudentScoreData,
   BookScoreDetail,
-} from '../utils/quiterioScores';
+} from "../utils/quiterioScores";
 import {
   playCorrectSound,
   playWrongSound,
@@ -55,11 +55,8 @@ import {
   playCatMeowSound,
   playCelebrationSound,
   setSoundEnabled,
-} from '../utils/gameAudio';
-import {
-  gerarQuestaoComGemini,
-  converterParaQuizQuestion,
-} from '../services/geminiQuiz';
+} from "../utils/gameAudio";
+import { gerarQuestaoComGemini, converterParaQuizQuestion } from "../services/geminiQuiz";
 
 interface MissaoQuiterioViewProps {
   books: Book[];
@@ -90,10 +87,10 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
   const initialStudent = currentSession.student || null;
   const [activeStudent, setActiveStudent] = useState<Student | null>(initialStudent);
   const [studentCodeInput, setStudentCodeInput] = useState<string>(
-    initialStudent?.studentCode || ''
+    initialStudent?.studentCode || "",
   );
   const [isCodeModalOpen, setIsCodeModalOpen] = useState<boolean>(!initialStudent);
-  const [codeError, setCodeError] = useState<string>('');
+  const [codeError, setCodeError] = useState<string>("");
   const [isBadgesModalOpen, setIsBadgesModalOpen] = useState<boolean>(false);
   const [isBookSelectorModalOpen, setIsBookSelectorModalOpen] = useState<boolean>(false);
 
@@ -108,19 +105,19 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
 
   // Score & Gamification Data
   const [gameData, setGameData] = useState<StudentScoreData>(() => {
-    const codeOrId = activeStudent?.studentCode || activeStudent?.id || 'anon';
-    return getStudentGameData(codeOrId, activeStudent?.name || 'Estudante');
+    const codeOrId = activeStudent?.studentCode || activeStudent?.id || "anon";
+    return getStudentGameData(codeOrId, activeStudent?.name || "Estudante");
   });
 
   // Controls displaying the mascot's book-by-book scoreboard view
   const [showBookScoresView, setShowBookScoresView] = useState<boolean>(() => {
-    const codeOrId = activeStudent?.studentCode || activeStudent?.id || 'anon';
-    const initData = getStudentGameData(codeOrId, activeStudent?.name || 'Estudante');
+    const codeOrId = activeStudent?.studentCode || activeStudent?.id || "anon";
+    const initData = getStudentGameData(codeOrId, activeStudent?.name || "Estudante");
     return (initData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS;
   });
 
   const [leaderboard, setLeaderboard] = useState(() =>
-    getTopSchoolRanking(activeStudent?.studentCode)
+    getTopSchoolRanking(activeStudent?.studentCode),
   );
 
   // Sync when student changes
@@ -128,7 +125,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
     if (activeStudent) {
       const data = getStudentGameData(
         activeStudent.studentCode || activeStudent.id,
-        activeStudent.name
+        activeStudent.name,
       );
       setGameData(data);
       setLeaderboard(getTopSchoolRanking(activeStudent.studentCode));
@@ -142,23 +139,33 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
   const studentLoans = useMemo(() => {
     if (!activeStudent) return [];
     return loans.filter((l) => {
-      const studentCodeNormalized = (activeStudent.studentCode || '').trim().toLowerCase().replace(/^alu-/, '');
-      const loanCodeNormalized = (l.studentCode || '').trim().toLowerCase().replace(/^alu-/, '');
-      const codeMatch =
-        Boolean(studentCodeNormalized && loanCodeNormalized && studentCodeNormalized === loanCodeNormalized);
+      const studentCodeNormalized = (activeStudent.studentCode || "")
+        .trim()
+        .toLowerCase()
+        .replace(/^alu-/, "");
+      const loanCodeNormalized = (l.studentCode || "").trim().toLowerCase().replace(/^alu-/, "");
+      const codeMatch = Boolean(
+        studentCodeNormalized && loanCodeNormalized && studentCodeNormalized === loanCodeNormalized,
+      );
 
-      const studentNameNormalized = (activeStudent.name || '').trim().toLowerCase();
-      const loanNameNormalized = (l.studentName || '').trim().toLowerCase();
-      const nameMatch =
-        Boolean(studentNameNormalized && loanNameNormalized && studentNameNormalized === loanNameNormalized);
+      const studentNameNormalized = (activeStudent.name || "").trim().toLowerCase();
+      const loanNameNormalized = (l.studentName || "").trim().toLowerCase();
+      const nameMatch = Boolean(
+        studentNameNormalized && loanNameNormalized && studentNameNormalized === loanNameNormalized,
+      );
 
-      const studentEmailNormalized = (activeStudent.email || '').trim().toLowerCase();
-      const loanEmailNormalized = (l.studentEmail || '').trim().toLowerCase();
-      const emailMatch =
-        Boolean(studentEmailNormalized && loanEmailNormalized && studentEmailNormalized === loanEmailNormalized);
+      const studentEmailNormalized = (activeStudent.email || "").trim().toLowerCase();
+      const loanEmailNormalized = (l.studentEmail || "").trim().toLowerCase();
+      const emailMatch = Boolean(
+        studentEmailNormalized &&
+        loanEmailNormalized &&
+        studentEmailNormalized === loanEmailNormalized,
+      );
 
-      const studentIdNormalized = (activeStudent.id || '').trim().toLowerCase();
-      const loanIdMatch = Boolean(studentIdNormalized && loanCodeNormalized === studentIdNormalized);
+      const studentIdNormalized = (activeStudent.id || "").trim().toLowerCase();
+      const loanIdMatch = Boolean(
+        studentIdNormalized && loanCodeNormalized === studentIdNormalized,
+      );
 
       return codeMatch || nameMatch || emailMatch || loanIdMatch;
     });
@@ -168,23 +175,22 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
   const studentBooks = useMemo(() => {
     const map = new Map<string, { book: Book; loan: Loan }>();
     studentLoans.forEach((loan) => {
-      const matchedBook =
-        books.find((b) => b.id === loan.bookId) ||
+      const matchedBook = books.find((b) => b.id === loan.bookId) ||
         books.find((b) => b.title.toLowerCase() === loan.bookTitle.toLowerCase()) || {
           id: loan.bookId,
           title: loan.bookTitle,
           author: loan.bookAuthor,
           cover: loan.bookCover,
-          category: 'Literatura',
+          category: "Literatura",
           rating: 5,
           reviewsCount: 1,
-          status: 'disponivel',
+          status: "disponivel",
           pages: 100,
           year: 2026,
-          publisher: 'Biblioteca',
-          location: 'Geral',
+          publisher: "Biblioteca",
+          location: "Geral",
           synopsis: `Obra emprestada por ${loan.studentName}.`,
-          isbn: '000',
+          isbn: "000",
           totalCopies: 1,
           availableCopies: 1,
         };
@@ -201,20 +207,21 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
     if (studentBooks.length > 0) return studentBooks[0].book;
     return (
       books[0] || {
-        id: 'default_book',
-        title: 'Dom Casmurro',
-        author: 'Machado de Assis',
-        cover: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&auto=format&fit=crop&q=80',
-        category: 'Literatura Brasileira',
+        id: "default_book",
+        title: "Dom Casmurro",
+        author: "Machado de Assis",
+        cover:
+          "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&auto=format&fit=crop&q=80",
+        category: "Literatura Brasileira",
         rating: 5,
         reviewsCount: 1,
-        status: 'disponivel',
+        status: "disponivel",
         pages: 256,
         year: 2026,
-        publisher: 'Biblioteca Maria Quitéria',
-        location: 'Geral',
-        synopsis: 'Clássico da literatura com a história de Bento Santiago e Capitu.',
-        isbn: '978-85-001',
+        publisher: "Biblioteca Maria Quitéria",
+        location: "Geral",
+        synopsis: "Clássico da literatura com a história de Bento Santiago e Capitu.",
+        isbn: "978-85-001",
         totalCopies: 5,
         availableCopies: 5,
       }
@@ -229,7 +236,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
       const isAlreadyInStudentBooks = studentBooks.some(
         (sb) =>
           sb.book.id === selectedBookForQuiz?.id ||
-          sb.book.title.toLowerCase() === selectedBookForQuiz?.title?.toLowerCase()
+          sb.book.title.toLowerCase() === selectedBookForQuiz?.title?.toLowerCase(),
       );
       if (!isAlreadyInStudentBooks) {
         setSelectedBookForQuiz(studentBooks[0].book);
@@ -241,19 +248,19 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
   useEffect(() => {
     if (!activeStudent) {
       setSpeechBubbleText(
-        'Miau! Identifique-se com seu código ou nome para cruzarmos seus empréstimos e liberar o Show de Saberes! 🐾'
+        "Miau! Identifique-se com seu código ou nome para cruzarmos seus empréstimos e liberar o Show de Saberes! 🐾",
       );
-      setMascotMood('talking');
+      setMascotMood("talking");
     } else if (studentLoans.length === 0) {
       setSpeechBubbleText(
-        'Miau! Identificamos que você ainda não tem livros emprestados. Por favor, leia um livro para participar do Desafio! 🐾'
+        "Miau! Identificamos que você ainda não tem livros emprestados. Por favor, leia um livro para participar do Desafio! 🐾",
       );
-      setMascotMood('thinking');
+      setMascotMood("thinking");
     } else {
       setSpeechBubbleText(
-        `Miau! Bem-vindo ao Desafio Literário! Perguntas exclusivas de "${selectedBookForQuiz.title}" geradas para testar sua leitura real! 🐾`
+        `Miau! Bem-vindo ao Desafio Literário! Perguntas exclusivas de "${selectedBookForQuiz.title}" geradas para testar sua leitura real! 🐾`,
       );
-      setMascotMood('talking');
+      setMascotMood("talking");
     }
   }, [activeStudent, studentLoans.length, selectedBookForQuiz]);
 
@@ -278,10 +285,10 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
   const [coverHasError, setCoverHasError] = useState<boolean>(false);
 
   // Mascot Mood & Speech Bubble Text
-  const [mascotMood, setMascotMood] = useState<MascotMood>('talking');
+  const [mascotMood, setMascotMood] = useState<MascotMood>("talking");
   const [isMeowing, setIsMeowing] = useState<boolean>(false);
   const [speechBubbleText, setSpeechBubbleText] = useState<string>(
-    'Bem-vindo ao Show de Saberes Literários! 🐾'
+    "Bem-vindo ao Show de Saberes Literários! 🐾",
   );
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -303,16 +310,16 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
         bookCover: selectedBookForQuiz.cover,
         question: `Qual é o tema central da obra "${selectedBookForQuiz.title}" de ${selectedBookForQuiz.author}?`,
         options: [
-          'O valor humano e a reflexão proporcionada pela leitura',
-          'A montagem técnica de engrenagens mecânicas',
-          'Viagens interestelares em buracos negros',
-          'Fórmulas matemáticas de geometria euclidiana',
+          "O valor humano e a reflexão proporcionada pela leitura",
+          "A montagem técnica de engrenagens mecânicas",
+          "Viagens interestelares em buracos negros",
+          "Fórmulas matemáticas de geometria euclidiana",
         ],
         correctIndex: 0,
         explanation: `A leitura de "${selectedBookForQuiz.title}" enriquece a imaginação e a formação leitora!`,
         points: level * 1000,
-        capituloReferencia: 'Acervo Escolar',
-        dicaGuru: 'Pense no impacto literário da narrativa que você retirou na biblioteca!',
+        capituloReferencia: "Acervo Escolar",
+        dicaGuru: "Pense no impacto literário da narrativa que você retirou na biblioteca!",
         nivel: level,
       }
     );
@@ -327,19 +334,14 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
     let isMounted = true;
     setIsAiLoading(true);
 
-    gerarQuestaoComGemini(
-      selectedBookForQuiz.title,
-      selectedBookForQuiz.author,
-      level,
-      5
-    )
+    gerarQuestaoComGemini(selectedBookForQuiz.title, selectedBookForQuiz.author, level, 5)
       .then((geminiRes) => {
         if (!isMounted) return;
         const converted = converterParaQuizQuestion(geminiRes, selectedBookForQuiz.cover);
         setAiQuestionsCache((prev) => ({ ...prev, [level]: converted }));
       })
       .catch((err) => {
-        console.error('Fallback para questão local:', err);
+        console.error("Fallback para questão local:", err);
       })
       .finally(() => {
         if (isMounted) setIsAiLoading(false);
@@ -358,10 +360,12 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
     setIsCorrect(false);
     setTimeLeft(QUESTION_TIMER_SECONDS);
     setIsTimerActive(true);
-    setMascotMood('talking');
+    setMascotMood("talking");
     setIsMeowing(false);
     setShowGuruTip(false);
-    setSpeechBubbleText(`Questão ${idx + 1} de 5 valendo ${(idx + 1) * 1000} pontos! Mostre seus conhecimentos! 🐾`);
+    setSpeechBubbleText(
+      `Questão ${idx + 1} de 5 valendo ${(idx + 1) * 1000} pontos! Mostre seus conhecimentos! 🐾`,
+    );
     setFloatingScore(null);
     setCoverHasError(false);
   };
@@ -369,7 +373,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
   const handlePetQuiterio = () => {
     if (soundOn) playCatMeowSound();
     setIsMeowing(true);
-    setSpeechBubbleText('Miau!! 🐾 O Quitério adora carinho e torce pelo seu sucesso no quiz!');
+    setSpeechBubbleText("Miau!! 🐾 O Quitério adora carinho e torce pelo seu sucesso no quiz!");
     setTimeout(() => {
       setIsMeowing(false);
     }, 2200);
@@ -402,9 +406,9 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
     setIsAnswered(true);
     setIsCorrect(false);
     setIsTimerActive(false);
-    setMascotMood('thinking');
+    setMascotMood("thinking");
     setStreakCount(0);
-    setSpeechBubbleText('Buzzer! ⏰ O tempo da pergunta esgotou! Na próxima você recupera! 🐾');
+    setSpeechBubbleText("Buzzer! ⏰ O tempo da pergunta esgotou! Na próxima você recupera! 🐾");
     if (soundOn) playWrongSound();
   };
 
@@ -419,8 +423,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
     const correct = index === activeQuestion.correctIndex;
     setIsCorrect(correct);
 
-    const studentKey = activeStudent?.studentCode || activeStudent?.id || 'aluno_anonimo';
-    const studentName = activeStudent?.name || 'Leitor Apaixonado';
+    const studentKey = activeStudent?.studentCode || activeStudent?.id || "aluno_anonimo";
+    const studentName = activeStudent?.name || "Leitor Apaixonado";
     const questionPoints = activeQuestion.points || (currentQuestionIndex + 1) * 1000;
 
     if (correct) {
@@ -428,9 +432,11 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
       setStreakCount(newStreak);
 
       setFloatingScore(questionPoints);
-      setMascotMood('celebrating');
+      setMascotMood("celebrating");
       setIsMeowing(true);
-      setSpeechBubbleText(`RESPOSTA EXATA! 🏆 +${questionPoints} LivroCoins para sua pontuação! Miau!! 🐾`);
+      setSpeechBubbleText(
+        `RESPOSTA EXATA! 🏆 +${questionPoints} LivroCoins para sua pontuação! Miau!! 🐾`,
+      );
 
       if (soundOn) {
         playCorrectSound();
@@ -445,7 +451,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
           particleCount: 80,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ['#ffd165', '#f7be1d', '#62f0b3', '#06b6d4', '#eab308'],
+          colors: ["#ffd165", "#f7be1d", "#62f0b3", "#06b6d4", "#eab308"],
         });
       } catch {
         // Fallback
@@ -459,7 +465,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
         true,
         selectedBookForQuiz.title,
         selectedBookForQuiz.author,
-        selectedBookForQuiz.cover
+        selectedBookForQuiz.cover,
       );
       setGameData(updatedData);
       setLeaderboard(getTopSchoolRanking(activeStudent?.studentCode));
@@ -469,9 +475,11 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
       }));
     } else {
       setStreakCount(0);
-      setMascotMood('thinking');
+      setMascotMood("thinking");
       setIsMeowing(false);
-      setSpeechBubbleText('Ah, não foi dessa vez! Mas não desanime, leia a explicação literária e siga firme! 🐾');
+      setSpeechBubbleText(
+        "Ah, não foi dessa vez! Mas não desanime, leia a explicação literária e siga firme! 🐾",
+      );
 
       if (soundOn) playWrongSound();
 
@@ -482,7 +490,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
         false,
         selectedBookForQuiz.title,
         selectedBookForQuiz.author,
-        selectedBookForQuiz.cover
+        selectedBookForQuiz.cover,
       );
       setGameData(updatedData);
       setLeaderboard(getTopSchoolRanking(activeStudent?.studentCode));
@@ -494,8 +502,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
     if (currentQuestionIndex < 4) {
       startQuestion(currentQuestionIndex + 1);
     } else {
-      const studentKey = activeStudent?.studentCode || activeStudent?.id || 'aluno_anonimo';
-      const studentName = activeStudent?.name || 'Leitor Apaixonado';
+      const studentKey = activeStudent?.studentCode || activeStudent?.id || "aluno_anonimo";
+      const studentName = activeStudent?.name || "Leitor Apaixonado";
 
       // Record completed attempt for this book
       const { updatedData, isLimitReached } = recordAttemptCompletion(
@@ -506,7 +514,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
         selectedBookForQuiz.cover,
         roundStats.pointsEarned,
         roundStats.correct,
-        5
+        5,
       );
 
       setGameData(updatedData);
@@ -515,17 +523,17 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
       setIsTimerActive(false);
 
       if (isLimitReached) {
-        setMascotMood('celebrating');
+        setMascotMood("celebrating");
         setIsMeowing(true);
         setSpeechBubbleText(
-          'Miau!! 🎓 ESPETÁCULO! Você atingiu sua 5ª e última tentativa na Missão Quitério! Veja sua pontuação detalhada! 🐾'
+          "Miau!! 🎓 ESPETÁCULO! Você atingiu sua 5ª e última tentativa na Missão Quitério! Veja sua pontuação detalhada! 🐾",
         );
         setShowBookScoresView(true);
         if (soundOn) playCelebrationSound();
       } else {
-        setMascotMood('celebrating');
+        setMascotMood("celebrating");
         setSpeechBubbleText(
-          `Sensacional, leitor de ouro! Rodada concluída com ${roundStats.pointsEarned} LivroCoins conquistados! 🏆`
+          `Sensacional, leitor de ouro! Rodada concluída com ${roundStats.pointsEarned} LivroCoins conquistados! 🏆`,
         );
         if (soundOn) playCelebrationSound();
       }
@@ -535,9 +543,9 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
   const restartQuiz = () => {
     if ((gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS) {
       setShowBookScoresView(true);
-      setMascotMood('talking');
+      setMascotMood("talking");
       setSpeechBubbleText(
-        'Miau! Você já utilizou suas 5 tentativas na Missão! Confira seu boletim por livro abaixo! 🐾'
+        "Miau! Você já utilizou suas 5 tentativas na Missão! Confira seu boletim por livro abaixo! 🐾",
       );
       return;
     }
@@ -553,9 +561,9 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
     setIsBookSelectorModalOpen(false);
     if ((gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS) {
       setShowBookScoresView(true);
-      setMascotMood('talking');
+      setMascotMood("talking");
       setSpeechBubbleText(
-        'Miau! Suas 5 tentativas foram concluídas! Confira seu histórico por livro! 🐾'
+        "Miau! Suas 5 tentativas foram concluídas! Confira seu histórico por livro! 🐾",
       );
       return;
     }
@@ -566,27 +574,29 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
     setStreakCount(0);
     setAiQuestionsCache({});
     startQuestion(0);
-    setMascotMood('talking');
-    setSpeechBubbleText(`Miau! Desafio selecionado para "${book.title}"! Gerando perguntas com IA! 🐾`);
+    setMascotMood("talking");
+    setSpeechBubbleText(
+      `Miau! Desafio selecionado para "${book.title}"! Gerando perguntas com IA! 🐾`,
+    );
   };
 
   // Student Identification Modal handler
   const handleIdentifyStudent = (e: React.FormEvent) => {
     e.preventDefault();
-    setCodeError('');
+    setCodeError("");
 
     const rawInput = studentCodeInput.trim();
     if (!rawInput) {
-      setCodeError('Digite seu Código ou Nome de Aluno para entrar no Desafio.');
+      setCodeError("Digite seu Código ou Nome de Aluno para entrar no Desafio.");
       return;
     }
 
-    const cleanInput = rawInput.toLowerCase().replace(/^alu-/, '');
+    const cleanInput = rawInput.toLowerCase().replace(/^alu-/, "");
 
     const foundStudent = students.find((s) => {
-      const sCode = (s.studentCode || '').trim().toLowerCase().replace(/^alu-/, '');
-      const sId = (s.id || '').trim().toLowerCase().replace(/^alu-/, '');
-      const sName = (s.name || '').trim().toLowerCase();
+      const sCode = (s.studentCode || "").trim().toLowerCase().replace(/^alu-/, "");
+      const sId = (s.id || "").trim().toLowerCase().replace(/^alu-/, "");
+      const sName = (s.name || "").trim().toLowerCase();
       return (
         sCode === cleanInput ||
         sId === cleanInput ||
@@ -597,17 +607,17 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
 
     if (!foundStudent) {
       if (soundOn) playWrongSound();
-      setCodeError('Aluno não encontrado! Verifique o código ou nome digitado.');
+      setCodeError("Aluno não encontrado! Verifique o código ou nome digitado.");
       return;
     }
 
     setActiveStudent(foundStudent);
     setIsCodeModalOpen(false);
-    setCodeError('');
+    setCodeError("");
 
     const existingData = getStudentGameData(
       foundStudent.studentCode || foundStudent.id,
-      foundStudent.name
+      foundStudent.name,
     );
     setGameData(existingData);
     setLeaderboard(getTopSchoolRanking(foundStudent.studentCode));
@@ -685,11 +695,11 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                 setSoundOn(next);
                 setSoundEnabled(next);
               }}
-              title={soundOn ? 'Desativar Efeitos' : 'Ativar Efeitos'}
+              title={soundOn ? "Desativar Efeitos" : "Ativar Efeitos"}
               className={`p-2.5 rounded-2xl border-2 border-b-4 transition-all cursor-pointer shadow-md active:translate-y-1 active:border-b-2 ${
                 soundOn
-                  ? 'bg-[#ffd165] text-[#251a00] border-[#f7be1d] border-b-[#ca8a04]'
-                  : 'bg-[#171f33] text-[#94a3b8] border-[#334155] border-b-[#0b0f19]'
+                  ? "bg-[#ffd165] text-[#251a00] border-[#f7be1d] border-b-[#ca8a04]"
+                  : "bg-[#171f33] text-[#94a3b8] border-[#334155] border-b-[#0b0f19]"
               }`}
             >
               {soundOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
@@ -709,7 +719,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                   LivroCoins
                 </span>
                 <span className="text-base sm:text-lg font-['Rubik'] font-black text-[#f8fafc] leading-none">
-                  {gameData.score.toLocaleString('pt-BR')}
+                  {gameData.score.toLocaleString("pt-BR")}
                 </span>
               </div>
             </div>
@@ -727,8 +737,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                       key={n}
                       className={`w-3.5 h-3.5 transition-all ${
                         isAlive
-                          ? 'text-[#dc2626] fill-[#dc2626] scale-105'
-                          : 'text-[#475569] fill-transparent opacity-30'
+                          ? "text-[#dc2626] fill-[#dc2626] scale-105"
+                          : "text-[#475569] fill-transparent opacity-30"
                       }`}
                     />
                   );
@@ -755,7 +765,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
             >
               <User className="w-3.5 h-3.5 text-[#ffd165]" />
               <span className="truncate max-w-[100px] sm:max-w-[130px]">
-                {activeStudent ? activeStudent.name.split(' ')[0] : 'Identificar'}
+                {activeStudent ? activeStudent.name.split(" ")[0] : "Identificar"}
               </span>
             </button>
           </div>
@@ -774,8 +784,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                   <span className="w-3 h-3 rounded-full bg-[#ffd165] shadow-[0_0_10px_#ffd165]" />
                   <h2 className="text-lg sm:text-xl font-['Rubik'] font-bold text-[#f8fafc]">
                     {showBookScoresView || (gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS
-                      ? 'Boletim da Missão Quitério'
-                      : 'Show de Saberes • Questão em Andamento'}
+                      ? "Boletim da Missão Quitério"
+                      : "Show de Saberes • Questão em Andamento"}
                   </h2>
                 </div>
 
@@ -787,7 +797,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                       onClick={() => {
                         if ((gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS) {
                           setSpeechBubbleText(
-                            'Miau! Você já completou suas 5 tentativas! Confira seus pontos por livro abaixo! 🐾'
+                            "Miau! Você já completou suas 5 tentativas! Confira seus pontos por livro abaixo! 🐾",
                           );
                           return;
                         }
@@ -795,8 +805,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                       }}
                       className={`px-3 py-1.5 rounded-xl text-xs font-['Rubik'] font-bold transition-all cursor-pointer ${
                         !showBookScoresView && (gameData.attemptsCount || 0) < MAX_QUIZ_ATTEMPTS
-                          ? 'bg-[#ffd165] text-[#251a00] shadow-sm'
-                          : 'text-[#94a3b8] hover:text-[#f8fafc]'
+                          ? "bg-[#ffd165] text-[#251a00] shadow-sm"
+                          : "text-[#94a3b8] hover:text-[#f8fafc]"
                       }`}
                     >
                       Arena de Questões
@@ -806,8 +816,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                       onClick={() => setShowBookScoresView(true)}
                       className={`px-3 py-1.5 rounded-xl text-xs font-['Rubik'] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
                         showBookScoresView || (gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS
-                          ? 'bg-[#ffd165] text-[#251a00] shadow-sm'
-                          : 'text-[#94a3b8] hover:text-[#f8fafc]'
+                          ? "bg-[#ffd165] text-[#251a00] shadow-sm"
+                          : "text-[#94a3b8] hover:text-[#f8fafc]"
                       }`}
                     >
                       <span>Boletim de Pontos</span>
@@ -831,8 +841,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                     transition={{ duration: 0.8 }}
                     className="absolute top-4 right-6 sm:right-8 z-30 pointer-events-none px-4 py-2 rounded-2xl bg-gradient-to-r from-[#ffd165] to-[#f7be1d] text-[#251a00] font-['Rubik'] font-black text-base sm:text-lg shadow-[0_8px_25px_rgba(247,190,29,0.5)] flex items-center gap-1.5 border-2 border-[#fff] border-b-4 border-[#ca8a04]"
                   >
-                    <Sparkles className="w-5 h-5 text-[#251a00]" />
-                    +{floatingScore} LIVROCOINS!
+                    <Sparkles className="w-5 h-5 text-[#251a00]" />+{floatingScore} LIVROCOINS!
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -847,7 +856,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                     Acesso à Arena Bloqueado
                   </h3>
                   <p className="text-xs sm:text-sm text-[#94a3b8] max-w-md mx-auto mb-6">
-                    Digite seu <strong>Código ou Nome de Aluno</strong> para cruzarmos os livros que você retirou e liberar o quiz literário do Google AI Studio!
+                    Digite seu <strong>Código ou Nome de Aluno</strong> para cruzarmos os livros que
+                    você retirou e liberar o quiz literário do Google AI Studio!
                   </p>
                   <button
                     type="button"
@@ -877,8 +887,11 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                       <span>Olá, {activeStudent.name}!</span>
                     </p>
                     <p className="text-xs sm:text-sm text-[#94a3b8]">
-                      Cruzamos seus dados com o registro de empréstimos da biblioteca e não encontramos nenhum livro retirado por você.
-                      Para participar do <strong>Desafio Literário</strong>, retire e leia um livro na biblioteca escolar! As perguntas são formuladas pelo Gemini com base exclusiva nas obras que você retirou.
+                      Cruzamos seus dados com o registro de empréstimos da biblioteca e não
+                      encontramos nenhum livro retirado por você. Para participar do{" "}
+                      <strong>Desafio Literário</strong>, retire e leia um livro na biblioteca
+                      escolar! As perguntas são formuladas pelo Gemini com base exclusiva nas obras
+                      que você retirou.
                     </p>
                   </div>
 
@@ -917,7 +930,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                     </div>
 
                     <div className="px-3.5 py-1.5 rounded-xl bg-[#060e20] border border-[#ffd165]/50 text-xs font-['Rubik'] font-bold text-[#ffd165]">
-                      Total: {gameData.score.toLocaleString('pt-BR')} LivroCoins
+                      Total: {gameData.score.toLocaleString("pt-BR")} LivroCoins
                     </div>
                   </div>
 
@@ -930,7 +943,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                           5 de 5 Tentativas Concluídas!
                         </strong>
                         <span className="text-[#94a3b8]">
-                          Conforme o regulamento do Desafio Literário, você atingiu o limite de 5 rodadas da Missão Quitério. Parabéns pelo esforço e dedicação à leitura!
+                          Conforme o regulamento do Desafio Literário, você atingiu o limite de 5
+                          rodadas da Missão Quitério. Parabéns pelo esforço e dedicação à leitura!
                         </span>
                       </div>
                     </div>
@@ -945,68 +959,75 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                           Nenhum livro pontuado ainda
                         </h4>
                         <p className="text-xs text-[#94a3b8] max-w-xs mt-1">
-                          Inicie o desafio para responder às perguntas geradas e acumular LivroCoins!
+                          Inicie o desafio para responder às perguntas geradas e acumular
+                          LivroCoins!
                         </p>
                       </div>
                     ) : (
-                      (Object.values(gameData.bookScores || {}) as BookScoreDetail[]).map((bookScore, idx) => {
-                        const matchedBook =
-                          books.find((b) => b.title.toLowerCase() === bookScore.bookTitle.toLowerCase()) ||
-                          selectedBookForQuiz;
-                        const cover = bookScore.bookCover || matchedBook.cover;
-                        const percentage =
-                          bookScore.totalQuestions > 0
-                            ? Math.round((bookScore.correctAnswers / bookScore.totalQuestions) * 100)
-                            : 0;
+                      (Object.values(gameData.bookScores || {}) as BookScoreDetail[]).map(
+                        (bookScore, idx) => {
+                          const matchedBook =
+                            books.find(
+                              (b) => b.title.toLowerCase() === bookScore.bookTitle.toLowerCase(),
+                            ) || selectedBookForQuiz;
+                          const cover = bookScore.bookCover || matchedBook.cover;
+                          const percentage =
+                            bookScore.totalQuestions > 0
+                              ? Math.round(
+                                  (bookScore.correctAnswers / bookScore.totalQuestions) * 100,
+                                )
+                              : 0;
 
-                        return (
-                          <div
-                            key={idx}
-                            className="p-4 rounded-2xl bg-[#131b2e] border-2 border-[#334155] border-b-4 border-[#060e20] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-12 h-16 rounded-xl overflow-hidden bg-[#060e20] flex-shrink-0 border border-[#334155] flex items-center justify-center shadow-sm">
-                                {cover ? (
-                                  <img
-                                    src={cover}
-                                    alt={bookScore.bookTitle}
-                                    className="w-full h-full object-cover"
-                                    referrerPolicy="no-referrer"
-                                  />
-                                ) : (
-                                  <BookOpen className="w-5 h-5 text-[#94a3b8]" />
-                                )}
-                              </div>
-                              <div className="truncate">
-                                <span className="text-[10px] font-['Rubik'] font-bold uppercase tracking-wider text-[#ffd165]">
-                                  {bookScore.bookAuthor || matchedBook.author}
-                                </span>
-                                <h4 className="text-sm sm:text-base font-['Rubik'] font-bold text-[#f8fafc] truncate">
-                                  {bookScore.bookTitle}
-                                </h4>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <div className="w-24 h-2 rounded-full bg-[#060e20] overflow-hidden border border-[#334155]">
-                                    <div
-                                      className="h-full bg-gradient-to-r from-[#ffd165] to-[#62f0b3] rounded-full"
-                                      style={{ width: `${percentage}%` }}
+                          return (
+                            <div
+                              key={idx}
+                              className="p-4 rounded-2xl bg-[#131b2e] border-2 border-[#334155] border-b-4 border-[#060e20] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-12 h-16 rounded-xl overflow-hidden bg-[#060e20] flex-shrink-0 border border-[#334155] flex items-center justify-center shadow-sm">
+                                  {cover ? (
+                                    <img
+                                      src={cover}
+                                      alt={bookScore.bookTitle}
+                                      className="w-full h-full object-cover"
+                                      referrerPolicy="no-referrer"
                                     />
-                                  </div>
-                                  <span className="text-[11px] font-bold text-[#62f0b3]">
-                                    {bookScore.correctAnswers}/{bookScore.totalQuestions} ({percentage}%)
+                                  ) : (
+                                    <BookOpen className="w-5 h-5 text-[#94a3b8]" />
+                                  )}
+                                </div>
+                                <div className="truncate">
+                                  <span className="text-[10px] font-['Rubik'] font-bold uppercase tracking-wider text-[#ffd165]">
+                                    {bookScore.bookAuthor || matchedBook.author}
                                   </span>
+                                  <h4 className="text-sm sm:text-base font-['Rubik'] font-bold text-[#f8fafc] truncate">
+                                    {bookScore.bookTitle}
+                                  </h4>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <div className="w-24 h-2 rounded-full bg-[#060e20] overflow-hidden border border-[#334155]">
+                                      <div
+                                        className="h-full bg-gradient-to-r from-[#ffd165] to-[#62f0b3] rounded-full"
+                                        style={{ width: `${percentage}%` }}
+                                      />
+                                    </div>
+                                    <span className="text-[11px] font-bold text-[#62f0b3]">
+                                      {bookScore.correctAnswers}/{bookScore.totalQuestions} (
+                                      {percentage}%)
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-end gap-2 flex-shrink-0">
+                                <div className="px-3.5 py-1.5 rounded-xl bg-[#060e20] border-2 border-[#eab308] text-[#ffd165] font-['Rubik'] font-black text-sm flex items-center gap-1.5 shadow-[0_0_12px_rgba(234,179,8,0.25)]">
+                                  <Star className="w-4 h-4 fill-[#ffd165]" />
+                                  <span>{bookScore.points} pts</span>
                                 </div>
                               </div>
                             </div>
-
-                            <div className="flex items-center justify-end gap-2 flex-shrink-0">
-                              <div className="px-3.5 py-1.5 rounded-xl bg-[#060e20] border-2 border-[#eab308] text-[#ffd165] font-['Rubik'] font-black text-sm flex items-center gap-1.5 shadow-[0_0_12px_rgba(234,179,8,0.25)]">
-                                <Star className="w-4 h-4 fill-[#ffd165]" />
-                                <span>{bookScore.points} pts</span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })
+                          );
+                        },
+                      )
                     )}
                   </div>
 
@@ -1080,14 +1101,14 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                     <div
                       className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-2xl font-['Rubik'] font-black text-xs sm:text-sm border-2 border-b-4 shadow-md flex-shrink-0 ${
                         timeLeft <= 60
-                          ? 'bg-[#dc2626] text-white border-[#f87171] border-b-[#991b1b] animate-pulse shadow-[0_0_20px_rgba(220,38,38,0.5)]'
-                          : 'bg-[#060e20] text-[#ffd165] border-[#ffd165]/50 border-b-[#ca8a04]'
+                          ? "bg-[#dc2626] text-white border-[#f87171] border-b-[#991b1b] animate-pulse shadow-[0_0_20px_rgba(220,38,38,0.5)]"
+                          : "bg-[#060e20] text-[#ffd165] border-[#ffd165]/50 border-b-[#ca8a04]"
                       }`}
                       title="Tempo restante: 20 minutos"
                     >
                       <Clock className="w-4 h-4 text-current" />
                       <span className="font-mono">
-                        {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
+                        {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, "0")}
                       </span>
                     </div>
                   </div>
@@ -1134,23 +1155,24 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
 
                       // Default Tactile Neo-Arcade Slab
                       let slabStyle =
-                        'bg-[#131b2e] hover:bg-[#1a243c] text-[#f8fafc] border-2 border-[#334155] border-b-4 border-[#060e20] shadow-[0_4px_0_#060e20] active:translate-y-1 active:border-b-2';
-                      let letterStyle = 'bg-[#060e20] text-[#06b6d4] border border-[#06b6d4]/40';
+                        "bg-[#131b2e] hover:bg-[#1a243c] text-[#f8fafc] border-2 border-[#334155] border-b-4 border-[#060e20] shadow-[0_4px_0_#060e20] active:translate-y-1 active:border-b-2";
+                      let letterStyle = "bg-[#060e20] text-[#06b6d4] border border-[#06b6d4]/40";
 
                       if (isAnswered) {
                         if (isThisCorrect) {
                           // Glowing Emerald Green on Triumph
                           slabStyle =
-                            'bg-[#065f46] text-white border-2 border-[#34d399] border-b-4 border-[#047857] shadow-[0_0_24px_-4px_rgba(16,185,129,0.5)] font-bold';
-                          letterStyle = 'bg-[#10b981] text-[#064e3b] font-black';
+                            "bg-[#065f46] text-white border-2 border-[#34d399] border-b-4 border-[#047857] shadow-[0_0_24px_-4px_rgba(16,185,129,0.5)] font-bold";
+                          letterStyle = "bg-[#10b981] text-[#064e3b] font-black";
                         } else if (isSelected && !isThisCorrect) {
                           // Ruby Red Buzzer on Wrong
                           slabStyle =
-                            'bg-[#7f1d1d] text-white border-2 border-[#f87171] border-b-4 border-[#991b1b] shadow-[0_0_24px_-4px_rgba(220,38,38,0.5)] font-bold';
-                          letterStyle = 'bg-[#dc2626] text-white font-black';
+                            "bg-[#7f1d1d] text-white border-2 border-[#f87171] border-b-4 border-[#991b1b] shadow-[0_0_24px_-4px_rgba(220,38,38,0.5)] font-bold";
+                          letterStyle = "bg-[#dc2626] text-white font-black";
                         } else {
-                          slabStyle = 'opacity-35 bg-[#0b0f19] border-[#1e293b] text-[#64748b] shadow-none';
-                          letterStyle = 'bg-[#1e293b] text-[#64748b] border-transparent';
+                          slabStyle =
+                            "opacity-35 bg-[#0b0f19] border-[#1e293b] text-[#64748b] shadow-none";
+                          letterStyle = "bg-[#1e293b] text-[#64748b] border-transparent";
                         }
                       }
 
@@ -1208,7 +1230,9 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-[#62f0b3]">
-                            {isCorrect ? `✓ Acertou! +${activeQuestion.points || (currentQuestionIndex + 1) * 1000} LivroCoins` : '✗ Resposta incorreta'}
+                            {isCorrect
+                              ? `✓ Acertou! +${activeQuestion.points || (currentQuestionIndex + 1) * 1000} LivroCoins`
+                              : "✗ Resposta incorreta"}
                           </span>
                         </div>
 
@@ -1218,7 +1242,9 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                           className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-gradient-to-r from-[#ffd165] to-[#f7be1d] hover:from-[#f7be1d] hover:to-[#ffd165] text-[#251a00] font-['Rubik'] font-black text-xs sm:text-sm shadow-[0_4px_0_#ca8a04] border-2 border-[#fff] border-b-4 border-[#ca8a04] active:translate-y-1 active:border-b-2 flex items-center justify-center gap-2 cursor-pointer transition-all"
                         >
                           <span>
-                            {currentQuestionIndex < 4 ? 'Próxima Questão do Desafio' : 'Ver Resultado da Rodada'}
+                            {currentQuestionIndex < 4
+                              ? "Próxima Questão do Desafio"
+                              : "Ver Resultado da Rodada"}
                           </span>
                           <ArrowRight className="w-4 h-4" />
                         </button>
@@ -1234,11 +1260,11 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-['Rubik'] font-black text-[#f8fafc]">
                     {(gameData.attemptsCount || 0) >= MAX_QUIZ_ATTEMPTS
-                      ? '5 de 5 Tentativas Concluídas! 🎓'
-                      : 'Show de Saberes Concluído! 🏆'}
+                      ? "5 de 5 Tentativas Concluídas! 🎓"
+                      : "Show de Saberes Concluído! 🏆"}
                   </h3>
                   <p className="text-xs sm:text-sm text-[#94a3b8] max-w-md mt-1 mb-5">
-                    Você finalizou as 5 perguntas geradas para{' '}
+                    Você finalizou as 5 perguntas geradas para{" "}
                     <strong className="text-[#ffd165]">{selectedBookForQuiz.title}</strong>!
                   </p>
 
@@ -1353,28 +1379,26 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                       key={idx}
                       className={`p-2.5 rounded-2xl border-2 border-b-3 flex items-center justify-between gap-2.5 ${
                         idx === 0
-                          ? 'bg-[#eab308]/15 border-[#ffd165] border-b-[#ca8a04]'
+                          ? "bg-[#eab308]/15 border-[#ffd165] border-b-[#ca8a04]"
                           : idx === 1
-                          ? 'bg-[#131b2e] border-[#94a3b8] border-b-[#475569]'
-                          : 'bg-[#131b2e] border-[#b45309] border-b-[#78350f]'
+                            ? "bg-[#131b2e] border-[#94a3b8] border-b-[#475569]"
+                            : "bg-[#131b2e] border-[#b45309] border-b-[#78350f]"
                       }`}
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-base">
-                          {idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}
+                          {idx === 0 ? "🥇" : idx === 1 ? "🥈" : "🥉"}
                         </span>
                         <div>
                           <div className="text-xs font-['Rubik'] font-bold text-[#f8fafc] truncate max-w-[110px]">
                             {item.studentName}
                           </div>
-                          <span className="text-[10px] text-[#94a3b8]">
-                            {idx + 1}º colocado
-                          </span>
+                          <span className="text-[10px] text-[#94a3b8]">{idx + 1}º colocado</span>
                         </div>
                       </div>
 
                       <span className="text-xs font-['Rubik'] font-black text-[#ffd165]">
-                        {item.score.toLocaleString('pt-BR')} pts
+                        {item.score.toLocaleString("pt-BR")} pts
                       </span>
                     </div>
                   ))
@@ -1394,7 +1418,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                   Google AI Studio Integrado:
                 </strong>
                 <p className="text-[#94a3b8] mt-0.5 leading-relaxed">
-                  As perguntas são geradas sob demanda com o modelo <strong>Gemini 1.5</strong> via JSON estruturado, testando a compreensão real de leitura do aluno.
+                  As perguntas são geradas sob demanda com o modelo <strong>Gemini 1.5</strong> via
+                  JSON estruturado, testando a compreensão real de leitura do aluno.
                 </p>
               </div>
             </div>
@@ -1437,7 +1462,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                   Entrar no Desafio Literário
                 </h3>
                 <p className="text-xs text-[#94a3b8] max-w-xs mt-1">
-                  Digite seu <strong>Código ou Nome de Aluno</strong> para cruzarmos os livros que você retirou na biblioteca escolar!
+                  Digite seu <strong>Código ou Nome de Aluno</strong> para cruzarmos os livros que
+                  você retirou na biblioteca escolar!
                 </p>
               </div>
 
@@ -1468,7 +1494,7 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                     onClick={handleCloseModal}
                     className="px-4 py-3 rounded-2xl border-2 border-[#334155] bg-[#171f33] hover:bg-[#222a3d] text-xs font-bold text-[#dae2fd] transition-all cursor-pointer"
                   >
-                    {activeStudent ? 'Cancelar' : 'Voltar ao Início'}
+                    {activeStudent ? "Cancelar" : "Voltar ao Início"}
                   </button>
                   <button
                     type="submit"
@@ -1538,8 +1564,8 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                         onClick={() => handleSelectBookForQuiz(b)}
                         className={`p-3 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between gap-3 ${
                           isCurrent
-                            ? 'bg-[#eab308]/20 border-[#ffd165] shadow-sm'
-                            : 'bg-[#171f33] hover:bg-[#222a3d] border-[#334155]'
+                            ? "bg-[#eab308]/20 border-[#ffd165] shadow-sm"
+                            : "bg-[#171f33] hover:bg-[#222a3d] border-[#334155]"
                         }`}
                       >
                         <div className="flex items-center gap-3 truncate">
@@ -1573,11 +1599,11 @@ export const MissaoQuiterioView: React.FC<MissaoQuiterioViewProps> = ({
                         <span
                           className={`text-xs font-['Rubik'] font-bold px-3 py-1 rounded-xl flex-shrink-0 ${
                             isCurrent
-                              ? 'bg-[#ffd165] text-[#251a00]'
-                              : 'bg-[#060e20] text-[#94a3b8]'
+                              ? "bg-[#ffd165] text-[#251a00]"
+                              : "bg-[#060e20] text-[#94a3b8]"
                           }`}
                         >
-                          {isCurrent ? 'Selecionado' : 'Escolher'}
+                          {isCurrent ? "Selecionado" : "Escolher"}
                         </span>
                       </div>
                     );

@@ -44,7 +44,16 @@
         "status": { "type": "string", "enum": ["devolvido", "em_andamento", "atrasado"] },
         "notes": { "type": "string" }
       },
-      "required": ["id", "studentName", "studentEmail", "bookId", "bookTitle", "loanDate", "returnDate", "status"]
+      "required": [
+        "id",
+        "studentName",
+        "studentEmail",
+        "bookId",
+        "bookTitle",
+        "loanDate",
+        "returnDate",
+        "status"
+      ]
     },
     "Student": {
       "title": "Student",

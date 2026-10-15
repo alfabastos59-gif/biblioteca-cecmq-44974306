@@ -1,11 +1,8 @@
 // @ts-nocheck
-import React, { useState, useEffect } from 'react';
-import { AuthorItem } from '../types';
-import { useTheme } from '../context/ThemeContext';
-import {
-  getStoredAuthors,
-  subscribeToAuthorsUpdate
-} from '../data/authorsData';
+import React, { useState, useEffect } from "react";
+import { AuthorItem } from "../types";
+import { useTheme } from "../context/ThemeContext";
+import { getStoredAuthors, subscribeToAuthorsUpdate } from "../data/authorsData";
 
 interface QuoteSelection {
   author: AuthorItem;
@@ -30,7 +27,7 @@ function pickRandomWriterAndQuote(authors: AuthorItem[]): QuoteSelection | null 
   if (randomAuthor.featuredQuote && randomAuthor.featuredQuote.trim()) {
     quotesList.push({
       text: randomAuthor.featuredQuote.trim(),
-      source: randomAuthor.quoteSource?.trim() || ''
+      source: randomAuthor.quoteSource?.trim() || "",
     });
   }
   if (Array.isArray(randomAuthor.additionalQuotes)) {
@@ -38,7 +35,7 @@ function pickRandomWriterAndQuote(authors: AuthorItem[]): QuoteSelection | null 
       if (q && q.text && q.text.trim()) {
         quotesList.push({
           text: q.text.trim(),
-          source: q.source?.trim() || randomAuthor.quoteSource?.trim() || ''
+          source: q.source?.trim() || randomAuthor.quoteSource?.trim() || "",
         });
       }
     }
@@ -48,14 +45,16 @@ function pickRandomWriterAndQuote(authors: AuthorItem[]): QuoteSelection | null 
     quotesList.length > 0
       ? quotesList[Math.floor(Math.random() * quotesList.length)]
       : {
-          text: randomAuthor.featuredQuote || 'Sentia mais prazer de brincar com as palavras do que de pensar com elas',
-          source: randomAuthor.quoteSource || ''
+          text:
+            randomAuthor.featuredQuote ||
+            "Sentia mais prazer de brincar com as palavras do que de pensar com elas",
+          source: randomAuthor.quoteSource || "",
         };
 
   return {
     author: randomAuthor,
     quoteText: selectedQuote.text,
-    quoteSource: selectedQuote.source
+    quoteSource: selectedQuote.source,
   };
 }
 
@@ -105,7 +104,7 @@ export const FeaturedAuthor: React.FC = () => {
       id="featured-author-poster"
       className="relative w-full max-w-sm sm:max-w-md mx-auto rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-[#2d2116]/80 bg-[#0d0906]"
       style={{
-        backgroundColor: '#0d0906'
+        backgroundColor: "#0d0906",
       }}
     >
       {/* 1. FOTO DO ESCRITOR */}
@@ -161,9 +160,7 @@ export const FeaturedAuthor: React.FC = () => {
             </p>
           ) : (
             author.role && (
-              <p className="text-[#a48858] font-serif italic text-xs font-normal">
-                {author.role}
-              </p>
+              <p className="text-[#a48858] font-serif italic text-xs font-normal">{author.role}</p>
             )
           )}
         </div>

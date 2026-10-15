@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   Camera,
   RefreshCw,
@@ -21,20 +21,23 @@ import {
   AlertCircle,
   Move,
   Maximize2,
-  Image as ImageIcon
-} from 'lucide-react';
-import { playCameraShutterSound } from '../utils/gameAudio';
+  Image as ImageIcon,
+} from "lucide-react";
+import { playCameraShutterSound } from "../utils/gameAudio";
 
 export interface BookCoverCaptureModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCapture: (imageDataUrl: string, detectedMeta?: { title?: string; author?: string; category?: string; synopsis?: string }) => void;
+  onCapture: (
+    imageDataUrl: string,
+    detectedMeta?: { title?: string; author?: string; category?: string; synopsis?: string },
+  ) => void;
   initialImage?: string;
-  theme?: 'dark' | 'light';
+  theme?: "dark" | "light";
 }
 
-type TabMode = 'camera' | 'upload' | 'url';
-type FilterType = 'normal' | 'enhance' | 'vibrant' | 'mono';
+type TabMode = "camera" | "upload" | "url";
+type FilterType = "normal" | "enhance" | "vibrant" | "mono";
 
 export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
   isOpen,
@@ -42,10 +45,10 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
   onCapture,
   initialImage,
 }) => {
-  const [activeTab, setActiveTab] = useState<TabMode>('camera');
+  const [activeTab, setActiveTab] = useState<TabMode>("camera");
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
-  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
+  const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
   const [hasTorch, setHasTorch] = useState(false);
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -60,7 +63,7 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
   const [panY, setPanY] = useState<number>(0);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [dragStart, setDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [activeFilter, setActiveFilter] = useState<FilterType>('normal');
+  const [activeFilter, setActiveFilter] = useState<FilterType>("normal");
   const [brightness, setBrightness] = useState<number>(100); // 50 to 150
   const [contrast, setContrast] = useState<number>(100); // 50 to 150
 
@@ -69,7 +72,7 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
   const [aiError, setAiError] = useState<string | null>(null);
 
   // URL input state
-  const [urlInput, setUrlInput] = useState<string>('');
+  const [urlInput, setUrlInput] = useState<string>("");
   const [urlPreviewError, setUrlPreviewError] = useState(false);
 
   // Refs
@@ -94,54 +97,60 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
   }, []);
 
   // Start camera stream
-  const startCamera = useCallback(async (mode: 'environment' | 'user' = facingMode) => {
-    stopCamera();
-    setCameraError(null);
+  const startCamera = useCallback(
+    async (mode: "environment" | "user" = facingMode) => {
+      stopCamera();
+      setCameraError(null);
 
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setCameraError('Seu navegador não suporta captura direta de vídeo. Use a Câmera do Smartphone.');
-      return;
-    }
-
-    try {
-      const constraints: MediaStreamConstraints = {
-        video: {
-          facingMode: { ideal: mode },
-          width: { ideal: 1920, min: 640 },
-          height: { ideal: 1080, min: 480 },
-        },
-        audio: false,
-      };
-
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      streamRef.current = stream;
-      setFacingMode(mode);
-      setIsCameraActive(true);
-
-      const track = stream.getVideoTracks()[0];
-      if (track) {
-        const capabilities = (track.getCapabilities?.() as any) || {};
-        setHasTorch(Boolean(capabilities.torch));
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setCameraError(
+          "Seu navegador não suporta captura direta de vídeo. Use a Câmera do Smartphone.",
+        );
+        return;
       }
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play().catch((err) => {
-          console.warn('Erro ao reproduzir stream da câmera:', err);
-        });
+      try {
+        const constraints: MediaStreamConstraints = {
+          video: {
+            facingMode: { ideal: mode },
+            width: { ideal: 1920, min: 640 },
+            height: { ideal: 1080, min: 480 },
+          },
+          audio: false,
+        };
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        streamRef.current = stream;
+        setFacingMode(mode);
+        setIsCameraActive(true);
+
+        const track = stream.getVideoTracks()[0];
+        if (track) {
+          const capabilities = (track.getCapabilities?.() as any) || {};
+          setHasTorch(Boolean(capabilities.torch));
+        }
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play().catch((err) => {
+            console.warn("Erro ao reproduzir stream da câmera:", err);
+          });
+        }
+      } catch (err: any) {
+        console.error("Camera permission/hardware error:", err);
+        let msg = "Não foi possível acessar a câmera. Verifique as permissões de vídeo.";
+        if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+          msg =
+            'Permissão de câmera negada. Permita o acesso à câmera nas configurações do navegador ou use o botão "Câmera do Smartphone".';
+        } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
+          msg = "Nenhuma câmera encontrada no dispositivo.";
+        }
+        setCameraError(msg);
+        setIsCameraActive(false);
       }
-    } catch (err: any) {
-      console.error('Camera permission/hardware error:', err);
-      let msg = 'Não foi possível acessar a câmera. Verifique as permissões de vídeo.';
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        msg = 'Permissão de câmera negada. Permita o acesso à câmera nas configurações do navegador ou use o botão "Câmera do Smartphone".';
-      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-        msg = 'Nenhuma câmera encontrada no dispositivo.';
-      }
-      setCameraError(msg);
-      setIsCameraActive(false);
-    }
-  }, [facingMode, stopCamera]);
+    },
+    [facingMode, stopCamera],
+  );
 
   // Toggle flashlight
   const toggleTorch = async () => {
@@ -156,20 +165,20 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
       });
       setIsTorchOn(nextState);
     } catch (e) {
-      console.warn('Torch not supported on this track:', e);
+      console.warn("Torch not supported on this track:", e);
     }
   };
 
   // Toggle camera direction (front / back)
   const toggleFacingMode = () => {
-    const nextMode = facingMode === 'environment' ? 'user' : 'environment';
+    const nextMode = facingMode === "environment" ? "user" : "environment";
     startCamera(nextMode);
   };
 
   // Switch to live camera tab
   useEffect(() => {
     if (isOpen) {
-      if (!capturedRawImage && activeTab === 'camera') {
+      if (!capturedRawImage && activeTab === "camera") {
         startCamera(facingMode);
       }
     } else {
@@ -190,7 +199,7 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
     setZoom(1);
     setPanX(0);
     setPanY(0);
-    setActiveFilter('normal');
+    setActiveFilter("normal");
     setBrightness(100);
     setContrast(100);
     setAiError(null);
@@ -261,20 +270,20 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
     }
 
     // Target canvas with clean 3:4 book aspect ratio (e.g. 750 x 1000)
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = 750;
     canvas.height = 1000;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
 
     if (ctx) {
       // If user camera (selfie), mirror horizontally
-      if (facingMode === 'user') {
+      if (facingMode === "user") {
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
       }
 
       ctx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
 
       stopCamera();
       setCapturedRawImage(dataUrl);
@@ -301,8 +310,8 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
 
   // Handle image file selection (smartphone camera capture or gallery upload)
   const handleFileSelected = (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      alert('Selecione um arquivo de imagem válido (PNG, JPG, WEBP).');
+    if (!file.type.startsWith("image/")) {
+      alert("Selecione um arquivo de imagem válido (PNG, JPG, WEBP).");
       return;
     }
 
@@ -363,20 +372,20 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
   const generateFinalImage = (): Promise<string> => {
     return new Promise((resolve, reject) => {
       if (!capturedRawImage) {
-        reject('Nenhuma imagem capturada');
+        reject("Nenhuma imagem capturada");
         return;
       }
 
       const img = new Image();
-      img.crossOrigin = 'anonymous';
+      img.crossOrigin = "anonymous";
       img.onload = () => {
         const TARGET_W = 600;
         const TARGET_H = 800; // Perfect 3:4 portrait book ratio
 
-        const canvas = document.createElement('canvas');
+        const canvas = document.createElement("canvas");
         canvas.width = TARGET_W;
         canvas.height = TARGET_H;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext("2d");
 
         if (!ctx) {
           resolve(capturedRawImage);
@@ -384,13 +393,13 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
         }
 
         // Apply filters in canvas context
-        let filterStr = '';
-        if (activeFilter === 'enhance') {
-          filterStr += 'contrast(135%) brightness(105%) saturate(110%) ';
-        } else if (activeFilter === 'vibrant') {
-          filterStr += 'saturate(140%) contrast(110%) ';
-        } else if (activeFilter === 'mono') {
-          filterStr += 'grayscale(100%) contrast(130%) ';
+        let filterStr = "";
+        if (activeFilter === "enhance") {
+          filterStr += "contrast(135%) brightness(105%) saturate(110%) ";
+        } else if (activeFilter === "vibrant") {
+          filterStr += "saturate(140%) contrast(110%) ";
+        } else if (activeFilter === "mono") {
+          filterStr += "grayscale(100%) contrast(130%) ";
         }
 
         // Manual sliders
@@ -401,7 +410,7 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
           filterStr += `contrast(${contrast}%) `;
         }
 
-        ctx.filter = filterStr.trim() || 'none';
+        ctx.filter = filterStr.trim() || "none";
 
         ctx.save();
         // Move to center of canvas
@@ -434,7 +443,7 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
         ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
         ctx.restore();
 
-        resolve(canvas.toDataURL('image/jpeg', 0.88));
+        resolve(canvas.toDataURL("image/jpeg", 0.88));
       };
       img.onerror = () => {
         resolve(capturedRawImage);
@@ -450,17 +459,17 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
 
     try {
       const finalImage = await generateFinalImage();
-      const base64Data = finalImage.replace(/^data:image\/\w+;base64,/, '');
+      const base64Data = finalImage.replace(/^data:image\/\w+;base64,/, "");
 
-      const response = await fetch('/api/detect-book-cover', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/detect-book-cover", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imageBase64: base64Data }),
       });
 
       if (!response.ok) {
         // Fallback local simulated OCR / detection if backend not available
-        throw new Error('API não disponível');
+        throw new Error("API não disponível");
       }
 
       const data = await response.json();
@@ -475,7 +484,7 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
         return;
       }
     } catch (e) {
-      console.warn('AI recognition fallback:', e);
+      console.warn("AI recognition fallback:", e);
       // Even if AI recognition fails or is offline, finalize image normally
       const finalImage = await generateFinalImage();
       onCapture(finalImage);
@@ -492,7 +501,7 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
       onCapture(finalImage);
       onClose();
     } catch (err) {
-      console.error('Erro ao finalizar imagem:', err);
+      console.error("Erro ao finalizar imagem:", err);
       if (capturedRawImage) {
         onCapture(capturedRawImage);
         onClose();
@@ -504,7 +513,7 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
   const handleRetake = () => {
     setCapturedRawImage(null);
     resetAdjustments();
-    if (activeTab === 'camera') {
+    if (activeTab === "camera") {
       startCamera(facingMode);
     }
   };
@@ -514,7 +523,6 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-2xl bg-[#031522] border border-[#163650] rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
-        
         {/* Hidden inputs */}
         <input
           ref={fileInputRef}
@@ -524,7 +532,7 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) handleFileSelected(file);
-            e.target.value = '';
+            e.target.value = "";
           }}
         />
         <input
@@ -536,7 +544,7 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) handleFileSelected(file);
-            e.target.value = '';
+            e.target.value = "";
           }}
         />
 
@@ -555,8 +563,8 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
               </h2>
               <p className="text-xs text-slate-400">
                 {capturedRawImage
-                  ? 'Ajuste, gire ou recorte a foto antes de salvar no acervo'
-                  : 'Enquadre a capa do livro na moldura vertical para melhor resultado'}
+                  ? "Ajuste, gire ou recorte a foto antes de salvar no acervo"
+                  : "Enquadre a capa do livro na moldura vertical para melhor resultado"}
               </p>
             </div>
           </div>
@@ -574,11 +582,11 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
           <div className="flex items-center border-b border-[#163650] bg-[#031522] px-4 pt-2 shrink-0 gap-2">
             <button
               type="button"
-              onClick={() => setActiveTab('camera')}
+              onClick={() => setActiveTab("camera")}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-t-xl transition-all cursor-pointer border-b-2 ${
-                activeTab === 'camera'
-                  ? 'border-emerald-500 text-emerald-400 bg-emerald-500/5'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                activeTab === "camera"
+                  ? "border-emerald-500 text-emerald-400 bg-emerald-500/5"
+                  : "border-transparent text-slate-400 hover:text-slate-200"
               }`}
             >
               <Camera className="w-4 h-4" />
@@ -596,13 +604,13 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
             <button
               type="button"
               onClick={() => {
-                setActiveTab('upload');
+                setActiveTab("upload");
                 fileInputRef.current?.click();
               }}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-t-xl transition-all cursor-pointer border-b-2 ${
-                activeTab === 'upload'
-                  ? 'border-emerald-500 text-emerald-400 bg-emerald-500/5'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                activeTab === "upload"
+                  ? "border-emerald-500 text-emerald-400 bg-emerald-500/5"
+                  : "border-transparent text-slate-400 hover:text-slate-200"
               }`}
             >
               <Upload className="w-4 h-4" />
@@ -610,11 +618,11 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab('url')}
+              onClick={() => setActiveTab("url")}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs sm:text-sm font-semibold rounded-t-xl transition-all cursor-pointer border-b-2 ${
-                activeTab === 'url'
-                  ? 'border-emerald-500 text-emerald-400 bg-emerald-500/5'
-                  : 'border-transparent text-slate-400 hover:text-slate-200'
+                activeTab === "url"
+                  ? "border-emerald-500 text-emerald-400 bg-emerald-500/5"
+                  : "border-transparent text-slate-400 hover:text-slate-200"
               }`}
             >
               <Link2 className="w-4 h-4" />
@@ -625,16 +633,17 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
 
         {/* Modal Main Area */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 flex flex-col items-center justify-center custom-scrollbar min-h-[320px]">
-          
           {/* ============================================================== */}
           {/* STEP 1: CAPTURE MODE (Live Camera Viewfinder)                  */}
           {/* ============================================================== */}
-          {!capturedRawImage && activeTab === 'camera' && (
+          {!capturedRawImage && activeTab === "camera" && (
             <div className="w-full flex flex-col items-center">
               {cameraError ? (
                 <div className="w-full max-w-md p-6 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-center my-6">
                   <AlertCircle className="w-12 h-12 text-rose-400 mx-auto mb-3" />
-                  <h3 className="text-sm font-bold text-rose-300 mb-1">Acesso à Câmera Bloqueado</h3>
+                  <h3 className="text-sm font-bold text-rose-300 mb-1">
+                    Acesso à Câmera Bloqueado
+                  </h3>
                   <p className="text-xs text-rose-200/80 mb-4">{cameraError}</p>
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
                     <button
@@ -678,7 +687,7 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
                     playsInline
                     muted
                     className={`w-full h-full object-cover transition-transform ${
-                      facingMode === 'user' ? 'scale-x-[-1]' : ''
+                      facingMode === "user" ? "scale-x-[-1]" : ""
                     }`}
                   />
 
@@ -706,12 +715,16 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
                             onClick={toggleTorch}
                             className={`pointer-events-auto p-2 rounded-full backdrop-blur-md border transition-all ${
                               isTorchOn
-                                ? 'bg-amber-400 text-slate-950 border-amber-300 shadow-lg shadow-amber-400/30'
-                                : 'bg-black/60 text-white border-white/20 hover:bg-black/80'
+                                ? "bg-amber-400 text-slate-950 border-amber-300 shadow-lg shadow-amber-400/30"
+                                : "bg-black/60 text-white border-white/20 hover:bg-black/80"
                             }`}
                             title="Ligar Lanterna / Flash"
                           >
-                            {isTorchOn ? <Zap className="w-4 h-4 fill-slate-950" /> : <ZapOff className="w-4 h-4" />}
+                            {isTorchOn ? (
+                              <Zap className="w-4 h-4 fill-slate-950" />
+                            ) : (
+                              <ZapOff className="w-4 h-4" />
+                            )}
                           </button>
                         )}
                       </div>
@@ -750,8 +763,8 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
                       onClick={handleStartTimerSnapshot}
                       className={`p-2.5 rounded-full border backdrop-blur-md transition-all cursor-pointer ${
                         countdown !== null
-                          ? 'bg-emerald-500 text-white border-emerald-400'
-                          : 'bg-black/60 hover:bg-black/80 text-white border-white/20'
+                          ? "bg-emerald-500 text-white border-emerald-400"
+                          : "bg-black/60 hover:bg-black/80 text-white border-white/20"
                       }`}
                       title="Disparo com Temporizador de 3 Segundos"
                     >
@@ -801,7 +814,7 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
           {/* ============================================================== */}
           {/* STEP 1 (Alt): Upload or URL Input Mode                         */}
           {/* ============================================================== */}
-          {!capturedRawImage && activeTab === 'upload' && (
+          {!capturedRawImage && activeTab === "upload" && (
             <div
               onClick={() => fileInputRef.current?.click()}
               onDragOver={(e) => e.preventDefault()}
@@ -827,7 +840,7 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
             </div>
           )}
 
-          {!capturedRawImage && activeTab === 'url' && (
+          {!capturedRawImage && activeTab === "url" && (
             <div className="w-full max-w-md p-6 rounded-3xl bg-[#020e18]/80 border border-[#163650] my-4">
               <label className="block text-xs font-bold text-slate-300 mb-2">
                 Cole a URL direta da imagem da capa
@@ -876,7 +889,6 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
           {/* ============================================================== */}
           {capturedRawImage && (
             <div className="w-full flex flex-col items-center animate-in zoom-in-95 duration-200">
-              
               {/* Studio Canvas / Viewport */}
               <div
                 className="relative w-48 sm:w-56 aspect-[3/4] rounded-2xl overflow-hidden bg-black border-2 border-emerald-500/80 shadow-2xl cursor-grab active:cursor-grabbing select-none"
@@ -899,9 +911,9 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
                   style={{
                     transform: `rotate(${rotation}deg) scaleX(${isFlipped ? -1 : 1}) scale(${zoom}) translate(${panX}px, ${panY}px)`,
                     filter: `
-                      ${activeFilter === 'enhance' ? 'contrast(135%) brightness(105%) saturate(110%) ' : ''}
-                      ${activeFilter === 'vibrant' ? 'saturate(140%) contrast(110%) ' : ''}
-                      ${activeFilter === 'mono' ? 'grayscale(100%) contrast(130%) ' : ''}
+                      ${activeFilter === "enhance" ? "contrast(135%) brightness(105%) saturate(110%) " : ""}
+                      ${activeFilter === "vibrant" ? "saturate(140%) contrast(110%) " : ""}
+                      ${activeFilter === "mono" ? "grayscale(100%) contrast(130%) " : ""}
                       brightness(${brightness}%) contrast(${contrast}%)
                     `.trim(),
                   }}
@@ -920,7 +932,6 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
 
               {/* Editing Controls Toolbar */}
               <div className="w-full max-w-lg mt-4 space-y-3">
-                
                 {/* 1. Quick Transform Actions (Rotate, Flip, Zoom) */}
                 <div className="p-2.5 rounded-2xl bg-[#020e18]/80 border border-[#163650] flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-1">
@@ -947,8 +958,8 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
                       onClick={() => setIsFlipped((f) => !f)}
                       className={`p-2 rounded-xl border text-xs font-medium flex items-center gap-1 cursor-pointer transition-colors ${
                         isFlipped
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50'
-                          : 'bg-[#082032] hover:bg-[#0f2e47] text-slate-200 border-[#163650]'
+                          ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/50"
+                          : "bg-[#082032] hover:bg-[#0f2e47] text-slate-200 border-[#163650]"
                       }`}
                       title="Espelhar Horizontalmente"
                     >
@@ -996,44 +1007,44 @@ export const BookCoverCaptureModal: React.FC<BookCoverCaptureModalProps> = ({
                   <div className="grid grid-cols-4 gap-1.5">
                     <button
                       type="button"
-                      onClick={() => setActiveFilter('normal')}
+                      onClick={() => setActiveFilter("normal")}
                       className={`py-1.5 px-2 rounded-xl text-[11px] font-semibold transition-all cursor-pointer ${
-                        activeFilter === 'normal'
-                          ? 'bg-emerald-600 text-white shadow-sm'
-                          : 'bg-[#082032] text-slate-300 hover:bg-[#0e2a40]'
+                        activeFilter === "normal"
+                          ? "bg-emerald-600 text-white shadow-sm"
+                          : "bg-[#082032] text-slate-300 hover:bg-[#0e2a40]"
                       }`}
                     >
                       Original
                     </button>
                     <button
                       type="button"
-                      onClick={() => setActiveFilter('enhance')}
+                      onClick={() => setActiveFilter("enhance")}
                       className={`py-1.5 px-2 rounded-xl text-[11px] font-semibold transition-all cursor-pointer ${
-                        activeFilter === 'enhance'
-                          ? 'bg-emerald-600 text-white shadow-sm'
-                          : 'bg-[#082032] text-slate-300 hover:bg-[#0e2a40]'
+                        activeFilter === "enhance"
+                          ? "bg-emerald-600 text-white shadow-sm"
+                          : "bg-[#082032] text-slate-300 hover:bg-[#0e2a40]"
                       }`}
                     >
                       📖 Nítido
                     </button>
                     <button
                       type="button"
-                      onClick={() => setActiveFilter('vibrant')}
+                      onClick={() => setActiveFilter("vibrant")}
                       className={`py-1.5 px-2 rounded-xl text-[11px] font-semibold transition-all cursor-pointer ${
-                        activeFilter === 'vibrant'
-                          ? 'bg-emerald-600 text-white shadow-sm'
-                          : 'bg-[#082032] text-slate-300 hover:bg-[#0e2a40]'
+                        activeFilter === "vibrant"
+                          ? "bg-emerald-600 text-white shadow-sm"
+                          : "bg-[#082032] text-slate-300 hover:bg-[#0e2a40]"
                       }`}
                     >
                       🎨 Vívido
                     </button>
                     <button
                       type="button"
-                      onClick={() => setActiveFilter('mono')}
+                      onClick={() => setActiveFilter("mono")}
                       className={`py-1.5 px-2 rounded-xl text-[11px] font-semibold transition-all cursor-pointer ${
-                        activeFilter === 'mono'
-                          ? 'bg-emerald-600 text-white shadow-sm'
-                          : 'bg-[#082032] text-slate-300 hover:bg-[#0e2a40]'
+                        activeFilter === "mono"
+                          ? "bg-emerald-600 text-white shadow-sm"
+                          : "bg-[#082032] text-slate-300 hover:bg-[#0e2a40]"
                       }`}
                     >
                       📄 P&B

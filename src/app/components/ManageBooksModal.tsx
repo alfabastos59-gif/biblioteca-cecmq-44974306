@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from "react";
 import {
   X,
   Search,
@@ -10,10 +10,10 @@ import {
   Check,
   ArrowLeft,
   CheckCircle2,
-} from 'lucide-react';
-import { Book } from '../types';
-import { CATEGORIES } from '../data/mockData';
-import { useTheme } from '../context/ThemeContext';
+} from "lucide-react";
+import { Book } from "../types";
+import { CATEGORIES } from "../data/mockData";
+import { useTheme } from "../context/ThemeContext";
 
 interface ManageBooksModalProps {
   isOpen: boolean;
@@ -33,7 +33,7 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
   onDeleteBook,
 }) => {
   const { isDark } = useTheme();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [editingBook, setEditingBook] = useState<Book | null>(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [bookToDelete, setBookToDelete] = useState<Book | null>(null);
@@ -52,9 +52,9 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
             b.title.toLowerCase().includes(searchTerm.toLowerCase().trim()) ||
             b.author.toLowerCase().includes(searchTerm.toLowerCase().trim()) ||
             b.category.toLowerCase().includes(searchTerm.toLowerCase().trim()) ||
-            (b.isbn && b.isbn.toLowerCase().includes(searchTerm.toLowerCase().trim()))
+            (b.isbn && b.isbn.toLowerCase().includes(searchTerm.toLowerCase().trim())),
         );
-    return list.sort((a, b) => a.title.localeCompare(b.title, 'pt-BR', { sensitivity: 'base' }));
+    return list.sort((a, b) => a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" }));
   }, [books, searchTerm]);
 
   if (!isOpen) return null;
@@ -80,21 +80,22 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
     setEditingBook(null);
     setFormData({
       id: `livro-${Date.now()}`,
-      title: '',
-      author: '',
-      category: 'Literatura Brasileira',
+      title: "",
+      author: "",
+      category: "Literatura Brasileira",
       year: new Date().getFullYear(),
       totalCopies: 1,
       availableCopies: 1,
-      location: 'Estante 01 - Prateleira A',
-      isbn: '',
-      synopsis: '',
+      location: "Estante 01 - Prateleira A",
+      isbn: "",
+      synopsis: "",
       pages: 150,
-      publisher: 'Acervo Biblioteca',
+      publisher: "Acervo Biblioteca",
       rating: 4.8,
       reviewsCount: 10,
-      status: 'disponivel',
-      cover: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&auto=format&fit=crop&q=80',
+      status: "disponivel",
+      cover:
+        "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&auto=format&fit=crop&q=80",
     });
     setFormErrors({});
   };
@@ -104,10 +105,11 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
     e.preventDefault();
     const errors: Record<string, string> = {};
 
-    if (!formData.title?.trim()) errors.title = 'O título do livro é obrigatório.';
-    if (!formData.author?.trim()) errors.author = 'O autor é obrigatório.';
-    if (!formData.category?.trim()) errors.category = 'Selecione uma categoria.';
-    if (!formData.totalCopies || formData.totalCopies < 1) errors.totalCopies = 'Mínimo de 1 exemplar.';
+    if (!formData.title?.trim()) errors.title = "O título do livro é obrigatório.";
+    if (!formData.author?.trim()) errors.author = "O autor é obrigatório.";
+    if (!formData.category?.trim()) errors.category = "Selecione uma categoria.";
+    if (!formData.totalCopies || formData.totalCopies < 1)
+      errors.totalCopies = "Mínimo de 1 exemplar.";
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
@@ -117,28 +119,28 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
     const totalCopies = Number(formData.totalCopies) || 1;
     const availableCopies = Math.min(
       totalCopies,
-      Math.max(0, Number(formData.availableCopies ?? totalCopies))
+      Math.max(0, Number(formData.availableCopies ?? totalCopies)),
     );
 
     const bookPayload: Book = {
       id: formData.id || `livro-${Date.now()}`,
       title: formData.title!.trim(),
       author: formData.author!.trim(),
-      category: formData.category || 'Literatura Brasileira',
+      category: formData.category || "Literatura Brasileira",
       year: Number(formData.year) || new Date().getFullYear(),
       totalCopies,
       availableCopies,
-      location: formData.location?.trim() || 'Estante 01 - Prateleira A',
-      isbn: formData.isbn?.trim() || 'N/A',
+      location: formData.location?.trim() || "Estante 01 - Prateleira A",
+      isbn: formData.isbn?.trim() || "N/A",
       synopsis: formData.synopsis?.trim() || `Livro ${formData.title} por ${formData.author}.`,
       pages: Number(formData.pages) || 160,
-      publisher: formData.publisher?.trim() || 'Acervo Biblioteca',
+      publisher: formData.publisher?.trim() || "Acervo Biblioteca",
       rating: Number(formData.rating) || 4.8,
       reviewsCount: Number(formData.reviewsCount) || 12,
-      status: availableCopies > 0 ? 'disponivel' : 'reservado',
+      status: availableCopies > 0 ? "disponivel" : "reservado",
       cover:
         formData.cover?.trim() ||
-        'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&auto=format&fit=crop&q=80',
+        "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&auto=format&fit=crop&q=80",
       featured: formData.featured ?? false,
     };
 
@@ -165,10 +167,13 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
       {/* Modal Container */}
-      <div className={`border rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150 relative ${
-        isDark ? 'bg-[#071d2b] border-[#163650] text-white' : 'bg-white border-slate-200 text-slate-900'
-      }`}>
-        
+      <div
+        className={`border rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150 relative ${
+          isDark
+            ? "bg-[#071d2b] border-[#163650] text-white"
+            : "bg-white border-slate-200 text-slate-900"
+        }`}
+      >
         {/* Toast Alert */}
         {toastMessage && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-xl flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
@@ -181,14 +186,20 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
         {!editingBook && !isCreatingNew && (
           <>
             {/* Top Header */}
-            <div className={`p-5 sm:p-6 pb-4 flex items-start justify-between border-b ${
-              isDark ? 'border-[#163650]/60' : 'border-slate-100'
-            }`}>
+            <div
+              className={`p-5 sm:p-6 pb-4 flex items-start justify-between border-b ${
+                isDark ? "border-[#163650]/60" : "border-slate-100"
+              }`}
+            >
               <div>
-                <h2 className={`text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2.5 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                <h2
+                  className={`text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2.5 ${isDark ? "text-white" : "text-slate-900"}`}
+                >
                   <span>Gerenciar livros</span>
                 </h2>
-                <p className={`text-xs sm:text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                <p
+                  className={`text-xs sm:text-sm mt-1 ${isDark ? "text-slate-400" : "text-slate-500"}`}
+                >
                   Busque, altere ou exclua livros do acervo.
                 </p>
               </div>
@@ -200,8 +211,8 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
                 aria-label="Fechar janela"
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer border shrink-0 ${
                   isDark
-                    ? 'bg-[#0d2a3d] hover:bg-[#163b52] text-slate-300 hover:text-white border-[#1b435b]'
-                    : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border-slate-200'
+                    ? "bg-[#0d2a3d] hover:bg-[#163b52] text-slate-300 hover:text-white border-[#1b435b]"
+                    : "bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border-slate-200"
                 }`}
               >
                 <X className="w-4 h-4" />
@@ -211,7 +222,9 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
             {/* Search Input Bar */}
             <div className="px-5 sm:px-6 my-4">
               <div className="relative">
-                <Search className={`w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 ${isDark ? 'text-slate-400' : 'text-slate-400'}`} />
+                <Search
+                  className={`w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 ${isDark ? "text-slate-400" : "text-slate-400"}`}
+                />
                 <input
                   id="input-manage-books-search"
                   type="text"
@@ -220,16 +233,18 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className={`w-full pl-10 pr-10 py-2.5 rounded-xl text-sm focus:outline-none transition-all border ${
                     isDark
-                      ? 'bg-[#031522] border-[#144754] focus:border-emerald-500 text-white placeholder-slate-400'
-                      : 'bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400'
+                      ? "bg-[#031522] border-[#144754] focus:border-emerald-500 text-white placeholder-slate-400"
+                      : "bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400"
                   }`}
                   autoFocus
                 />
                 {searchTerm && (
                   <button
-                    onClick={() => setSearchTerm('')}
+                    onClick={() => setSearchTerm("")}
                     className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs p-1 rounded-full ${
-                      isDark ? 'text-slate-400 hover:text-white bg-[#0d2a3d]' : 'text-slate-500 hover:text-slate-900 bg-slate-200'
+                      isDark
+                        ? "text-slate-400 hover:text-white bg-[#0d2a3d]"
+                        : "text-slate-500 hover:text-slate-900 bg-slate-200"
                     }`}
                   >
                     <X className="w-3 h-3" />
@@ -239,11 +254,15 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
             </div>
 
             {/* Books List (Scrollable) */}
-            <div className={`flex-1 overflow-y-auto px-5 sm:px-6 divide-y space-y-0.5 max-h-[52vh] ${
-              isDark ? 'divide-[#102d42]' : 'divide-slate-100'
-            }`}>
+            <div
+              className={`flex-1 overflow-y-auto px-5 sm:px-6 divide-y space-y-0.5 max-h-[52vh] ${
+                isDark ? "divide-[#102d42]" : "divide-slate-100"
+              }`}
+            >
               {filteredBooks.length === 0 ? (
-                <div className={`py-12 text-center ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                <div
+                  className={`py-12 text-center ${isDark ? "text-slate-400" : "text-slate-500"}`}
+                >
                   <BookOpen className="w-10 h-10 mx-auto mb-2 opacity-50" />
                   <p className="text-sm font-medium">Nenhum livro encontrado para "{searchTerm}"</p>
                   <p className="text-xs mt-1">Verifique a ortografia ou cadastre um novo título.</p>
@@ -253,7 +272,7 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
                   <div
                     key={book.id}
                     className={`py-3 sm:py-3.5 flex items-center justify-between gap-3 group rounded-xl px-2 -mx-2 transition-colors ${
-                      isDark ? 'hover:bg-[#092233]/40' : 'hover:bg-slate-50'
+                      isDark ? "hover:bg-[#092233]/40" : "hover:bg-slate-50"
                     }`}
                   >
                     {/* Left: Thumbnail & Meta */}
@@ -262,20 +281,24 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
                         src={book.cover}
                         alt={book.title}
                         className={`w-10 h-14 object-cover rounded-lg shrink-0 shadow-sm border ${
-                          isDark ? 'bg-[#020e17] border-[#163650]' : 'bg-slate-100 border-slate-200'
+                          isDark ? "bg-[#020e17] border-[#163650]" : "bg-slate-100 border-slate-200"
                         }`}
                         onError={(e) => {
                           (e.target as HTMLImageElement).src =
-                            'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&auto=format&fit=crop&q=80';
+                            "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&auto=format&fit=crop&q=80";
                         }}
                       />
                       <div className="min-w-0">
-                        <h4 className={`text-xs sm:text-sm font-bold truncate group-hover:text-emerald-500 transition-colors ${
-                          isDark ? 'text-white' : 'text-slate-900'
-                        }`}>
+                        <h4
+                          className={`text-xs sm:text-sm font-bold truncate group-hover:text-emerald-500 transition-colors ${
+                            isDark ? "text-white" : "text-slate-900"
+                          }`}
+                        >
                           {book.title}
                         </h4>
-                        <div className={`text-[11px] truncate mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                        <div
+                          className={`text-[11px] truncate mt-0.5 ${isDark ? "text-slate-400" : "text-slate-500"}`}
+                        >
                           <span>{book.author}</span>
                           {book.year ? <span> · {book.year}</span> : null}
                           <span> · Acervo: {book.totalCopies}</span>
@@ -302,8 +325,8 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
                         onClick={() => handleStartEdit(book)}
                         className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all cursor-pointer shadow-sm active:scale-95 ${
                           isDark
-                            ? 'bg-[#0e2738] hover:bg-[#163950] text-slate-200 hover:text-white border-[#1b435b]'
-                            : 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border-slate-200'
+                            ? "bg-[#0e2738] hover:bg-[#163950] text-slate-200 hover:text-white border-[#1b435b]"
+                            : "bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border-slate-200"
                         }`}
                       >
                         <Pencil className="w-3.5 h-3.5" />
@@ -325,12 +348,19 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
             </div>
 
             {/* Bottom Footer */}
-            <div className={`p-4 sm:p-5 border-t flex items-center justify-between gap-4 ${
-              isDark ? 'bg-[#051724] border-[#163650]' : 'bg-slate-50 border-slate-200'
-            }`}>
-              <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Mostrando <strong className={isDark ? 'text-white' : 'text-slate-900'}>{filteredBooks.length}</strong> de{' '}
-                <strong className={isDark ? 'text-white' : 'text-slate-900'}>{books.length}</strong> livros
+            <div
+              className={`p-4 sm:p-5 border-t flex items-center justify-between gap-4 ${
+                isDark ? "bg-[#051724] border-[#163650]" : "bg-slate-50 border-slate-200"
+              }`}
+            >
+              <span className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                Mostrando{" "}
+                <strong className={isDark ? "text-white" : "text-slate-900"}>
+                  {filteredBooks.length}
+                </strong>{" "}
+                de{" "}
+                <strong className={isDark ? "text-white" : "text-slate-900"}>{books.length}</strong>{" "}
+                livros
               </span>
               <button
                 id="btn-add-new-book"
@@ -348,9 +378,11 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
         {(editingBook || isCreatingNew) && (
           <form onSubmit={handleSaveForm} className="flex flex-col flex-1 overflow-hidden">
             {/* Header */}
-            <div className={`p-5 sm:p-6 pb-4 border-b flex items-center justify-between ${
-              isDark ? 'border-[#163650] bg-[#001728]' : 'border-slate-200 bg-slate-50'
-            }`}>
+            <div
+              className={`p-5 sm:p-6 pb-4 border-b flex items-center justify-between ${
+                isDark ? "border-[#163650] bg-[#001728]" : "border-slate-200 bg-slate-50"
+              }`}
+            >
               <div className="flex items-center gap-3">
                 <button
                   type="button"
@@ -360,19 +392,21 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
                   }}
                   className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer border ${
                     isDark
-                      ? 'bg-[#0d2a3d] hover:bg-[#163b52] text-slate-300 hover:text-white border-[#1b435b]'
-                      : 'bg-slate-200 hover:bg-slate-300 text-slate-600 hover:text-slate-900 border-slate-300'
+                      ? "bg-[#0d2a3d] hover:bg-[#163b52] text-slate-300 hover:text-white border-[#1b435b]"
+                      : "bg-slate-200 hover:bg-slate-300 text-slate-600 hover:text-slate-900 border-slate-300"
                   }`}
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </button>
                 <div>
-                  <h2 className={`text-lg sm:text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                    {isCreatingNew ? 'Cadastrar Novo Livro' : 'Alterar Dados do Livro'}
+                  <h2
+                    className={`text-lg sm:text-xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}
+                  >
+                    {isCreatingNew ? "Cadastrar Novo Livro" : "Alterar Dados do Livro"}
                   </h2>
-                  <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
                     {isCreatingNew
-                      ? 'Preencha as informações para adicionar ao acervo.'
+                      ? "Preencha as informações para adicionar ao acervo."
                       : `Editando: ${editingBook?.title}`}
                   </p>
                 </div>
@@ -383,8 +417,8 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
                 onClick={onClose}
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer border ${
                   isDark
-                    ? 'bg-[#0d2a3d] hover:bg-[#163b52] text-slate-300 hover:text-white border-[#1b435b]'
-                    : 'bg-slate-200 hover:bg-slate-300 text-slate-600 hover:text-slate-900 border-slate-300'
+                    ? "bg-[#0d2a3d] hover:bg-[#163b52] text-slate-300 hover:text-white border-[#1b435b]"
+                    : "bg-slate-200 hover:bg-slate-300 text-slate-600 hover:text-slate-900 border-slate-300"
                 }`}
               >
                 <X className="w-4 h-4" />
@@ -396,18 +430,20 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
               {/* Título & Autor */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className={`block font-semibold mb-1 text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  <label
+                    className={`block font-semibold mb-1 text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                  >
                     Título da Obra <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
-                    value={formData.title || ''}
+                    value={formData.title || ""}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     placeholder="Ex: Dom Casmurro"
                     className={`w-full px-3.5 py-2.5 rounded-xl focus:outline-none border transition-all ${
                       isDark
-                        ? 'bg-[#031522] border-[#163650] focus:border-emerald-500 text-white placeholder-slate-400'
-                        : 'bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400'
+                        ? "bg-[#031522] border-[#163650] focus:border-emerald-500 text-white placeholder-slate-400"
+                        : "bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400"
                     }`}
                   />
                   {formErrors.title && (
@@ -416,22 +452,26 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
                 </div>
 
                 <div>
-                  <label className={`block font-semibold mb-1 text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  <label
+                    className={`block font-semibold mb-1 text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                  >
                     Autor(a) <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
-                    value={formData.author || ''}
+                    value={formData.author || ""}
                     onChange={(e) => setFormData({ ...formData, author: e.target.value })}
                     placeholder="Ex: Machado de Assis"
                     className={`w-full px-3.5 py-2.5 rounded-xl focus:outline-none border transition-all ${
                       isDark
-                        ? 'bg-[#031522] border-[#163650] focus:border-emerald-500 text-white placeholder-slate-400'
-                        : 'bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400'
+                        ? "bg-[#031522] border-[#163650] focus:border-emerald-500 text-white placeholder-slate-400"
+                        : "bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400"
                     }`}
                   />
                   {formErrors.author && (
-                    <span className="text-rose-500 text-[11px] mt-1 block">{formErrors.author}</span>
+                    <span className="text-rose-500 text-[11px] mt-1 block">
+                      {formErrors.author}
+                    </span>
                   )}
                 </div>
               </div>
@@ -439,20 +479,26 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
               {/* Categoria, Ano & ISBN */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className={`block font-semibold mb-1 text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  <label
+                    className={`block font-semibold mb-1 text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                  >
                     Categoria <span className="text-rose-500">*</span>
                   </label>
                   <select
-                    value={formData.category || 'Literatura Brasileira'}
+                    value={formData.category || "Literatura Brasileira"}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className={`w-full px-3.5 py-2.5 rounded-xl focus:outline-none border transition-all ${
                       isDark
-                        ? 'bg-[#031522] border-[#163650] focus:border-emerald-500 text-white'
-                        : 'bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900'
+                        ? "bg-[#031522] border-[#163650] focus:border-emerald-500 text-white"
+                        : "bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900"
                     }`}
                   >
-                    {CATEGORIES.filter((c) => c !== 'Todos').map((cat) => (
-                      <option key={cat} value={cat} className={isDark ? 'bg-[#071d2b] text-white' : 'bg-white text-slate-900'}>
+                    {CATEGORIES.filter((c) => c !== "Todos").map((cat) => (
+                      <option
+                        key={cat}
+                        value={cat}
+                        className={isDark ? "bg-[#071d2b] text-white" : "bg-white text-slate-900"}
+                      >
                         {cat}
                       </option>
                     ))}
@@ -460,35 +506,39 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
                 </div>
 
                 <div>
-                  <label className={`block font-semibold mb-1 text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  <label
+                    className={`block font-semibold mb-1 text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                  >
                     Ano de Publicação
                   </label>
                   <input
                     type="number"
-                    value={formData.year || ''}
+                    value={formData.year || ""}
                     onChange={(e) => setFormData({ ...formData, year: Number(e.target.value) })}
                     placeholder="Ex: 2018"
                     className={`w-full px-3.5 py-2.5 rounded-xl focus:outline-none border transition-all ${
                       isDark
-                        ? 'bg-[#031522] border-[#163650] focus:border-emerald-500 text-white placeholder-slate-400'
-                        : 'bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400'
+                        ? "bg-[#031522] border-[#163650] focus:border-emerald-500 text-white placeholder-slate-400"
+                        : "bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400"
                     }`}
                   />
                 </div>
 
                 <div>
-                  <label className={`block font-semibold mb-1 text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  <label
+                    className={`block font-semibold mb-1 text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                  >
                     Código ISBN
                   </label>
                   <input
                     type="text"
-                    value={formData.isbn || ''}
+                    value={formData.isbn || ""}
                     onChange={(e) => setFormData({ ...formData, isbn: e.target.value })}
                     placeholder="Ex: 978-85-0000-00-0"
                     className={`w-full px-3.5 py-2.5 rounded-xl focus:outline-none border transition-all ${
                       isDark
-                        ? 'bg-[#031522] border-[#163650] focus:border-emerald-500 text-white placeholder-slate-400'
-                        : 'bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400'
+                        ? "bg-[#031522] border-[#163650] focus:border-emerald-500 text-white placeholder-slate-400"
+                        : "bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400"
                     }`}
                   />
                 </div>
@@ -497,7 +547,9 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
               {/* Quantidade Total, Quantidade Disponível & Localização */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className={`block font-semibold mb-1 text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  <label
+                    className={`block font-semibold mb-1 text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                  >
                     Total de Exemplares <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -514,14 +566,16 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
                     }}
                     className={`w-full px-3.5 py-2.5 rounded-xl focus:outline-none border transition-all ${
                       isDark
-                        ? 'bg-[#031522] border-[#163650] focus:border-emerald-500 text-white'
-                        : 'bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900'
+                        ? "bg-[#031522] border-[#163650] focus:border-emerald-500 text-white"
+                        : "bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900"
                     }`}
                   />
                 </div>
 
                 <div>
-                  <label className={`block font-semibold mb-1 text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  <label
+                    className={`block font-semibold mb-1 text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                  >
                     Exemplares Disponíveis
                   </label>
                   <input
@@ -537,25 +591,27 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
                     }
                     className={`w-full px-3.5 py-2.5 rounded-xl focus:outline-none border transition-all ${
                       isDark
-                        ? 'bg-[#031522] border-[#163650] focus:border-emerald-500 text-white'
-                        : 'bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900'
+                        ? "bg-[#031522] border-[#163650] focus:border-emerald-500 text-white"
+                        : "bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900"
                     }`}
                   />
                 </div>
 
                 <div>
-                  <label className={`block font-semibold mb-1 text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                  <label
+                    className={`block font-semibold mb-1 text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                  >
                     Localização na Estante
                   </label>
                   <input
                     type="text"
-                    value={formData.location || ''}
+                    value={formData.location || ""}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     placeholder="Ex: Estante 02 - Prateleira B"
                     className={`w-full px-3.5 py-2.5 rounded-xl focus:outline-none border transition-all ${
                       isDark
-                        ? 'bg-[#031522] border-[#163650] focus:border-emerald-500 text-white placeholder-slate-400'
-                        : 'bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400'
+                        ? "bg-[#031522] border-[#163650] focus:border-emerald-500 text-white placeholder-slate-400"
+                        : "bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400"
                     }`}
                   />
                 </div>
@@ -563,19 +619,21 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
 
               {/* Capa URL */}
               <div>
-                <label className={`block font-semibold mb-1 text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                <label
+                  className={`block font-semibold mb-1 text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                >
                   URL da Imagem da Capa
                 </label>
                 <div className="flex gap-3 items-center">
                   <input
                     type="text"
-                    value={formData.cover || ''}
+                    value={formData.cover || ""}
                     onChange={(e) => setFormData({ ...formData, cover: e.target.value })}
                     placeholder="https://exemplo.com/capa.jpg"
                     className={`flex-1 px-3.5 py-2.5 rounded-xl focus:outline-none border transition-all text-xs font-mono ${
                       isDark
-                        ? 'bg-[#031522] border-[#163650] focus:border-emerald-500 text-white placeholder-slate-400'
-                        : 'bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400'
+                        ? "bg-[#031522] border-[#163650] focus:border-emerald-500 text-white placeholder-slate-400"
+                        : "bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400"
                     }`}
                   />
                   {formData.cover && (
@@ -583,11 +641,11 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
                       src={formData.cover}
                       alt="Preview da Capa"
                       className={`w-9 h-12 object-cover rounded-lg shrink-0 border ${
-                        isDark ? 'bg-[#031522] border-[#163650]' : 'bg-slate-100 border-slate-200'
+                        isDark ? "bg-[#031522] border-[#163650]" : "bg-slate-100 border-slate-200"
                       }`}
                       onError={(e) => {
                         (e.target as HTMLImageElement).src =
-                          'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&auto=format&fit=crop&q=80';
+                          "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&auto=format&fit=crop&q=80";
                       }}
                     />
                   )}
@@ -596,27 +654,31 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
 
               {/* Sinopse / Descrição */}
               <div>
-                <label className={`block font-semibold mb-1 text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                <label
+                  className={`block font-semibold mb-1 text-xs ${isDark ? "text-slate-300" : "text-slate-700"}`}
+                >
                   Sinopse / Descrição da Obra
                 </label>
                 <textarea
                   rows={3}
-                  value={formData.synopsis || ''}
+                  value={formData.synopsis || ""}
                   onChange={(e) => setFormData({ ...formData, synopsis: e.target.value })}
                   placeholder="Escreva breve resumo sobre o enredo ou conteúdo do livro..."
                   className={`w-full px-3.5 py-2.5 rounded-xl focus:outline-none border transition-all resize-none ${
                     isDark
-                      ? 'bg-[#031522] border-[#163650] focus:border-emerald-500 text-white placeholder-slate-400'
-                      : 'bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400'
+                      ? "bg-[#031522] border-[#163650] focus:border-emerald-500 text-white placeholder-slate-400"
+                      : "bg-slate-50 border-slate-300 focus:border-emerald-500 text-slate-900 placeholder-slate-400"
                   }`}
                 />
               </div>
             </div>
 
             {/* Form Footer Actions */}
-            <div className={`p-4 sm:p-5 border-t flex items-center justify-end gap-3 ${
-              isDark ? 'bg-[#051724] border-[#163650]' : 'bg-slate-50 border-slate-200'
-            }`}>
+            <div
+              className={`p-4 sm:p-5 border-t flex items-center justify-end gap-3 ${
+                isDark ? "bg-[#051724] border-[#163650]" : "bg-slate-50 border-slate-200"
+              }`}
+            >
               <button
                 type="button"
                 onClick={() => {
@@ -625,8 +687,8 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
                 }}
                 className={`px-4 py-2.5 rounded-xl font-semibold text-xs border transition-colors cursor-pointer ${
                   isDark
-                    ? 'bg-[#092032] hover:bg-[#163650] text-slate-300 border-[#163650]'
-                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                    ? "bg-[#092032] hover:bg-[#163650] text-slate-300 border-[#163650]"
+                    : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
                 }`}
               >
                 Cancelar
@@ -636,7 +698,7 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
                 className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition-all flex items-center gap-2 cursor-pointer"
               >
                 <Check className="w-4 h-4" />
-                <span>{isCreatingNew ? 'Cadastrar Livro' : 'Salvar Alterações'}</span>
+                <span>{isCreatingNew ? "Cadastrar Livro" : "Salvar Alterações"}</span>
               </button>
             </div>
           </form>
@@ -646,38 +708,57 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
       {/* DELETE CONFIRMATION MODAL */}
       {bookToDelete && (
         <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
-          <div className={`border border-rose-500/40 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 animate-in zoom-in-95 ${
-            isDark ? 'bg-[#092032] text-white' : 'bg-white text-slate-900'
-          }`}>
+          <div
+            className={`border border-rose-500/40 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5 animate-in zoom-in-95 ${
+              isDark ? "bg-[#092032] text-white" : "bg-white text-slate-900"
+            }`}
+          >
             <div className="flex items-center gap-3.5">
               <div className="w-11 h-11 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-500 shrink-0">
                 <Trash2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className={`text-base font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>Excluir Livro do Acervo?</h3>
-                <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Esta ação removerá o título da biblioteca.</p>
+                <h3 className={`text-base font-bold ${isDark ? "text-white" : "text-slate-900"}`}>
+                  Excluir Livro do Acervo?
+                </h3>
+                <p className={`text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                  Esta ação removerá o título da biblioteca.
+                </p>
               </div>
             </div>
 
-            <div className={`p-3.5 rounded-xl border flex items-center gap-3 ${
-              isDark ? 'bg-[#031522] border-[#163650]' : 'bg-slate-50 border-slate-200'
-            }`}>
+            <div
+              className={`p-3.5 rounded-xl border flex items-center gap-3 ${
+                isDark ? "bg-[#031522] border-[#163650]" : "bg-slate-50 border-slate-200"
+              }`}
+            >
               <img
                 src={bookToDelete.cover}
                 alt={bookToDelete.title}
                 className={`w-10 h-14 object-cover rounded-lg shrink-0 border ${
-                  isDark ? 'border-[#163650]' : 'border-slate-200'
+                  isDark ? "border-[#163650]" : "border-slate-200"
                 }`}
               />
               <div className="min-w-0">
-                <h4 className={`text-xs font-bold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{bookToDelete.title}</h4>
-                <p className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{bookToDelete.author}</p>
-                <p className="text-[10px] text-emerald-500 font-semibold mt-0.5">{bookToDelete.category}</p>
+                <h4
+                  className={`text-xs font-bold truncate ${isDark ? "text-white" : "text-slate-900"}`}
+                >
+                  {bookToDelete.title}
+                </h4>
+                <p className={`text-[11px] ${isDark ? "text-slate-400" : "text-slate-500"}`}>
+                  {bookToDelete.author}
+                </p>
+                <p className="text-[10px] text-emerald-500 font-semibold mt-0.5">
+                  {bookToDelete.category}
+                </p>
               </div>
             </div>
 
-            <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-              Tem certeza que deseja remover este livro? Caso haja empréstimos associados no histórico, eles permanecerão registrados.
+            <p
+              className={`text-xs leading-relaxed ${isDark ? "text-slate-300" : "text-slate-600"}`}
+            >
+              Tem certeza que deseja remover este livro? Caso haja empréstimos associados no
+              histórico, eles permanecerão registrados.
             </p>
 
             <div className="flex gap-3 pt-2">
@@ -686,8 +767,8 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
                 onClick={() => setBookToDelete(null)}
                 className={`flex-1 py-2.5 rounded-xl font-semibold text-xs border transition-colors cursor-pointer ${
                   isDark
-                    ? 'bg-[#071d2b] hover:bg-[#163650] text-slate-300 border-[#163650]'
-                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                    ? "bg-[#071d2b] hover:bg-[#163650] text-slate-300 border-[#163650]"
+                    : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
                 }`}
               >
                 Cancelar
@@ -706,4 +787,3 @@ export const ManageBooksModal: React.FC<ManageBooksModalProps> = ({
     </div>
   );
 };
-

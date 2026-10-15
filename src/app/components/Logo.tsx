@@ -1,8 +1,8 @@
 // @ts-nocheck
-import React from 'react';
+import React from "react";
 
 interface LogoProps {
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: "sm" | "md" | "lg" | "xl";
   showSubtitle?: boolean;
   className?: string;
   subtitleClassName?: string;
@@ -10,32 +10,32 @@ interface LogoProps {
 }
 
 export const Logo: React.FC<LogoProps> = ({
-  size = 'md',
+  size = "md",
   showSubtitle = true,
-  className = '',
-  subtitleClassName = '',
-  titleClassName = '',
+  className = "",
+  subtitleClassName = "",
+  titleClassName = "",
 }) => {
   // Dimensions mapping
   const iconSizes = {
-    sm: 'w-8 h-8',
-    md: 'w-10 h-10',
-    lg: 'w-13 h-13',
-    xl: 'w-16 h-16',
+    sm: "w-8 h-8",
+    md: "w-10 h-10",
+    lg: "w-13 h-13",
+    xl: "w-16 h-16",
   };
 
   const titleSizes = {
-    sm: 'text-sm font-bold',
-    md: 'text-base sm:text-lg font-bold tracking-normal',
-    lg: 'text-xl sm:text-2xl font-bold tracking-tight',
-    xl: 'text-2xl sm:text-3xl font-extrabold tracking-tight',
+    sm: "text-sm font-bold",
+    md: "text-base sm:text-lg font-bold tracking-normal",
+    lg: "text-xl sm:text-2xl font-bold tracking-tight",
+    xl: "text-2xl sm:text-3xl font-extrabold tracking-tight",
   };
 
   const subtitleSizes = {
-    sm: 'text-[10px]',
-    md: 'text-[11px] sm:text-xs',
-    lg: 'text-xs sm:text-sm',
-    xl: 'text-sm sm:text-base',
+    sm: "text-[10px]",
+    md: "text-[11px] sm:text-xs",
+    lg: "text-xs sm:text-sm",
+    xl: "text-sm sm:text-base",
   };
 
   return (
@@ -94,15 +94,33 @@ export const Logo: React.FC<LogoProps> = ({
             />
 
             {/* Top-Left Icon: Paintbrush / Pen (Artes & Humanidades) */}
-            <g transform="translate(18, 14) scale(0.65)" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
-              <path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.375-9.375z" fill="#FFFFFF" fillOpacity="0.2" />
+            <g
+              transform="translate(18, 14) scale(0.65)"
+              stroke="#FFFFFF"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            >
+              <path
+                d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.375-9.375z"
+                fill="#FFFFFF"
+                fillOpacity="0.2"
+              />
               <path d="M14.5 5.5l3 3" />
               <path d="M3 21l3-1 2-2" />
               <circle cx="5" cy="19" r="1" fill="#FFFFFF" />
             </g>
 
             {/* Top-Right Icon: Chemistry Beaker / Flask (Ciências & Tecnologia) */}
-            <g transform="translate(62, 13) scale(0.65)" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
+            <g
+              transform="translate(62, 13) scale(0.65)"
+              stroke="#FFFFFF"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            >
               <path d="M10 2v7.5L4.5 20a1.5 1.5 0 0 0 1.3 2.2h12.4a1.5 1.5 0 0 0 1.3-2.2L14 9.5V2" />
               <path d="M8 2h8" />
               <path d="M6.5 16h11" strokeDasharray="1 2" />
@@ -111,7 +129,14 @@ export const Logo: React.FC<LogoProps> = ({
             </g>
 
             {/* Bottom-Left Icon: Molecule / Network of 3 Nodes (Conhecimento & Inovação) */}
-            <g transform="translate(18, 58) scale(0.65)" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
+            <g
+              transform="translate(18, 58) scale(0.65)"
+              stroke="#FFFFFF"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            >
               <circle cx="12" cy="5" r="3.5" fill="#FFFFFF" fillOpacity="0.9" />
               <circle cx="5" cy="17" r="3.5" fill="#FFFFFF" fillOpacity="0.9" />
               <circle cx="19" cy="17" r="3.5" fill="#FFFFFF" fillOpacity="0.9" />
@@ -121,9 +146,20 @@ export const Logo: React.FC<LogoProps> = ({
             </g>
 
             {/* Bottom-Right Icon: Soccer Ball / Sports / Global (Educação Integral & Esporte) */}
-            <g transform="translate(62, 58) scale(0.65)" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none">
+            <g
+              transform="translate(62, 58) scale(0.65)"
+              stroke="#FFFFFF"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            >
               <circle cx="12" cy="12" r="10" />
-              <polygon points="12 7, 16 10, 14.5 15, 9.5 15, 8 10" fill="#FFFFFF" fillOpacity="0.4" />
+              <polygon
+                points="12 7, 16 10, 14.5 15, 9.5 15, 8 10"
+                fill="#FFFFFF"
+                fillOpacity="0.4"
+              />
               <line x1="12" y1="7" x2="12" y2="2" />
               <line x1="16" y1="10" x2="20.5" y2="7.5" />
               <line x1="14.5" y1="15" x2="18.5" y2="19" />

@@ -1,13 +1,13 @@
 // @ts-nocheck
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 
-export type TrailEffectType = 'patinhas' | 'brilho' | 'livros';
+export type TrailEffectType = "patinhas" | "brilho" | "livros";
 
 export interface MouseTrailProps {
   enabled?: boolean;
   effectType?: TrailEffectType;
   particleDensity?: number; // 1 a 3
-  glowIntensity?: number;   // 0.5 a 1.5
+  glowIntensity?: number; // 0.5 a 1.5
 }
 
 interface Particle {
@@ -21,12 +21,12 @@ interface Particle {
   currentLife: number;
   color: string;
   rotation: number;
-  type: 'paw' | 'star' | 'book';
+  type: "paw" | "star" | "book";
 }
 
 export const MouseTrailCanvas: React.FC<MouseTrailProps> = ({
   enabled = true,
-  effectType = 'patinhas',
+  effectType = "patinhas",
   particleDensity = 2,
   glowIntensity = 1.0,
 }) => {
@@ -39,7 +39,7 @@ export const MouseTrailCanvas: React.FC<MouseTrailProps> = ({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: true });
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
     // Ajusta o tamanho do canvas para a resolução da tela
@@ -52,9 +52,9 @@ export const MouseTrailCanvas: React.FC<MouseTrailProps> = ({
     };
 
     handleResize();
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
-    const colors = ['#f59e0b', '#fb923c', '#38bdf8', '#10b981', '#fef08a'];
+    const colors = ["#f59e0b", "#fb923c", "#38bdf8", "#10b981", "#fef08a"];
 
     // Captura o movimento do mouse
     const onMouseMove = (e: MouseEvent) => {
@@ -74,7 +74,7 @@ export const MouseTrailCanvas: React.FC<MouseTrailProps> = ({
       const angle = Math.atan2(dy, dx);
 
       // 1. EFEITO PATINHAS DE GATO 🐾
-      if (effectType === 'patinhas') {
+      if (effectType === "patinhas") {
         distanceSinceLastPawRef.current += dist;
         const stepDist = 28 / Math.max(1, particleDensity * 0.7);
 
@@ -97,15 +97,15 @@ export const MouseTrailCanvas: React.FC<MouseTrailProps> = ({
             alpha: 0.95,
             maxLife: 45,
             currentLife: 45,
-            color: '#f59e0b',
+            color: "#f59e0b",
             rotation: angle + Math.PI / 2, // Aponta para a direção do movimento
-            type: 'paw',
+            type: "paw",
           });
         }
       }
 
       // 2. EFEITO BRILHO ESTELAR ✨
-      if (effectType === 'brilho') {
+      if (effectType === "brilho") {
         const count = Math.min(5, Math.floor(dist / 6) * particleDensity);
         for (let i = 0; i < count; i++) {
           particlesRef.current.push({
@@ -119,7 +119,7 @@ export const MouseTrailCanvas: React.FC<MouseTrailProps> = ({
             currentLife: 35,
             color: colors[Math.floor(Math.random() * colors.length)],
             rotation: Math.random() * Math.PI * 2,
-            type: 'star',
+            type: "star",
           });
         }
       }
@@ -138,19 +138,19 @@ export const MouseTrailCanvas: React.FC<MouseTrailProps> = ({
           y: e.clientY,
           vx: Math.cos(pAngle) * speed,
           vy: Math.sin(pAngle) * speed,
-          size: effectType === 'patinhas' ? 12 : 5,
+          size: effectType === "patinhas" ? 12 : 5,
           alpha: 1,
           maxLife: 35,
           currentLife: 35,
           color: colors[Math.floor(Math.random() * colors.length)],
           rotation: Math.random() * Math.PI * 2,
-          type: effectType === 'patinhas' ? 'paw' : 'star',
+          type: effectType === "patinhas" ? "paw" : "star",
         });
       }
     };
 
-    window.addEventListener('mousemove', onMouseMove, { passive: true });
-    window.addEventListener('mousedown', onMouseDown, { passive: true });
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
+    window.addEventListener("mousedown", onMouseDown, { passive: true });
 
     // Desenho de uma Patinha de Gato Completa
     const drawPaw = (c: CanvasRenderingContext2D, p: Particle) => {
@@ -159,7 +159,7 @@ export const MouseTrailCanvas: React.FC<MouseTrailProps> = ({
       c.rotate(p.rotation);
       c.globalAlpha = p.alpha;
       c.fillStyle = p.color;
-      c.shadowColor = '#f59e0b';
+      c.shadowColor = "#f59e0b";
       c.shadowBlur = 8 * glowIntensity;
 
       // Almofadinha central grande
@@ -200,7 +200,7 @@ export const MouseTrailCanvas: React.FC<MouseTrailProps> = ({
         c.lineTo(Math.cos((i * Math.PI) / 2) * p.size, Math.sin((i * Math.PI) / 2) * p.size);
         c.lineTo(
           Math.cos((i * Math.PI) / 2 + Math.PI / 4) * (p.size * 0.3),
-          Math.sin((i * Math.PI) / 2 + Math.PI / 4) * (p.size * 0.3)
+          Math.sin((i * Math.PI) / 2 + Math.PI / 4) * (p.size * 0.3),
         );
       }
       c.closePath();
@@ -225,7 +225,7 @@ export const MouseTrailCanvas: React.FC<MouseTrailProps> = ({
           continue;
         }
 
-        if (p.type === 'paw') {
+        if (p.type === "paw") {
           drawPaw(ctx, p);
         } else {
           drawStar(ctx, p);
@@ -239,9 +239,9 @@ export const MouseTrailCanvas: React.FC<MouseTrailProps> = ({
 
     return () => {
       cancelAnimationFrame(animId);
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mousedown", onMouseDown);
     };
   }, [enabled, effectType, particleDensity, glowIntensity]);
 
@@ -251,12 +251,12 @@ export const MouseTrailCanvas: React.FC<MouseTrailProps> = ({
     <canvas
       ref={canvasRef}
       style={{
-        position: 'fixed',
+        position: "fixed",
         top: 0,
         left: 0,
-        width: '100vw',
-        height: '100vh',
-        pointerEvents: 'none',
+        width: "100vw",
+        height: "100vh",
+        pointerEvents: "none",
         zIndex: 9999,
       }}
     />

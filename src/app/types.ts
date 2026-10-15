@@ -9,7 +9,7 @@ export interface Book {
   category: string;
   rating: number;
   reviewsCount: number;
-  status: 'disponivel' | 'emprestado' | 'manutencao' | 'reservado' | 'em_andamento' | string;
+  status: "disponivel" | "emprestado" | "manutencao" | "reservado" | "em_andamento" | string;
   pages: number;
   year: number;
   publisher: string;
@@ -53,7 +53,7 @@ export interface Loan {
   loanDate: string;
   returnDate: string;
   actualReturnDate?: string;
-  status: 'ativo' | 'devolvido' | 'atrasado' | 'em_andamento' | string;
+  status: "ativo" | "devolvido" | "atrasado" | "em_andamento" | string;
   notes?: string;
 }
 
@@ -66,10 +66,10 @@ export interface Suggestion {
   category: string;
   reason?: string;
   date: string;
-  status: 'pendente' | 'em_analise' | 'aprovado' | 'recusado' | 'adquirido';
+  status: "pendente" | "em_analise" | "aprovado" | "recusado" | "adquirido";
 }
 
-export type AdminRole = 'superadmin' | 'bibliotecario' | 'assistente';
+export type AdminRole = "superadmin" | "bibliotecario" | "assistente";
 
 export interface AdminUser {
   id: string;
@@ -79,7 +79,7 @@ export interface AdminUser {
   roleLabel?: string;
   avatar: string;
   pin: string;
-  status: 'ativo' | 'inativo';
+  status: "ativo" | "inativo";
   createdAt?: string;
   lastLogin?: string;
   phone?: string;
@@ -87,17 +87,17 @@ export interface AdminUser {
 }
 
 export type AuditActionCategory =
-  | 'acesso'
-  | 'livros'
-  | 'emprestimos'
-  | 'alunos'
-  | 'sugestoes'
-  | 'autores'
-  | 'administradores'
-  | 'usuarios_adm'
-  | 'sistema'
-  | 'backup'
-  | 'geral';
+  | "acesso"
+  | "livros"
+  | "emprestimos"
+  | "alunos"
+  | "sugestoes"
+  | "autores"
+  | "administradores"
+  | "usuarios_adm"
+  | "sistema"
+  | "backup"
+  | "geral";
 
 export interface AuditLog {
   id: string;
@@ -135,35 +135,35 @@ export interface AuthorItem {
 }
 
 export type ActiveTab =
-  | 'inicio'
-  | 'catalogo'
-  | 'ranking'
-  | 'missao_quiterio'
-  | 'meu_historico'
-  | 'emprestimos'
-  | 'sugestoes'
-  | 'sobre'
-  | 'admin'
-  | 'relatorios'
-  | 'mobile_view';
+  | "inicio"
+  | "catalogo"
+  | "ranking"
+  | "missao_quiterio"
+  | "meu_historico"
+  | "emprestimos"
+  | "sugestoes"
+  | "sobre"
+  | "admin"
+  | "relatorios"
+  | "mobile_view";
 
-export type MobileTab = 'inicio' | 'catalogo' | 'emprestimos' | 'perfil' | 'sobre';
+export type MobileTab = "inicio" | "catalogo" | "emprestimos" | "perfil" | "sobre";
 
 export type AdminSection =
-  | 'dashboard'
-  | 'livros'
-  | 'alunos'
-  | 'emprestimos'
-  | 'carteirinhas'
-  | 'autores'
-  | 'sugestoes'
-  | 'usuarios_adm'
-  | 'auditoria'
-  | 'configuracoes'
-  | 'backup';
+  | "dashboard"
+  | "livros"
+  | "alunos"
+  | "emprestimos"
+  | "carteirinhas"
+  | "autores"
+  | "sugestoes"
+  | "usuarios_adm"
+  | "auditoria"
+  | "configuracoes"
+  | "backup";
 
 export interface UserSession {
-  role: 'visitante' | 'aluno' | 'admin' | 'student' | 'guest';
+  role: "visitante" | "aluno" | "admin" | "student" | "guest";
   student?: Student | null;
   admin?: AdminUser | null;
   timestamp?: string;

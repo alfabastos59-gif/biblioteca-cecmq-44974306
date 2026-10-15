@@ -1,7 +1,7 @@
 // @ts-nocheck
 export const MAX_QUIZ_ATTEMPTS = 5;
 
-const STORAGE_KEY = 'cecmq_quiterio_scores_v2';
+const STORAGE_KEY = "cecmq_quiterio_scores_v2";
 
 export interface BookScoreDetail {
   bookTitle: string;
@@ -46,7 +46,7 @@ export type LeaderboardResult = LeaderboardEntry[] & {
 };
 
 export function loadScoresMap(): Record<string, StudentScoreData> {
-  if (typeof window === 'undefined') return {};
+  if (typeof window === "undefined") return {};
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return {};
@@ -57,17 +57,22 @@ export function loadScoresMap(): Record<string, StudentScoreData> {
 }
 
 export function saveScoresMap(map: Record<string, StudentScoreData>): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   try {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(map)); } catch {}
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+    } catch {}
   } catch {
     // Ignore storage quota errors
   }
 }
 
-export function getStudentGameData(studentKey: string, studentName = 'Estudante'): StudentScoreData {
+export function getStudentGameData(
+  studentKey: string,
+  studentName = "Estudante",
+): StudentScoreData {
   const map = loadScoresMap();
-  const normalizedKey = (studentKey || 'anon').trim().toLowerCase();
+  const normalizedKey = (studentKey || "anon").trim().toLowerCase();
 
   if (map[normalizedKey]) {
     return map[normalizedKey];
@@ -99,10 +104,10 @@ export function addGamePoints(
   isCorrect: boolean,
   bookTitle?: string,
   author?: string,
-  cover?: string
+  cover?: string,
 ): { updatedData: StudentScoreData } {
   const map = loadScoresMap();
-  const normalizedKey = (studentKey || 'anon').trim().toLowerCase();
+  const normalizedKey = (studentKey || "anon").trim().toLowerCase();
   const current = map[normalizedKey] || getStudentGameData(studentKey, studentName);
 
   const updated: StudentScoreData = {
@@ -119,10 +124,10 @@ export function addGamePoints(
   if (bookTitle) {
     const existingBook = updated.bookScores?.[bookTitle] || {
       bookTitle,
-      author: author || '',
-      bookAuthor: author || '',
-      cover: cover || '',
-      bookCover: cover || '',
+      author: author || "",
+      bookAuthor: author || "",
+      cover: cover || "",
+      bookCover: cover || "",
       points: 0,
       correctAnswers: 0,
       totalQuestions: 0,
@@ -157,10 +162,10 @@ export function recordAttemptCompletion(
   cover?: string,
   roundPoints = 0,
   correctCount = 0,
-  totalQuestions = 0
+  totalQuestions = 0,
 ): { updatedData: StudentScoreData; isLimitReached: boolean } {
   const map = loadScoresMap();
-  const normalizedKey = (studentKey || 'anon').trim().toLowerCase();
+  const normalizedKey = (studentKey || "anon").trim().toLowerCase();
   const current = map[normalizedKey] || getStudentGameData(studentKey, studentName);
 
   const attemptsCount = (current.attemptsCount || 0) + 1;
@@ -169,10 +174,10 @@ export function recordAttemptCompletion(
   const bookScores = { ...(current.bookScores || {}) };
   const existingBook = bookScores[bookTitle] || {
     bookTitle,
-    author: author || '',
-    bookAuthor: author || '',
-    cover: cover || '',
-    bookCover: cover || '',
+    author: author || "",
+    bookAuthor: author || "",
+    cover: cover || "",
+    bookCover: cover || "",
     points: 0,
     correctAnswers: 0,
     totalQuestions: 0,
@@ -215,17 +220,17 @@ export function getTopSchoolRanking(currentStudentCode?: string): LeaderboardRes
 
   list.sort((a, b) => (b.score || 0) - (a.score || 0));
 
-  const cleanCurrent = (currentStudentCode || '').trim().toLowerCase();
+  const cleanCurrent = (currentStudentCode || "").trim().toLowerCase();
 
   const formattedList: LeaderboardEntry[] = list.map((item, idx) => ({
     rank: idx + 1,
-    studentCode: item.studentCode || item.studentId || '',
-    studentName: item.studentName || 'Estudante',
+    studentCode: item.studentCode || item.studentId || "",
+    studentName: item.studentName || "Estudante",
     score: item.score || 0,
     attemptsCount: item.attemptsCount || 0,
     isCurrentStudent:
       Boolean(cleanCurrent) &&
-      (item.studentCode || item.studentId || '').trim().toLowerCase() === cleanCurrent,
+      (item.studentCode || item.studentId || "").trim().toLowerCase() === cleanCurrent,
   }));
 
   const topThree = formattedList.slice(0, 3);

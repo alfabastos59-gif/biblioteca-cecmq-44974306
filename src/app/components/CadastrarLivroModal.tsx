@@ -1,12 +1,12 @@
 // @ts-nocheck
-import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Camera, 
-  X, 
-  RotateCcw, 
-  Upload, 
-  Check, 
-  BookOpen, 
+import React, { useState, useRef, useEffect } from "react";
+import {
+  Camera,
+  X,
+  RotateCcw,
+  Upload,
+  Check,
+  BookOpen,
   AlertCircle,
   SwitchCamera,
   Layers,
@@ -20,9 +20,9 @@ import {
   KeyRound,
   Eye,
   EyeOff,
-  Sparkles
-} from 'lucide-react';
-import { Book } from '../types';
+  Sparkles,
+} from "lucide-react";
+import { Book } from "../types";
 
 export interface NovoLivroData {
   titulo: string;
@@ -53,28 +53,28 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
 }) => {
   // Estado de Autenticação / Login
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
-  const [passwordInput, setPasswordInput] = useState<string>('');
+  const [passwordInput, setPasswordInput] = useState<string>("");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
   // Estado dos campos do formulário
   const [formData, setFormData] = useState<NovoLivroData>({
-    titulo: '',
-    autor: '',
-    isbn: '',
-    categoria: 'Literatura Brasileira',
-    editora: '',
-    anoPublicacao: '',
-    paginas: '',
+    titulo: "",
+    autor: "",
+    isbn: "",
+    categoria: "Literatura Brasileira",
+    editora: "",
+    anoPublicacao: "",
+    paginas: "",
     quantidade: 1,
-    localizacao: '',
-    sinopse: '',
+    localizacao: "",
+    sinopse: "",
     capaUrl: null,
   });
 
   // Estados da Câmera
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
-  const [cameraFacingMode, setCameraFacingMode] = useState<'environment' | 'user'>('environment');
+  const [cameraFacingMode, setCameraFacingMode] = useState<"environment" | "user">("environment");
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState<boolean>(false);
 
@@ -86,7 +86,7 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
   // Ao abrir o modal, resetar o login se necessário
   useEffect(() => {
     if (isOpen) {
-      setPasswordInput('');
+      setPasswordInput("");
       setPasswordError(null);
     } else {
       stopCamera();
@@ -101,22 +101,22 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
     e.preventDefault();
     const cleanPassword = passwordInput.trim();
 
-    if (cleanPassword === 'aluno123' || cleanPassword.toLowerCase() === 'aluno123') {
+    if (cleanPassword === "aluno123" || cleanPassword.toLowerCase() === "aluno123") {
       setIsAuthorized(true);
       setPasswordError(null);
     } else {
-      setPasswordError('Senha incorreta. Digite a senha correta para continuar.');
+      setPasswordError("Senha incorreta. Digite a senha correta para continuar.");
     }
   };
 
   // Iniciar fluxo da câmera
-  const startCamera = async (facingMode: 'environment' | 'user' = cameraFacingMode) => {
+  const startCamera = async (facingMode: "environment" | "user" = cameraFacingMode) => {
     setCameraError(null);
     stopCamera();
 
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Seu dispositivo não suporta acesso direto à câmera.');
+        throw new Error("Seu dispositivo não suporta acesso direto à câmera.");
       }
 
       const constraints: MediaStreamConstraints = {
@@ -140,19 +140,23 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
           if (tries < 30) requestAnimationFrame(() => attach(tries + 1));
           return;
         }
-        v.setAttribute('playsinline', 'true');
+        v.setAttribute("playsinline", "true");
         v.muted = true;
         v.srcObject = stream;
-        try { await v.play(); } catch (e) { console.warn('play()', e); }
+        try {
+          await v.play();
+        } catch (e) {
+          console.warn("play()", e);
+        }
       };
       attach();
     } catch (err: any) {
-      console.error('Erro ao acessar a câmera:', err);
-      let errorMsg = 'Não foi possível acessar a câmera. Verifique as permissões.';
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        errorMsg = 'Permissão negada. Permita o acesso à câmera no seu navegador.';
-      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-        errorMsg = 'Nenhuma câmera detectada no seu dispositivo.';
+      console.error("Erro ao acessar a câmera:", err);
+      let errorMsg = "Não foi possível acessar a câmera. Verifique as permissões.";
+      if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+        errorMsg = "Permissão negada. Permita o acesso à câmera no seu navegador.";
+      } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
+        errorMsg = "Nenhuma câmera detectada no seu dispositivo.";
       }
       setCameraError(errorMsg);
       setIsCameraActive(false);
@@ -173,7 +177,7 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
 
   // Alternar entre câmera traseira e frontal
   const toggleCameraFacingMode = () => {
-    const nextMode = cameraFacingMode === 'environment' ? 'user' : 'environment';
+    const nextMode = cameraFacingMode === "environment" ? "user" : "environment";
     setCameraFacingMode(nextMode);
     startCamera(nextMode);
   };
@@ -184,18 +188,18 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
     setIsCapturing(true);
 
     const video = videoRef.current;
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth || 640;
     canvas.height = video.videoHeight || 480;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (ctx) {
-      if (cameraFacingMode === 'user') {
+      if (cameraFacingMode === "user") {
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
       }
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const photoDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      const photoDataUrl = canvas.toDataURL("image/jpeg", 0.9);
 
       setFormData((prev) => ({ ...prev, capaUrl: photoDataUrl }));
       stopCamera();
@@ -223,12 +227,12 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
 
   // Atualizar valores do formulário
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'quantidade' ? Math.max(1, parseInt(value) || 1) : value,
+      [name]: name === "quantidade" ? Math.max(1, parseInt(value) || 1) : value,
     }));
   };
 
@@ -236,7 +240,7 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.titulo.trim() || !formData.autor.trim()) {
-      alert('Por favor, preencha ao menos o Título e o Autor do livro.');
+      alert("Por favor, preencha ao menos o Título e o Autor do livro.");
       return;
     }
 
@@ -245,21 +249,22 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
     }
 
     if (onRegisterBook) {
-      const defaultCover = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&auto=format&fit=crop&q=80';
+      const defaultCover =
+        "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&auto=format&fit=crop&q=80";
       const newBook: Book = {
         id: `b_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         title: formData.titulo.trim(),
         author: formData.autor.trim(),
         cover: formData.capaUrl || defaultCover,
-        category: formData.categoria || 'Geral',
+        category: formData.categoria || "Geral",
         rating: 5,
         reviewsCount: 0,
-        status: 'disponivel',
+        status: "disponivel",
         pages: parseInt(formData.paginas, 10) || 150,
         year: parseInt(formData.anoPublicacao, 10) || new Date().getFullYear(),
-        publisher: formData.editora.trim() || 'Acervo Biblioteca',
-        location: formData.localizacao.trim() || 'Estante Geral',
-        synopsis: formData.sinopse.trim() || 'Sem descrição cadastrada.',
+        publisher: formData.editora.trim() || "Acervo Biblioteca",
+        location: formData.localizacao.trim() || "Estante Geral",
+        synopsis: formData.sinopse.trim() || "Sem descrição cadastrada.",
         isbn: formData.isbn.trim() || `978-${Math.floor(1000000000 + Math.random() * 9000000000)}`,
         totalCopies: formData.quantidade || 1,
         availableCopies: formData.quantidade || 1,
@@ -275,21 +280,18 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
-      
       {/* ========================================================================= */}
       {/* TELA 1: AUTORIZAÇÃO / LOGIN COM SENHA (aluno123) - VISUAL DO SCREENSHOT   */}
       {/* ========================================================================= */}
       {!isAuthorized ? (
-        <div 
+        <div
           className="relative w-full max-w-[430px] bg-[#051829] rounded-2xl shadow-2xl overflow-hidden border border-[#0d2a45] my-auto flex flex-col animate-in zoom-in-95 duration-200"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Cabeçalho */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-[#0d273f]">
             <div>
-              <h2 className="text-xl font-bold text-white tracking-tight">
-                Cadastro de Livros
-              </h2>
+              <h2 className="text-xl font-bold text-white tracking-tight">Cadastro de Livros</h2>
               <p className="text-xs text-slate-300 mt-0.5">
                 Acesso protegido — digite a senha para continuar.
               </p>
@@ -306,7 +308,6 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
 
           {/* Corpo com Ícone e Formulário de Senha */}
           <div className="p-6 sm:p-8 flex flex-col items-center text-center">
-            
             {/* Ícone de Cadeado Amarelo com Moldura Brilhante */}
             <div className="w-16 h-16 rounded-2xl bg-[#081f33] border-2 border-amber-500/70 shadow-[0_0_25px_rgba(245,158,11,0.22)] flex items-center justify-center mb-5">
               <Lock className="w-8 h-8 text-amber-400" />
@@ -315,9 +316,10 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
             <h3 className="text-xl font-bold text-white mb-2 tracking-tight">
               Autorização Necessária
             </h3>
-            
+
             <p className="text-xs text-slate-300 leading-relaxed max-w-xs mb-6">
-              O cadastro de novos livros é restrito. Digite a senha de autorização para liberar o formulário:
+              O cadastro de novos livros é restrito. Digite a senha de autorização para liberar o
+              formulário:
             </p>
 
             <form onSubmit={handleValidatePassword} className="w-full space-y-4">
@@ -328,7 +330,7 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
                 <div className="relative">
                   <KeyRound className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     value={passwordInput}
                     onChange={(e) => {
                       setPasswordInput(e.target.value);
@@ -342,7 +344,7 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer p-0.5"
-                    aria-label={showPassword ? 'Ocultar senha' : 'Ver senha'}
+                    aria-label={showPassword ? "Ocultar senha" : "Ver senha"}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -381,7 +383,7 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
         /* ========================================================================= */
         /* TELA 2: FORMULÁRIO DE CADASTRO COM CÂMERA NO MESMO TEMA DARK PREMIUM      */
         /* ========================================================================= */
-        <div 
+        <div
           className="relative w-full max-w-4xl bg-[#051829] rounded-2xl shadow-2xl overflow-hidden border border-[#0d2a45] my-auto flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200"
           onClick={(e) => e.stopPropagation()}
         >
@@ -398,7 +400,9 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
                     <Check className="w-3 h-3" /> Acesso Liberado
                   </span>
                 </h2>
-                <p className="text-xs text-slate-400">Preencha os dados do livro e fotografe a capa</p>
+                <p className="text-xs text-slate-400">
+                  Preencha os dados do livro e fotografe a capa
+                </p>
               </div>
             </div>
             <button
@@ -415,9 +419,11 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
           </div>
 
           {/* Corpo com Formulário e Câmera */}
-          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+          <form
+            onSubmit={handleSubmit}
+            className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar"
+          >
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              
               {/* Seção Esquerda: Fotografia da Capa (Câmera / Preview) */}
               <div className="lg:col-span-4 flex flex-col items-center">
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider self-start mb-2 flex items-center gap-1.5">
@@ -435,9 +441,9 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
                         playsInline
                         muted
                         autoPlay
-                        className={`w-full h-full object-cover ${cameraFacingMode === 'user' ? 'scale-x-[-1]' : ''}`}
+                        className={`w-full h-full object-cover ${cameraFacingMode === "user" ? "scale-x-[-1]" : ""}`}
                       />
-                      
+
                       {/* Linhas guias para enquadrar a capa */}
                       <div className="absolute inset-4 border-2 border-amber-400/80 border-dashed rounded-lg pointer-events-none flex items-center justify-center">
                         <span className="text-[10px] text-white bg-black/60 px-2 py-0.5 rounded shadow backdrop-blur-xs">
@@ -560,7 +566,6 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
 
               {/* Seção Direita: Campos de Cadastro do Livro */}
               <div className="lg:col-span-8 space-y-4">
-                
                 {/* Título e Autor */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -714,7 +719,6 @@ export const CadastrarLivroModal: React.FC<CadastrarLivroModalProps> = ({
                     className="w-full px-3.5 py-2.5 bg-[#03111d] border border-[#133756] rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 transition-all resize-none shadow-inner"
                   />
                 </div>
-
               </div>
             </div>
 

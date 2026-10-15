@@ -6,13 +6,13 @@ let soundEnabled = true;
 
 function getAudioContext(): AudioContext | null {
   try {
-    if (!audioCtx && typeof window !== 'undefined') {
+    if (!audioCtx && typeof window !== "undefined") {
       const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
       if (AudioCtxClass) {
         audioCtx = new AudioCtxClass();
       }
     }
-    if (audioCtx && audioCtx.state === 'suspended') {
+    if (audioCtx && audioCtx.state === "suspended") {
       audioCtx.resume().catch(() => {});
     }
     return audioCtx;
@@ -40,7 +40,7 @@ export function playCorrectSound(): void {
     notes.forEach((freq, idx) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = 'triangle';
+      osc.type = "triangle";
       osc.frequency.setValueAtTime(freq, now + idx * 0.08);
 
       gain.gain.setValueAtTime(0.001, now + idx * 0.08);
@@ -68,7 +68,7 @@ export function playWrongSound(): void {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
-    osc.type = 'sawtooth';
+    osc.type = "sawtooth";
     osc.frequency.setValueAtTime(220, now);
     osc.frequency.exponentialRampToValueAtTime(110, now + 0.35);
 
@@ -95,7 +95,7 @@ export function playTickSound(): void {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
-    osc.type = 'sine';
+    osc.type = "sine";
     osc.frequency.setValueAtTime(800, now);
 
     gain.gain.setValueAtTime(0.08, now);
@@ -121,7 +121,7 @@ export function playCatMeowSound(): void {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
-    osc.type = 'sine';
+    osc.type = "sine";
     // Meow frequency inflection
     osc.frequency.setValueAtTime(550, now);
     osc.frequency.exponentialRampToValueAtTime(850, now + 0.15);
@@ -153,7 +153,7 @@ export function playCelebrationSound(): void {
       { note: 523.25, time: 0.14, dur: 0.12 },
       { note: 523.25, time: 0.28, dur: 0.12 },
       { note: 659.25, time: 0.42, dur: 0.25 },
-      { note: 587.33, time: 0.70, dur: 0.14 },
+      { note: 587.33, time: 0.7, dur: 0.14 },
       { note: 659.25, time: 0.86, dur: 0.14 },
       { note: 783.99, time: 1.02, dur: 0.4 },
     ];
@@ -161,7 +161,7 @@ export function playCelebrationSound(): void {
     fanfare.forEach(({ note, time, dur }) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = 'triangle';
+      osc.type = "triangle";
       osc.frequency.setValueAtTime(note, now + time);
 
       gain.gain.setValueAtTime(0.001, now + time);
@@ -190,7 +190,7 @@ export function playCameraShutterSound(): void {
     [0, 0.08].forEach((offset) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = 'square';
+      osc.type = "square";
       osc.frequency.setValueAtTime(1400, now + offset);
       osc.frequency.exponentialRampToValueAtTime(300, now + offset + 0.04);
 

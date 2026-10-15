@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Home,
   BookOpen,
@@ -13,12 +13,12 @@ import {
   Settings,
   LogOut,
   Smartphone,
-  Camera
-} from 'lucide-react';
-import { Book, Loan, MobileTab } from '../types';
-import { Logo } from './Logo';
-import { useTheme } from '../context/ThemeContext';
-import { getCategoryColor } from '../data/mockData';
+  Camera,
+} from "lucide-react";
+import { Book, Loan, MobileTab } from "../types";
+import { Logo } from "./Logo";
+import { useTheme } from "../context/ThemeContext";
+import { getCategoryColor } from "../data/mockData";
 
 interface MobileSimulatorProps {
   books: Book[];
@@ -34,67 +34,80 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
   onOpenRegisterBook,
 }) => {
   const { isDark } = useTheme();
-  const [mobileTab, setMobileTab] = useState<MobileTab>('inicio');
-  const [loanSubTab, setLoanSubTab] = useState<'ativos' | 'historico'>('ativos');
-  const [mobileSearch, setMobileSearch] = useState('');
-  const [mobileCategory, setMobileCategory] = useState('Todos');
+  const [mobileTab, setMobileTab] = useState<MobileTab>("inicio");
+  const [loanSubTab, setLoanSubTab] = useState<"ativos" | "historico">("ativos");
+  const [mobileSearch, setMobileSearch] = useState("");
+  const [mobileCategory, setMobileCategory] = useState("Todos");
 
   const featured = books.filter((b) => b.featured);
-  const activeLoans = loans.filter((l) => l.status !== 'devolvido');
+  const activeLoans = loans.filter((l) => l.status !== "devolvido");
 
   const filteredBooks = books
     .filter((b) => {
       const matchesSearch =
         b.title.toLowerCase().includes(mobileSearch.toLowerCase()) ||
         b.author.toLowerCase().includes(mobileSearch.toLowerCase());
-      const matchesCategory =
-        mobileCategory === 'Todos' || b.category === mobileCategory;
+      const matchesCategory = mobileCategory === "Todos" || b.category === mobileCategory;
       return matchesSearch && matchesCategory;
     })
-    .sort((a, b) => a.title.localeCompare(b.title, 'pt-BR', { sensitivity: 'base' }));
+    .sort((a, b) => a.title.localeCompare(b.title, "pt-BR", { sensitivity: "base" }));
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col items-center">
       {/* Introduction Header */}
       <div className="text-center mb-8 max-w-xl">
-        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold mb-2 ${
-          isDark ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
-        }`}>
+        <div
+          className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold mb-2 ${
+            isDark
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+              : "bg-emerald-50 border-emerald-200 text-emerald-700"
+          }`}
+        >
           <Smartphone className="w-3.5 h-3.5" />
           <span>Experiência no Smartphone</span>
         </div>
-        <h2 className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+        <h2
+          className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}
+        >
           Simulador Mobile Interativo
         </h2>
-        <p className={`text-xs sm:text-sm mt-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+        <p className={`text-xs sm:text-sm mt-1 ${isDark ? "text-slate-400" : "text-slate-600"}`}>
           Navegue pelas 4 telas mobile: Início, Catálogo, Empréstimos e Perfil.
         </p>
 
         {/* Quick Screen Selectors */}
         <div className="flex items-center justify-center gap-2 mt-4">
-          {(['inicio', 'catalogo', 'emprestimos', 'perfil'] as MobileTab[]).map((tab) => (
+          {(["inicio", "catalogo", "emprestimos", "perfil"] as MobileTab[]).map((tab) => (
             <button
               key={tab}
               id={`btn-mobile-screen-${tab}`}
               onClick={() => setMobileTab(tab)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all cursor-pointer ${
                 mobileTab === tab
-                  ? 'bg-[#23c65e] text-white shadow-sm'
+                  ? "bg-[#23c65e] text-white shadow-sm"
                   : isDark
-                  ? 'bg-[#092032] text-slate-400 border border-[#163650] hover:text-white'
-                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                    ? "bg-[#092032] text-slate-400 border border-[#163650] hover:text-white"
+                    : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
               }`}
             >
-              {tab === 'inicio' ? 'Início' : tab === 'catalogo' ? 'Catálogo' : tab === 'emprestimos' ? 'Empréstimos' : 'Perfil'}
+              {tab === "inicio"
+                ? "Início"
+                : tab === "catalogo"
+                  ? "Catálogo"
+                  : tab === "emprestimos"
+                    ? "Empréstimos"
+                    : "Perfil"}
             </button>
           ))}
         </div>
       </div>
 
       {/* Smartphone Device Frame matching Panel 6 */}
-      <div className={`relative w-full max-w-[340px] sm:max-w-[360px] h-[680px] rounded-[44px] shadow-2xl overflow-hidden flex flex-col justify-between select-none border-[8px] ${
-        isDark ? 'bg-[#00101d] border-[#163650]' : 'bg-[#00101d] border-slate-800'
-      }`}>
+      <div
+        className={`relative w-full max-w-[340px] sm:max-w-[360px] h-[680px] rounded-[44px] shadow-2xl overflow-hidden flex flex-col justify-between select-none border-[8px] ${
+          isDark ? "bg-[#00101d] border-[#163650]" : "bg-[#00101d] border-slate-800"
+        }`}
+      >
         {/* Notch / Speaker */}
         <div className="absolute top-0 inset-x-0 h-6 flex items-center justify-center z-30">
           <div className="w-32 h-4 bg-[#163650] rounded-b-xl flex items-center justify-center">
@@ -115,7 +128,7 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
         {/* Smartphone Screen Content */}
         <div className="flex-1 overflow-y-auto px-4 py-3 text-white text-xs scrollbar-none">
           {/* SCREEN 1: INÍCIO */}
-          {mobileTab === 'inicio' && (
+          {mobileTab === "inicio" && (
             <div className="space-y-4 animate-in fade-in duration-150">
               {/* Header with Official Logo */}
               <div className="flex items-center justify-between pt-1 border-b border-[#163650]/40 pb-2">
@@ -128,9 +141,7 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
               </div>
 
               <div>
-                <h3 className="text-sm font-extrabold text-white">
-                  Olá, Aluno! 👋
-                </h3>
+                <h3 className="text-sm font-extrabold text-white">Olá, Aluno! 👋</h3>
                 <p className="text-[10px] text-slate-400">
                   Que bom ter você na Biblioteca Maria Quitéria!
                 </p>
@@ -152,15 +163,13 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold text-white">
-                      Livros em destaque
-                    </span>
+                    <span className="text-xs font-bold text-white">Livros em destaque</span>
                     <span className="text-[10px] font-medium text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full border border-emerald-500/30">
-                      ({books.length} {books.length === 1 ? 'Livro' : 'Livros'})
+                      ({books.length} {books.length === 1 ? "Livro" : "Livros"})
                     </span>
                   </div>
                   <button
-                    onClick={() => setMobileTab('catalogo')}
+                    onClick={() => setMobileTab("catalogo")}
                     className="text-[10px] text-emerald-400 font-semibold cursor-pointer hover:underline"
                   >
                     Ver todos
@@ -180,7 +189,7 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
                           alt={b.title}
                           onError={(e) => {
                             (e.target as HTMLImageElement).src =
-                              'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&auto=format&fit=crop&q=80';
+                              "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&auto=format&fit=crop&q=80";
                           }}
                           className="w-full h-full object-cover"
                         />
@@ -188,9 +197,7 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
                       <span className="text-[10px] font-bold text-white block truncate leading-tight">
                         {b.title}
                       </span>
-                      <span className="text-[8px] text-slate-400 block truncate">
-                        {b.author}
-                      </span>
+                      <span className="text-[8px] text-slate-400 block truncate">{b.author}</span>
                     </div>
                   ))}
                 </div>
@@ -199,11 +206,9 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
               {/* Seus empréstimos */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-white">
-                    Seus empréstimos
-                  </span>
+                  <span className="text-xs font-bold text-white">Seus empréstimos</span>
                   <button
-                    onClick={() => setMobileTab('emprestimos')}
+                    onClick={() => setMobileTab("emprestimos")}
                     className="text-[10px] text-emerald-400 font-semibold cursor-pointer hover:underline"
                   >
                     Ver todos
@@ -217,7 +222,7 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
                       alt={activeLoans[0].bookTitle}
                       onError={(e) => {
                         (e.target as HTMLImageElement).src =
-                          'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&auto=format&fit=crop&q=80';
+                          "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&auto=format&fit=crop&q=80";
                       }}
                       className="w-10 h-14 rounded-lg object-cover border border-[#163650]"
                     />
@@ -244,12 +249,10 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
           )}
 
           {/* SCREEN 2: CATÁLOGO */}
-          {mobileTab === 'catalogo' && (
+          {mobileTab === "catalogo" && (
             <div className="space-y-3 animate-in fade-in duration-150">
               <div className="pt-1 flex items-center justify-between">
-                <h3 className="text-base font-extrabold text-white">
-                  Catálogo de Livros
-                </h3>
+                <h3 className="text-base font-extrabold text-white">Catálogo de Livros</h3>
                 {onOpenRegisterBook && (
                   <button
                     onClick={onOpenRegisterBook}
@@ -275,7 +278,7 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
 
               {/* Categories Pills */}
               <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar text-[10px]">
-                {['Todos', 'Literatura', 'Aventura', 'Ficção'].map((c, idx) => {
+                {["Todos", "Literatura", "Aventura", "Ficção"].map((c, idx) => {
                   const color = getCategoryColor(c, idx);
                   const isSelected = mobileCategory === c;
                   return (
@@ -286,8 +289,8 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
                         color.bg
                       } ${color.hover} text-white ${
                         isSelected
-                          ? 'scale-105 shadow-md ring-1.5 ring-white opacity-100'
-                          : 'opacity-85 hover:opacity-100'
+                          ? "scale-105 shadow-md ring-1.5 ring-white opacity-100"
+                          : "opacity-85 hover:opacity-100"
                       }`}
                     >
                       {c}
@@ -310,12 +313,8 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
                       className="w-11 h-14 rounded-lg object-cover shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <span className="text-xs font-bold text-white block truncate">
-                        {b.title}
-                      </span>
-                      <span className="text-[10px] text-slate-400 block truncate">
-                        {b.author}
-                      </span>
+                      <span className="text-xs font-bold text-white block truncate">{b.title}</span>
+                      <span className="text-[10px] text-slate-400 block truncate">{b.author}</span>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="bg-emerald-500/20 text-emerald-400 text-[9px] px-1.5 py-0.5 rounded font-semibold">
                           Disponível
@@ -332,28 +331,26 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
           )}
 
           {/* SCREEN 3: EMPRÉSTIMOS */}
-          {mobileTab === 'emprestimos' && (
+          {mobileTab === "emprestimos" && (
             <div className="space-y-3 animate-in fade-in duration-150">
               <div className="pt-1">
-                <h3 className="text-base font-extrabold text-white">
-                  Meus Empréstimos
-                </h3>
+                <h3 className="text-base font-extrabold text-white">Meus Empréstimos</h3>
               </div>
 
               {/* Tabs */}
               <div className="flex bg-[#092032] p-1 rounded-xl border border-[#163650]">
                 <button
-                  onClick={() => setLoanSubTab('ativos')}
+                  onClick={() => setLoanSubTab("ativos")}
                   className={`flex-1 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
-                    loanSubTab === 'ativos' ? 'bg-[#23c65e] text-white' : 'text-slate-400'
+                    loanSubTab === "ativos" ? "bg-[#23c65e] text-white" : "text-slate-400"
                   }`}
                 >
                   Ativos (2)
                 </button>
                 <button
-                  onClick={() => setLoanSubTab('historico')}
+                  onClick={() => setLoanSubTab("historico")}
                   className={`flex-1 py-1.5 rounded-lg text-xs font-semibold cursor-pointer ${
-                    loanSubTab === 'historico' ? 'bg-[#23c65e] text-white' : 'text-slate-400'
+                    loanSubTab === "historico" ? "bg-[#23c65e] text-white" : "text-slate-400"
                   }`}
                 >
                   Histórico
@@ -362,7 +359,7 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
 
               {/* Loans List */}
               <div className="space-y-2.5">
-                {loanSubTab === 'ativos' ? (
+                {loanSubTab === "ativos" ? (
                   <>
                     <div className="bg-[#092032] p-3 rounded-xl border border-[#163650] flex items-center gap-3">
                       <img
@@ -374,9 +371,7 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
                         <span className="text-xs font-bold text-white block">
                           O Pequeno Príncipe
                         </span>
-                        <span className="text-[10px] text-slate-400">
-                          Devolver até 09/06/2024
-                        </span>
+                        <span className="text-[10px] text-slate-400">Devolver até 09/06/2024</span>
                         <span className="inline-block mt-1.5 bg-emerald-500/20 text-emerald-400 text-[9px] px-2 py-0.5 rounded-md font-semibold">
                           Em andamento
                         </span>
@@ -390,12 +385,8 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
                         className="w-12 h-16 rounded-lg object-cover shrink-0"
                       />
                       <div>
-                        <span className="text-xs font-bold text-white block">
-                          Dom Casmurro
-                        </span>
-                        <span className="text-[10px] text-slate-400">
-                          Devolver até 08/06/2024
-                        </span>
+                        <span className="text-xs font-bold text-white block">Dom Casmurro</span>
+                        <span className="text-[10px] text-slate-400">Devolver até 08/06/2024</span>
                         <span className="inline-block mt-1.5 bg-amber-500/20 text-amber-400 text-[9px] px-2 py-0.5 rounded-md font-semibold">
                           Em andamento
                         </span>
@@ -413,9 +404,7 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
                       <span className="text-xs font-bold text-white block">
                         A Menina que Roubava Livros
                       </span>
-                      <span className="text-[10px] text-slate-400">
-                        Devolvido em 03/06/2024
-                      </span>
+                      <span className="text-[10px] text-slate-400">Devolvido em 03/06/2024</span>
                       <span className="inline-block mt-1.5 bg-blue-500/20 text-blue-400 text-[9px] px-2 py-0.5 rounded-md font-semibold">
                         Devolvido
                       </span>
@@ -427,7 +416,7 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
           )}
 
           {/* SCREEN 4: PERFIL */}
-          {mobileTab === 'perfil' && (
+          {mobileTab === "perfil" && (
             <div className="space-y-3 animate-in fade-in duration-150">
               {/* Profile Card */}
               <div className="bg-[#092032] p-3 rounded-2xl border border-[#163650] flex items-center gap-3">
@@ -438,9 +427,7 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
                 />
                 <div>
                   <h4 className="text-sm font-bold text-white">João da Silva</h4>
-                  <span className="text-[10px] text-slate-400 block">
-                    joao.silva@escola.com
-                  </span>
+                  <span className="text-[10px] text-slate-400 block">joao.silva@escola.com</span>
                   <span className="text-[9px] text-emerald-400 font-semibold">
                     3º Ano B - Ensino Médio
                   </span>
@@ -450,19 +437,19 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
               {/* Menu items matching Panel 6 */}
               <div className="bg-[#092032] rounded-2xl border border-[#163650] divide-y divide-[#163650]/60 overflow-hidden text-xs">
                 {[
-                  { label: 'Meus Dados', icon: User },
-                  { label: 'Histórico de Empréstimos', icon: BookmarkCheck },
-                  { label: 'Livros Favoritos', icon: Heart },
-                  { label: 'Sugestões', icon: Lightbulb },
-                  { label: 'Configurações', icon: Settings },
-                  { label: 'Sair', icon: LogOut, danger: true },
+                  { label: "Meus Dados", icon: User },
+                  { label: "Histórico de Empréstimos", icon: BookmarkCheck },
+                  { label: "Livros Favoritos", icon: Heart },
+                  { label: "Sugestões", icon: Lightbulb },
+                  { label: "Configurações", icon: Settings },
+                  { label: "Sair", icon: LogOut, danger: true },
                 ].map((item, i) => {
                   const Icon = item.icon;
                   return (
                     <div
                       key={i}
                       className={`p-2.5 flex items-center justify-between cursor-pointer hover:bg-[#031320] transition-colors ${
-                        item.danger ? 'text-rose-400' : 'text-slate-300'
+                        item.danger ? "text-rose-400" : "text-slate-300"
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
@@ -481,10 +468,10 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
         {/* Bottom Navigation Bar matching Panel 6 */}
         <div className="bg-[#031320] border-t border-[#163650] py-2 px-4 flex justify-around items-center z-20">
           {[
-            { id: 'inicio', label: 'Início', icon: Home },
-            { id: 'catalogo', label: 'Catálogo', icon: BookOpen },
-            { id: 'emprestimos', label: 'Empréstimos', icon: BookmarkCheck },
-            { id: 'perfil', label: 'Perfil', icon: User },
+            { id: "inicio", label: "Início", icon: Home },
+            { id: "catalogo", label: "Catálogo", icon: BookOpen },
+            { id: "emprestimos", label: "Empréstimos", icon: BookmarkCheck },
+            { id: "perfil", label: "Perfil", icon: User },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = mobileTab === tab.id;
@@ -493,7 +480,7 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
                 key={tab.id}
                 onClick={() => setMobileTab(tab.id as MobileTab)}
                 className={`flex flex-col items-center gap-0.5 transition-colors cursor-pointer ${
-                  isActive ? 'text-[#23c65e]' : 'text-slate-500 hover:text-slate-300'
+                  isActive ? "text-[#23c65e]" : "text-slate-500 hover:text-slate-300"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -506,4 +493,3 @@ export const MobileSimulator: React.FC<MobileSimulatorProps> = ({
     </div>
   );
 };
-

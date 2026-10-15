@@ -1,12 +1,12 @@
 // @ts-nocheck
-import React from 'react';
-import { motion } from 'motion/react';
+import React from "react";
+import { motion } from "motion/react";
 
-export type MascotMood = 'talking' | 'celebrating' | 'thinking' | 'encouraging' | 'sad';
+export type MascotMood = "talking" | "celebrating" | "thinking" | "encouraging" | "sad";
 
 interface QuiterioMascotProps {
   mood?: MascotMood;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: "sm" | "md" | "lg" | "xl";
   className?: string;
   showSpeechBubble?: boolean;
   speechText?: string;
@@ -15,19 +15,19 @@ interface QuiterioMascotProps {
 }
 
 export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
-  mood = 'talking',
-  size = 'lg',
-  className = '',
+  mood = "talking",
+  size = "lg",
+  className = "",
   showSpeechBubble = false,
-  speechText = 'Vamos testar seu conhecimento sobre o livro que você leu? 🐾',
+  speechText = "Vamos testar seu conhecimento sobre o livro que você leu? 🐾",
   isMeowing = false,
   onPetCat,
 }) => {
   const sizeDimensions = {
-    sm: 'w-24 h-24',
-    md: 'w-32 h-32 sm:w-36 sm:h-36',
-    lg: 'w-44 h-44 sm:w-56 sm:h-56 md:w-60 md:h-60',
-    xl: 'w-56 h-56 sm:w-72 sm:h-72',
+    sm: "w-24 h-24",
+    md: "w-32 h-32 sm:w-36 sm:h-36",
+    lg: "w-44 h-44 sm:w-56 sm:h-56 md:w-60 md:h-60",
+    xl: "w-56 h-56 sm:w-72 sm:h-72",
   };
 
   return (
@@ -37,7 +37,7 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 8 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+          transition={{ type: "spring", stiffness: 350, damping: 25 }}
           className="relative mb-2 z-20 max-w-[250px] sm:max-w-[280px]"
         >
           <div className="relative bg-white text-slate-800 border-2 border-amber-300 border-b-4 border-amber-500 px-4 py-2.5 rounded-2xl shadow-[0_4px_0_#d97706] font-bold text-xs sm:text-sm text-center leading-snug">
@@ -51,25 +51,25 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
       {/* Mascot Animated Character */}
       <motion.div
         onClick={onPetCat}
-        title={onPetCat ? 'Clique no Quitério para ouvir um Miau! 🐾' : undefined}
+        title={onPetCat ? "Clique no Quitério para ouvir um Miau! 🐾" : undefined}
         animate={
-          mood === 'celebrating' || isMeowing
+          mood === "celebrating" || isMeowing
             ? { y: [0, -14, 0, -8, 0], rotate: [0, -3, 3, -1.5, 0] }
-            : mood === 'thinking'
-            ? { rotate: [-2, 2, -2], y: [0, -4, 0] }
-            : mood === 'sad'
-            ? { y: [0, 4, 0], rotate: [-1, 1, -1] }
-            : { y: [0, -6, 0] }
+            : mood === "thinking"
+              ? { rotate: [-2, 2, -2], y: [0, -4, 0] }
+              : mood === "sad"
+                ? { y: [0, 4, 0], rotate: [-1, 1, -1] }
+                : { y: [0, -6, 0] }
         }
         transition={{
           repeat: Infinity,
-          duration: mood === 'celebrating' || isMeowing ? 1.4 : 3.0,
-          ease: 'easeInOut',
+          duration: mood === "celebrating" || isMeowing ? 1.4 : 3.0,
+          ease: "easeInOut",
         }}
-        className={`relative ${sizeDimensions[size]} ${onPetCat ? 'cursor-pointer' : ''}`}
+        className={`relative ${sizeDimensions[size]} ${onPetCat ? "cursor-pointer" : ""}`}
       >
         {/* Floating Comic "Miau!!" Balloon when celebrating / meowing */}
-        {(mood === 'celebrating' || isMeowing) && (
+        {(mood === "celebrating" || isMeowing) && (
           <motion.div
             initial={{ opacity: 0, scale: 0.4, y: 12, rotate: -12 }}
             animate={{
@@ -81,7 +81,7 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
             transition={{
               repeat: Infinity,
               duration: 1.5,
-              ease: 'easeInOut',
+              ease: "easeInOut",
             }}
             className="absolute -top-3 -right-2 sm:-right-6 z-30 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-amber-950 font-black text-xs sm:text-sm px-3.5 py-1.5 rounded-full shadow-xl border-2 border-amber-500 flex items-center gap-1.5"
           >
@@ -164,7 +164,7 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
             transition={{
               repeat: Infinity,
               duration: 2.4,
-              ease: 'easeInOut',
+              ease: "easeInOut",
             }}
           />
 
@@ -178,9 +178,9 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
             transition={{
               repeat: Infinity,
               duration: 2.8,
-              ease: 'easeInOut',
+              ease: "easeInOut",
             }}
-            style={{ originX: '140px', originY: '200px' }}
+            style={{ originX: "140px", originY: "200px" }}
           >
             {/* Base Tail Path */}
             <path
@@ -191,9 +191,24 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
               strokeLinejoin="round"
             />
             {/* Tail Tabby Stripes */}
-            <path d="M 144 218 Q 155 224 162 216" stroke="#9a3412" strokeWidth="3" strokeLinecap="round" />
-            <path d="M 152 232 Q 166 238 174 228" stroke="#9a3412" strokeWidth="3" strokeLinecap="round" />
-            <path d="M 160 248 Q 174 252 180 242" stroke="#9a3412" strokeWidth="3" strokeLinecap="round" />
+            <path
+              d="M 144 218 Q 155 224 162 216"
+              stroke="#9a3412"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+            <path
+              d="M 152 232 Q 166 238 174 228"
+              stroke="#9a3412"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+            <path
+              d="M 160 248 Q 174 252 180 242"
+              stroke="#9a3412"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
             {/* White Tail Tip */}
             <path
               d="M 170 256 C 182 254 186 242 184 236 C 180 232 174 235 170 242 Z"
@@ -212,9 +227,9 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
             transition={{
               repeat: Infinity,
               duration: 3,
-              ease: 'easeInOut',
+              ease: "easeInOut",
             }}
-            style={{ originX: '110px', originY: '185px' }}
+            style={{ originX: "110px", originY: "185px" }}
           >
             {/* Leg Thigh */}
             <path
@@ -282,8 +297,8 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
           {/* Left Ear */}
           <motion.g
             animate={{ rotate: [-2, 3, -2] }}
-            transition={{ repeat: Infinity, duration: 3.2, ease: 'easeInOut' }}
-            style={{ originX: '95px', originY: '60px' }}
+            transition={{ repeat: Infinity, duration: 3.2, ease: "easeInOut" }}
+            style={{ originX: "95px", originY: "60px" }}
           >
             <path
               d="M 82 66 L 62 18 C 76 16 104 32 112 56 Z"
@@ -293,22 +308,15 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
               strokeLinejoin="round"
             />
             {/* Inner Ear Soft Peach */}
-            <path
-              d="M 82 58 L 69 28 C 76 26 96 38 103 52 Z"
-              fill="#fed7aa"
-            />
-            <path
-              d="M 83 54 L 74 34 C 78 32 92 42 98 50 Z"
-              fill="#fda4af"
-              opacity="0.6"
-            />
+            <path d="M 82 58 L 69 28 C 76 26 96 38 103 52 Z" fill="#fed7aa" />
+            <path d="M 83 54 L 74 34 C 78 32 92 42 98 50 Z" fill="#fda4af" opacity="0.6" />
           </motion.g>
 
           {/* Right Ear */}
           <motion.g
             animate={{ rotate: [2, -3, 2] }}
-            transition={{ repeat: Infinity, duration: 3.2, delay: 0.2, ease: 'easeInOut' }}
-            style={{ originX: '185px', originY: '60px' }}
+            transition={{ repeat: Infinity, duration: 3.2, delay: 0.2, ease: "easeInOut" }}
+            style={{ originX: "185px", originY: "60px" }}
           >
             <path
               d="M 198 66 L 218 18 C 204 16 176 32 168 56 Z"
@@ -318,15 +326,8 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
               strokeLinejoin="round"
             />
             {/* Inner Ear Soft Peach */}
-            <path
-              d="M 198 58 L 211 28 C 204 26 184 38 177 52 Z"
-              fill="#fed7aa"
-            />
-            <path
-              d="M 197 54 L 206 34 C 202 32 188 42 182 50 Z"
-              fill="#fda4af"
-              opacity="0.6"
-            />
+            <path d="M 198 58 L 211 28 C 204 26 184 38 177 52 Z" fill="#fed7aa" />
+            <path d="M 197 54 L 206 34 C 202 32 188 42 182 50 Z" fill="#fda4af" opacity="0.6" />
           </motion.g>
 
           {/* ========================================================================= */}
@@ -347,15 +348,33 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
           <path d="M 128 47 L 132 60" stroke="#7c2d12" strokeWidth="3.5" strokeLinecap="round" />
           <path d="M 152 47 L 148 60" stroke="#7c2d12" strokeWidth="3.5" strokeLinecap="round" />
           {/* Side temple stripes */}
-          <path d="M 94 68 Q 106 72 110 76" stroke="#9a3412" strokeWidth="3" strokeLinecap="round" />
-          <path d="M 186 68 Q 174 72 170 76" stroke="#9a3412" strokeWidth="3" strokeLinecap="round" />
+          <path
+            d="M 94 68 Q 106 72 110 76"
+            stroke="#9a3412"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 186 68 Q 174 72 170 76"
+            stroke="#9a3412"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
 
           {/* Cute Rosy Cheeks */}
           <ellipse cx="102" cy="98" rx="11" ry="7" fill="#fb7185" opacity="0.6" />
           <ellipse cx="178" cy="98" rx="11" ry="7" fill="#fb7185" opacity="0.6" />
 
           {/* White Snout / Muzzle */}
-          <ellipse cx="140" cy="98" rx="24" ry="16" fill="#fffbeb" stroke="#7c2d12" strokeWidth="1.5" />
+          <ellipse
+            cx="140"
+            cy="98"
+            rx="24"
+            ry="16"
+            fill="#fffbeb"
+            stroke="#7c2d12"
+            strokeWidth="1.5"
+          />
 
           {/* Pink Nose */}
           <path
@@ -364,13 +383,45 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
           />
 
           {/* Whiskers (Crisp delicate cat whiskers) */}
-          <line x1="82" y1="96" x2="114" y2="98" stroke="#7c2d12" strokeWidth="2.2" strokeLinecap="round" />
-          <line x1="80" y1="104" x2="114" y2="102" stroke="#7c2d12" strokeWidth="2.2" strokeLinecap="round" />
-          <line x1="198" y1="96" x2="166" y2="98" stroke="#7c2d12" strokeWidth="2.2" strokeLinecap="round" />
-          <line x1="200" y1="104" x2="166" y2="102" stroke="#7c2d12" strokeWidth="2.2" strokeLinecap="round" />
+          <line
+            x1="82"
+            y1="96"
+            x2="114"
+            y2="98"
+            stroke="#7c2d12"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+          />
+          <line
+            x1="80"
+            y1="104"
+            x2="114"
+            y2="102"
+            stroke="#7c2d12"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+          />
+          <line
+            x1="198"
+            y1="96"
+            x2="166"
+            y2="98"
+            stroke="#7c2d12"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+          />
+          <line
+            x1="200"
+            y1="104"
+            x2="166"
+            y2="102"
+            stroke="#7c2d12"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+          />
 
           {/* Smiling / Expressive Mouth */}
-          {mood === 'celebrating' || isMeowing ? (
+          {mood === "celebrating" || isMeowing ? (
             <g>
               <path
                 d="M 131 98 Q 140 114 149 98 Q 140 102 131 98 Z"
@@ -380,7 +431,7 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
               />
               <ellipse cx="140" cy="107" rx="4.5" ry="3" fill="#fb7185" />
             </g>
-          ) : mood === 'sad' ? (
+          ) : mood === "sad" ? (
             <path
               d="M 133 103 Q 140 98 147 103"
               stroke="#7c2d12"
@@ -401,7 +452,7 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
           {/* ========================================================================= */}
           {/* BIG SHINING EYES (Expressive, warm eyes behind glasses) */}
           {/* ========================================================================= */}
-          {mood === 'celebrating' ? (
+          {mood === "celebrating" ? (
             /* Joyful Closed Crescent Eyes (^_^) */
             <g>
               <path
@@ -419,7 +470,7 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
                 fill="none"
               />
             </g>
-          ) : mood === 'sad' ? (
+          ) : mood === "sad" ? (
             /* Sad Droopy Eyes */
             <g>
               <circle cx="115" cy="81" r="11" fill="#ffffff" stroke="#7c2d12" strokeWidth="1.5" />
@@ -443,7 +494,7 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
                 duration: 4.2,
                 times: [0, 0.88, 0.92, 0.96, 0.98, 1, 1],
               }}
-              style={{ originX: '140px', originY: '80px' }}
+              style={{ originX: "140px", originY: "80px" }}
             >
               {/* Left Eye */}
               <circle cx="115" cy="80" r="13" fill="#ffffff" stroke="#7c2d12" strokeWidth="2" />
@@ -522,9 +573,9 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
             transition={{
               repeat: Infinity,
               duration: 2.8,
-              ease: 'easeInOut',
+              ease: "easeInOut",
             }}
-            style={{ originX: '140px', originY: '160px' }}
+            style={{ originX: "140px", originY: "160px" }}
           >
             {/* Soft Shadow under book */}
             <ellipse cx="140" cy="188" rx="55" ry="8" fill="#000000" opacity="0.3" />
@@ -571,10 +622,42 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
               strokeWidth="1.5"
             />
             {/* Left Page Text Lines */}
-            <line x1="94" y1="145" x2="130" y2="142" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" />
-            <line x1="94" y1="152" x2="131" y2="149" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" />
-            <line x1="94" y1="159" x2="128" y2="156" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" />
-            <line x1="94" y1="166" x2="122" y2="163" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" />
+            <line
+              x1="94"
+              y1="145"
+              x2="130"
+              y2="142"
+              stroke="#94a3b8"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+            <line
+              x1="94"
+              y1="152"
+              x2="131"
+              y2="149"
+              stroke="#94a3b8"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+            <line
+              x1="94"
+              y1="159"
+              x2="128"
+              y2="156"
+              stroke="#94a3b8"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+            <line
+              x1="94"
+              y1="166"
+              x2="122"
+              y2="163"
+              stroke="#94a3b8"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
 
             {/* Right Open Page (Cream paper) */}
             <path
@@ -584,10 +667,42 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
               strokeWidth="1.5"
             />
             {/* Right Page Text Lines */}
-            <line x1="150" y1="142" x2="186" y2="145" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" />
-            <line x1="149" y1="149" x2="186" y2="152" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" />
-            <line x1="152" y1="156" x2="186" y2="159" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" />
-            <line x1="158" y1="163" x2="186" y2="166" stroke="#94a3b8" strokeWidth="1.8" strokeLinecap="round" />
+            <line
+              x1="150"
+              y1="142"
+              x2="186"
+              y2="145"
+              stroke="#94a3b8"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+            <line
+              x1="149"
+              y1="149"
+              x2="186"
+              y2="152"
+              stroke="#94a3b8"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+            <line
+              x1="152"
+              y1="156"
+              x2="186"
+              y2="159"
+              stroke="#94a3b8"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
+            <line
+              x1="158"
+              y1="163"
+              x2="186"
+              y2="166"
+              stroke="#94a3b8"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            />
 
             {/* Gold Bookmark Ribbon hanging down */}
             <path
@@ -625,7 +740,7 @@ export const QuiterioMascot: React.FC<QuiterioMascotProps> = ({
           </motion.g>
 
           {/* Celebration Stars when celebrating */}
-          {mood === 'celebrating' && (
+          {mood === "celebrating" && (
             <g>
               <motion.circle
                 cx="55"

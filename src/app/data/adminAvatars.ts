@@ -3,7 +3,7 @@ export interface AdminAvatarOption {
   id: string;
   name: string;
   roleHint: string;
-  category: 'educadores' | 'bibliotecarios' | 'atendimento' | 'criativos';
+  category: "educadores" | "bibliotecarios" | "atendimento" | "criativos";
   url: string;
   bgHex: string;
 }
@@ -16,11 +16,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
   // --- LINHA 1 ---
   // 1. Mulher com Óculos & Batom Vermelho (Fundo Marrom Escuro)
   {
-    id: 'avatar-1',
-    name: 'Bibliotecária Chefe (Óculos e Batom Vermelho)',
-    roleHint: 'Gestão de Acervo e Coordenação',
-    category: 'bibliotecarios',
-    bgHex: '#543d34',
+    id: "avatar-1",
+    name: "Bibliotecária Chefe (Óculos e Batom Vermelho)",
+    roleHint: "Gestão de Acervo e Coordenação",
+    category: "bibliotecarios",
+    bgHex: "#543d34",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#543d34"/>
@@ -55,11 +55,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 2. Rapaz Loiro com Colete Verde (Fundo Verde Claro)
   {
-    id: 'avatar-2',
-    name: 'Assistente Jovem (Colete Verde e Topete Loiro)',
-    roleHint: 'Atendimento e Empréstimos Rápidos',
-    category: 'atendimento',
-    bgHex: '#77ab80',
+    id: "avatar-2",
+    name: "Assistente Jovem (Colete Verde e Topete Loiro)",
+    roleHint: "Atendimento e Empréstimos Rápidos",
+    category: "atendimento",
+    bgHex: "#77ab80",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#77ab80"/>
@@ -86,11 +86,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 3. Mulher Loira Cacheada com Top Rosa (Fundo Roxo)
   {
-    id: 'avatar-3',
-    name: 'Coordenadora Pedagógica (Cachos Loiros e Blusa Rosa)',
-    roleHint: 'Supervisão de Projetos e Eventos',
-    category: 'educadores',
-    bgHex: '#685994',
+    id: "avatar-3",
+    name: "Coordenadora Pedagógica (Cachos Loiros e Blusa Rosa)",
+    roleHint: "Supervisão de Projetos e Eventos",
+    category: "educadores",
+    bgHex: "#685994",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#685994"/>
@@ -126,11 +126,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 4. Homem com Chapéu Fedora & Casaco Vermelho (Fundo Bege Cinza)
   {
-    id: 'avatar-4',
-    name: 'Curador Cultural (Chapéu Fedora e Casaco Vermelho)',
-    roleHint: 'Atividades Culturais e Mediação',
-    category: 'criativos',
-    bgHex: '#c7bcae',
+    id: "avatar-4",
+    name: "Curador Cultural (Chapéu Fedora e Casaco Vermelho)",
+    roleHint: "Atividades Culturais e Mediação",
+    category: "criativos",
+    bgHex: "#c7bcae",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#c7bcae"/>
@@ -158,11 +158,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 5. Professor Sênior Negro com Barba Branca & Suspensórios (Fundo Verde Escuro)
   {
-    id: 'avatar-5',
-    name: 'Professor Sênior Emérito (Barba Branca e Suspensórios)',
-    roleHint: 'Consultoria Literária e Preservação',
-    category: 'educadores',
-    bgHex: '#3b7849',
+    id: "avatar-5",
+    name: "Professor Sênior Emérito (Barba Branca e Suspensórios)",
+    roleHint: "Consultoria Literária e Preservação",
+    category: "educadores",
+    bgHex: "#3b7849",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#3b7849"/>
@@ -191,11 +191,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
   // --- LINHA 2 ---
   // 6. Rapaz Ruivo com Topete Espetado (Fundo Azul Claro)
   {
-    id: 'avatar-6',
-    name: 'Monitor de Apoio (Ruivo com Regata)',
-    roleHint: 'Organização de Estantes e Auxílio Geral',
-    category: 'atendimento',
-    bgHex: '#7faecc',
+    id: "avatar-6",
+    name: "Monitor de Apoio (Ruivo com Regata)",
+    roleHint: "Organização de Estantes e Auxílio Geral",
+    category: "atendimento",
+    bgHex: "#7faecc",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#7faecc"/>
@@ -222,11 +222,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 7. Mulher Elegante com Cabelo Curto & Argolas (Fundo Dourado / Mostarda)
   {
-    id: 'avatar-7',
-    name: 'Supervisora de Biblioteca (Chanel Curto e Argolas)',
-    roleHint: 'Supervisão Geral de Atendimento',
-    category: 'bibliotecarios',
-    bgHex: '#bfa05d',
+    id: "avatar-7",
+    name: "Supervisora de Biblioteca (Chanel Curto e Argolas)",
+    roleHint: "Supervisão Geral de Atendimento",
+    category: "bibliotecarios",
+    bgHex: "#bfa05d",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#bfa05d"/>
@@ -251,11 +251,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 8. PROF. ELIEL BASTOS - SUPER ADMINISTRADOR (Fundo Lilás Claro / Óculos Modernos)
   {
-    id: 'avatar-8',
-    name: 'Prof. Eliel Bastos (Super Administrador)',
-    roleHint: 'Super Administrador e Gestor Geral da Biblioteca',
-    category: 'educadores',
-    bgHex: '#9986af',
+    id: "avatar-8",
+    name: "Prof. Eliel Bastos (Super Administrador)",
+    roleHint: "Super Administrador e Gestor Geral da Biblioteca",
+    category: "educadores",
+    bgHex: "#9986af",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#9986af"/>
@@ -287,11 +287,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 9. Mulher Ruiva com Boina Francesa & Cachecol (Fundo Laranja)
   {
-    id: 'avatar-9',
-    name: 'Mediadora Literária (Boina Parisiense e Cachecol)',
-    roleHint: 'Contação de Histórias e Clubes de Leitura',
-    category: 'criativos',
-    bgHex: '#e17235',
+    id: "avatar-9",
+    name: "Mediadora Literária (Boina Parisiense e Cachecol)",
+    roleHint: "Contação de Histórias e Clubes de Leitura",
+    category: "criativos",
+    bgHex: "#e17235",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#e17235"/>
@@ -318,11 +318,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 10. Diretor Grisalho com Bigode & Gravata (Fundo Lilás)
   {
-    id: 'avatar-10',
-    name: 'Diretor Escolar (Grisalho com Gravata e Bigode)',
-    roleHint: 'Direção e Representação Institucional',
-    category: 'educadores',
-    bgHex: '#9378ad',
+    id: "avatar-10",
+    name: "Diretor Escolar (Grisalho com Gravata e Bigode)",
+    roleHint: "Direção e Representação Institucional",
+    category: "educadores",
+    bgHex: "#9378ad",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#9378ad"/>
@@ -345,11 +345,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
   // --- LINHA 3 ---
   // 11. Menina com Bandana Vermelha & Macacão Jeans (Fundo Oliva)
   {
-    id: 'avatar-11',
-    name: 'Assistente Criativa (Bandana Vermelha e Macacão)',
-    roleHint: 'Oficinas e Dinâmicas para Alunos',
-    category: 'criativos',
-    bgHex: '#baaa39',
+    id: "avatar-11",
+    name: "Assistente Criativa (Bandana Vermelha e Macacão)",
+    roleHint: "Oficinas e Dinâmicas para Alunos",
+    category: "criativos",
+    bgHex: "#baaa39",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#baaa39"/>
@@ -379,11 +379,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 12. Jovem com Undercut Castanho & Jaqueta Preta (Fundo Vermelho)
   {
-    id: 'avatar-12',
-    name: 'Técnico de TI e Sistemas (Undercut e Gola Alta)',
-    roleHint: 'Suporte Técnico e Administração Digital',
-    category: 'atendimento',
-    bgHex: '#cc3737',
+    id: "avatar-12",
+    name: "Técnico de TI e Sistemas (Undercut e Gola Alta)",
+    roleHint: "Suporte Técnico e Administração Digital",
+    category: "atendimento",
+    bgHex: "#cc3737",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#cc3737"/>
@@ -405,11 +405,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 13. Mulher Asiática com Franja Reta & Blusa Verde (Fundo Taupe)
   {
-    id: 'avatar-13',
-    name: 'Especialista em Catalogação (Franja e Blusa Verde)',
-    roleHint: 'Catalogação ISBN e Gestão de Metadados',
-    category: 'bibliotecarios',
-    bgHex: '#9e9184',
+    id: "avatar-13",
+    name: "Especialista em Catalogação (Franja e Blusa Verde)",
+    roleHint: "Catalogação ISBN e Gestão de Metadados",
+    category: "bibliotecarios",
+    bgHex: "#9e9184",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#9e9184"/>
@@ -432,11 +432,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 14. Bibliotecário Pesquisador de Óculos (Fundo Ardósia / Teal)
   {
-    id: 'avatar-14',
-    name: 'Bibliotecário Pesquisador (Óculos e Cardigan)',
-    roleHint: 'Auxílio em Pesquisas Acadêmicas e TCC',
-    category: 'bibliotecarios',
-    bgHex: '#517482',
+    id: "avatar-14",
+    name: "Bibliotecário Pesquisador (Óculos e Cardigan)",
+    roleHint: "Auxílio em Pesquisas Acadêmicas e TCC",
+    category: "bibliotecarios",
+    bgHex: "#517482",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#517482"/>
@@ -460,11 +460,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 15. Designer Criativa com Cabelo Bicolor & Óculos Vermelhos (Fundo Lavanda)
   {
-    id: 'avatar-15',
-    name: 'Designer e Animadora Cultural (Cabelo Colorido e Óculos Vermelhos)',
-    roleHint: 'Identidade Visual, Murais e Exposições',
-    category: 'criativos',
-    bgHex: '#8b7c8f',
+    id: "avatar-15",
+    name: "Designer e Animadora Cultural (Cabelo Colorido e Óculos Vermelhos)",
+    roleHint: "Identidade Visual, Murais e Exposições",
+    category: "criativos",
+    bgHex: "#8b7c8f",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#8b7c8f"/>
@@ -492,11 +492,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
   // --- LINHA 4 ---
   // 16. Supervisor com Black Power & Bigode (Fundo Cinza)
   {
-    id: 'avatar-16',
-    name: 'Supervisor de Atendimento (Afro Volumoso e Bigode)',
-    roleHint: 'Recepção e Gestão de Fila de Empréstimo',
-    category: 'atendimento',
-    bgHex: '#7f848c',
+    id: "avatar-16",
+    name: "Supervisor de Atendimento (Afro Volumoso e Bigode)",
+    roleHint: "Recepção e Gestão de Fila de Empréstimo",
+    category: "atendimento",
+    bgHex: "#7f848c",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#7f848c"/>
@@ -521,11 +521,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 17. Secretária com Coque Clássico & Lenço Rosa (Fundo Azul Céu)
   {
-    id: 'avatar-17',
-    name: 'Secretária de Gestão (Coque Clássico e Lenço Rosa)',
-    roleHint: 'Documentação, Certificados e Atas',
-    category: 'educadores',
-    bgHex: '#739ec9',
+    id: "avatar-17",
+    name: "Secretária de Gestão (Coque Clássico e Lenço Rosa)",
+    roleHint: "Documentação, Certificados e Atas",
+    category: "educadores",
+    bgHex: "#739ec9",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#739ec9"/>
@@ -548,11 +548,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 18. Homem Sorridente com Jaqueta Jeans (Fundo Vinho / Ameixa)
   {
-    id: 'avatar-18',
-    name: 'Assistente de Acervo (Jaqueta Jeans e Gola de Lã)',
-    roleHint: 'Organização Física e Reposição de Livros',
-    category: 'atendimento',
-    bgHex: '#84425e',
+    id: "avatar-18",
+    name: "Assistente de Acervo (Jaqueta Jeans e Gola de Lã)",
+    roleHint: "Organização Física e Reposição de Livros",
+    category: "atendimento",
+    bgHex: "#84425e",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#84425e"/>
@@ -573,11 +573,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 19. Mulher Negra com Coque Alto & Óculos Rosa (Fundo Mostarda)
   {
-    id: 'avatar-19',
-    name: 'Orientadora Educacional (Coque Alto e Óculos Rosa)',
-    roleHint: 'Acompanhamento do Desempenho e Leitura',
-    category: 'educadores',
-    bgHex: '#bfa043',
+    id: "avatar-19",
+    name: "Orientadora Educacional (Coque Alto e Óculos Rosa)",
+    roleHint: "Acompanhamento do Desempenho e Leitura",
+    category: "educadores",
+    bgHex: "#bfa043",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#bfa043"/>
@@ -602,11 +602,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 20. Jovem com Topete & Gravata Borboleta (Fundo Verde Musgo)
   {
-    id: 'avatar-20',
-    name: 'Auxiliar de Eventos e Cerimonial (Gravata Borboleta)',
-    roleHint: 'Lançamentos de Livros e Feiras Literárias',
-    category: 'criativos',
-    bgHex: '#5a9672',
+    id: "avatar-20",
+    name: "Auxiliar de Eventos e Cerimonial (Gravata Borboleta)",
+    roleHint: "Lançamentos de Livros e Feiras Literárias",
+    category: "criativos",
+    bgHex: "#5a9672",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#5a9672"/>
@@ -630,11 +630,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
   // --- LINHA 5 ---
   // 21. Mulher com Óculos & Blusa Vermelha (Fundo Azul Escuro)
   {
-    id: 'avatar-21',
-    name: 'Professora de Literatura (Óculos e Blusa Vermelha)',
-    roleHint: 'Curadoria de Obras Clássicas e Nacionais',
-    category: 'educadores',
-    bgHex: '#4d5175',
+    id: "avatar-21",
+    name: "Professora de Literatura (Óculos e Blusa Vermelha)",
+    roleHint: "Curadoria de Obras Clássicas e Nacionais",
+    category: "educadores",
+    bgHex: "#4d5175",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#4d5175"/>
@@ -660,11 +660,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 22. Jovem com Gorro Beanie Vermelho (Fundo Verde Escuro)
   {
-    id: 'avatar-22',
-    name: 'Monitor de Multimídia e Jogos (Gorro Beanie)',
-    roleHint: 'Acervo Digital, Jogos e Espaço Maker',
-    category: 'criativos',
-    bgHex: '#406345',
+    id: "avatar-22",
+    name: "Monitor de Multimídia e Jogos (Gorro Beanie)",
+    roleHint: "Acervo Digital, Jogos e Espaço Maker",
+    category: "criativos",
+    bgHex: "#406345",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#406345"/>
@@ -684,11 +684,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 23. Mulher de Cabelo Ruivo Cacheado & Gravata (Fundo Areia)
   {
-    id: 'avatar-23',
-    name: 'Coordenadora de Projetos (Ruiva com Colete e Gravata)',
-    roleHint: 'Feiras de Livros e Parcerias Externas',
-    category: 'educadores',
-    bgHex: '#998675',
+    id: "avatar-23",
+    name: "Coordenadora de Projetos (Ruiva com Colete e Gravata)",
+    roleHint: "Feiras de Livros e Parcerias Externas",
+    category: "educadores",
+    bgHex: "#998675",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#998675"/>
@@ -713,11 +713,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 24. Rapaz com Paletó Azul & Cabelo Estilizado (Fundo Cinza Suave)
   {
-    id: 'avatar-24',
-    name: 'Analista de Comunicação (Paletó Azul e Camiseta)',
-    roleHint: 'Mural de Avisos, Redes Sociais e Boletins',
-    category: 'atendimento',
-    bgHex: '#8b92aa',
+    id: "avatar-24",
+    name: "Analista de Comunicação (Paletó Azul e Camiseta)",
+    roleHint: "Mural de Avisos, Redes Sociais e Boletins",
+    category: "atendimento",
+    bgHex: "#8b92aa",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#8b92aa"/>
@@ -736,11 +736,11 @@ export const ADMIN_AVATAR_OPTIONS: AdminAvatarOption[] = [
 
   // 25. Mulher com Vestido Verde & Colar de Pérolas (Fundo Laranja Terracota)
   {
-    id: 'avatar-25',
-    name: 'Vice-Diretora (Vestido Verde e Colar de Pérolas)',
-    roleHint: 'Coordenação Executiva e Atendimento aos Pais',
-    category: 'educadores',
-    bgHex: '#cf6f34',
+    id: "avatar-25",
+    name: "Vice-Diretora (Vestido Verde e Colar de Pérolas)",
+    roleHint: "Coordenação Executiva e Atendimento aos Pais",
+    category: "educadores",
+    bgHex: "#cf6f34",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="58" fill="#cf6f34"/>

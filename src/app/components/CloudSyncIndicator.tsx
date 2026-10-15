@@ -1,12 +1,21 @@
 // @ts-nocheck
-import React, { useState } from 'react';
-import { Cloud, CloudCheck, RefreshCw, Laptop, CheckCircle2, AlertCircle, X, ShieldCheck } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
-import { Book, Loan, Student, Suggestion, AdminUser, AuditLog } from '../types';
-import { pushAllLocalDataToCloud } from '../services/firebase';
+import React, { useState } from "react";
+import {
+  Cloud,
+  CloudCheck,
+  RefreshCw,
+  Laptop,
+  CheckCircle2,
+  AlertCircle,
+  X,
+  ShieldCheck,
+} from "lucide-react";
+import { useTheme } from "../context/ThemeContext";
+import { Book, Loan, Student, Suggestion, AdminUser, AuditLog } from "../types";
+import { pushAllLocalDataToCloud } from "../services/firebase";
 
 interface CloudSyncIndicatorProps {
-  status: 'connecting' | 'synced' | 'syncing' | 'offline';
+  status: "connecting" | "synced" | "syncing" | "offline";
   lastSyncTime: Date | null;
   books: Book[];
   loans: Loan[];
@@ -49,9 +58,9 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
           auditLogs,
         });
       }
-      setFeedback('Acervo sincronizado com sucesso na nuvem para todos os computadores!');
+      setFeedback("Acervo sincronizado com sucesso na nuvem para todos os computadores!");
     } catch (e: any) {
-      setFeedback('Erro ao sincronizar com a nuvem: ' + (e?.message || 'Tente novamente'));
+      setFeedback("Erro ao sincronizar com a nuvem: " + (e?.message || "Tente novamente"));
     } finally {
       setIsPushing(false);
     }
@@ -65,20 +74,20 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
         onClick={() => setIsOpen(true)}
         title="Status da Sincronização em Nuvem (Multi-computadores)"
         className={`px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer border ${
-          status === 'synced'
+          status === "synced"
             ? isEmerald
-              ? 'bg-[#032338] text-emerald-300 border-emerald-500/40 hover:bg-[#052d47]'
+              ? "bg-[#032338] text-emerald-300 border-emerald-500/40 hover:bg-[#052d47]"
               : isPurple
-              ? 'bg-[#250d4d] text-purple-200 border-purple-500/40 hover:bg-[#321266]'
-              : isDark
-              ? 'bg-emerald-950/40 text-emerald-300 border-emerald-600/40 hover:bg-emerald-900/40'
-              : 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
-            : status === 'syncing' || status === 'connecting'
-            ? 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-            : 'bg-rose-500/10 text-rose-300 border-rose-500/30'
+                ? "bg-[#250d4d] text-purple-200 border-purple-500/40 hover:bg-[#321266]"
+                : isDark
+                  ? "bg-emerald-950/40 text-emerald-300 border-emerald-600/40 hover:bg-emerald-900/40"
+                  : "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100"
+            : status === "syncing" || status === "connecting"
+              ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
+              : "bg-rose-500/10 text-rose-300 border-rose-500/30"
         }`}
       >
-        {status === 'synced' ? (
+        {status === "synced" ? (
           <>
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -87,7 +96,7 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
             <Cloud className="w-3.5 h-3.5 text-emerald-400" />
             <span className="hidden sm:inline text-[11px] font-bold">Nuvem Conectada</span>
           </>
-        ) : status === 'syncing' || status === 'connecting' ? (
+        ) : status === "syncing" || status === "connecting" ? (
           <>
             <RefreshCw className="w-3.5 h-3.5 text-amber-400 animate-spin" />
             <span className="hidden sm:inline text-[11px] font-bold">Sincronizando...</span>
@@ -106,8 +115,8 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
           <div
             className={`w-full max-w-md rounded-2xl border p-6 shadow-2xl relative ${
               isDark
-                ? 'bg-[#001424] border-[#163650] text-slate-100'
-                : 'bg-white border-slate-200 text-slate-900'
+                ? "bg-[#001424] border-[#163650] text-slate-100"
+                : "bg-white border-slate-200 text-slate-900"
             }`}
           >
             {/* Header */}
@@ -132,7 +141,7 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
             {/* Explanation */}
             <div
               className={`p-3.5 rounded-xl border mb-4 text-xs space-y-1.5 ${
-                isDark ? 'bg-[#092032] border-[#163650]' : 'bg-slate-50 border-slate-200'
+                isDark ? "bg-[#092032] border-[#163650]" : "bg-slate-50 border-slate-200"
               }`}
             >
               <div className="flex items-center gap-2 font-semibold text-emerald-400">
@@ -140,8 +149,9 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
                 <span>Acesso Compartilhado em Tempo Real</span>
               </div>
               <p className="text-slate-300 leading-relaxed">
-                Qualquer livro cadastrado, empréstimo realizado ou aluno registrado neste computador é
-                sincronizado automaticamente com <strong>todos os outros computadores e tablets</strong> conectados na web.
+                Qualquer livro cadastrado, empréstimo realizado ou aluno registrado neste computador
+                é sincronizado automaticamente com{" "}
+                <strong>todos os outros computadores e tablets</strong> conectados na web.
               </p>
             </div>
 
@@ -149,7 +159,7 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
             <div className="grid grid-cols-3 gap-2.5 mb-4">
               <div
                 className={`p-2.5 rounded-xl border text-center ${
-                  isDark ? 'bg-[#041c2c] border-[#163650]' : 'bg-slate-50 border-slate-200'
+                  isDark ? "bg-[#041c2c] border-[#163650]" : "bg-slate-50 border-slate-200"
                 }`}
               >
                 <p className="text-xs text-slate-400">Livros</p>
@@ -157,7 +167,7 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
               </div>
               <div
                 className={`p-2.5 rounded-xl border text-center ${
-                  isDark ? 'bg-[#041c2c] border-[#163650]' : 'bg-slate-50 border-slate-200'
+                  isDark ? "bg-[#041c2c] border-[#163650]" : "bg-slate-50 border-slate-200"
                 }`}
               >
                 <p className="text-xs text-slate-400">Empréstimos</p>
@@ -165,7 +175,7 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
               </div>
               <div
                 className={`p-2.5 rounded-xl border text-center ${
-                  isDark ? 'bg-[#041c2c] border-[#163650]' : 'bg-slate-50 border-slate-200'
+                  isDark ? "bg-[#041c2c] border-[#163650]" : "bg-slate-50 border-slate-200"
                 }`}
               >
                 <p className="text-xs text-slate-400">Alunos</p>
@@ -185,7 +195,7 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
               <div className="text-xs text-slate-400 flex items-center justify-between mb-4 px-1">
                 <span>Última atualização recebida:</span>
                 <span className="font-medium text-slate-300">
-                  {lastSyncTime.toLocaleTimeString('pt-BR')}
+                  {lastSyncTime.toLocaleTimeString("pt-BR")}
                 </span>
               </div>
             )}
@@ -204,8 +214,8 @@ export const CloudSyncIndicator: React.FC<CloudSyncIndicatorProps> = ({
                 disabled={isPushing}
                 className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-98 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer disabled:opacity-50"
               >
-                <RefreshCw className={`w-4 h-4 ${isPushing ? 'animate-spin' : ''}`} />
-                <span>{isPushing ? 'Sincronizando...' : 'Forçar Sincronização Agora'}</span>
+                <RefreshCw className={`w-4 h-4 ${isPushing ? "animate-spin" : ""}`} />
+                <span>{isPushing ? "Sincronizando..." : "Forçar Sincronização Agora"}</span>
               </button>
               <button
                 onClick={() => setIsOpen(false)}

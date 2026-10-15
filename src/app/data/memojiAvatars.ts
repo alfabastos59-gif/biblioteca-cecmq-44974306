@@ -9,7 +9,7 @@ export interface MemojiAvatar {
   id: string;
   name: string;
   description: string;
-  genderHint: 'feminino' | 'masculino' | 'neutro';
+  genderHint: "feminino" | "masculino" | "neutro";
   bgHex: string;
   url: string;
 }
@@ -21,11 +21,11 @@ const encodeSvg = (svg: string): string => {
 export const MEMOJI_AVATAR_OPTIONS: MemojiAvatar[] = [
   // 1. Menina Coques Duplos (Space Buns) & Brincos de Gota Dourados
   {
-    id: 'memoji-01',
-    name: 'Jovem Coques Duplos & Brincos Dourados',
-    description: 'Cabelo castanho com coques espaciais, brincos dourados e sorriso alegre',
-    genderHint: 'feminino',
-    bgHex: '#fff1f2',
+    id: "memoji-01",
+    name: "Jovem Coques Duplos & Brincos Dourados",
+    description: "Cabelo castanho com coques espaciais, brincos dourados e sorriso alegre",
+    genderHint: "feminino",
+    bgHex: "#fff1f2",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140">
         <defs>
@@ -83,11 +83,11 @@ export const MEMOJI_AVATAR_OPTIONS: MemojiAvatar[] = [
 
   // 2. Senhor com Chapéu Fedora Azul & Bigode Branco
   {
-    id: 'memoji-02',
-    name: 'Senhor com Chapéu Azul & Bigode',
-    description: 'Chapéu fedora azul cerúleo, óculos, cabelos grisalhos e bigode branco',
-    genderHint: 'masculino',
-    bgHex: '#eff6ff',
+    id: "memoji-02",
+    name: "Senhor com Chapéu Azul & Bigode",
+    description: "Chapéu fedora azul cerúleo, óculos, cabelos grisalhos e bigode branco",
+    genderHint: "masculino",
+    bgHex: "#eff6ff",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140">
         <defs>
@@ -132,11 +132,11 @@ export const MEMOJI_AVATAR_OPTIONS: MemojiAvatar[] = [
 
   // 3. Mulher Negra de Hijab Roxo & Óculos Gatinho Brancos
   {
-    id: 'memoji-03',
-    name: 'Mulher de Hijab Lilás & Óculos Gatinho',
-    description: 'Hijab roxo estilizado, óculos brancos modelo gatinho e pele negra iluminada',
-    genderHint: 'feminino',
-    bgHex: '#faf5ff',
+    id: "memoji-03",
+    name: "Mulher de Hijab Lilás & Óculos Gatinho",
+    description: "Hijab roxo estilizado, óculos brancos modelo gatinho e pele negra iluminada",
+    genderHint: "feminino",
+    bgHex: "#faf5ff",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140">
         <defs>
@@ -175,11 +175,11 @@ export const MEMOJI_AVATAR_OPTIONS: MemojiAvatar[] = [
 
   // 4. Homem Negro com Dreadlocks & Óculos Redondos Âmbar
   {
-    id: 'memoji-04',
-    name: 'Homem Dreadlocks & Óculos Redondos',
-    description: 'Dreadlocks estilizados, barba cheia e óculos redondos vintage',
-    genderHint: 'masculino',
-    bgHex: '#fef3c7',
+    id: "memoji-04",
+    name: "Homem Dreadlocks & Óculos Redondos",
+    description: "Dreadlocks estilizados, barba cheia e óculos redondos vintage",
+    genderHint: "masculino",
+    bgHex: "#fef3c7",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140">
         <defs>
@@ -222,11 +222,11 @@ export const MEMOJI_AVATAR_OPTIONS: MemojiAvatar[] = [
 
   // 5. Mulher Loira com Óculos Escuros Rosa Gatinho
   {
-    id: 'memoji-05',
-    name: 'Mulher Loira & Óculos Rosa Gatinho',
-    description: 'Cabelos loiros volumosos e ondulados, óculos cat-eye rosa choque e brincos',
-    genderHint: 'feminino',
-    bgHex: '#fdf2f8',
+    id: "memoji-05",
+    name: "Mulher Loira & Óculos Rosa Gatinho",
+    description: "Cabelos loiros volumosos e ondulados, óculos cat-eye rosa choque e brincos",
+    genderHint: "feminino",
+    bgHex: "#fdf2f8",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140">
         <defs>
@@ -259,11 +259,11 @@ export const MEMOJI_AVATAR_OPTIONS: MemojiAvatar[] = [
 
   // 6. Menino de Franja Tigela & Sardas (Freckles)
   {
-    id: 'memoji-06',
-    name: 'Menino com Franja & Sardinhas',
-    description: 'Cabelo castanho liso, sardinhas fofas nas bochechas e sorriso infantil',
-    genderHint: 'masculino',
-    bgHex: '#f0fdf4',
+    id: "memoji-06",
+    name: "Menino com Franja & Sardinhas",
+    description: "Cabelo castanho liso, sardinhas fofas nas bochechas e sorriso infantil",
+    genderHint: "masculino",
+    bgHex: "#f0fdf4",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140">
         <circle cx="70" cy="70" r="66" fill="#f0fdf4"/>
@@ -296,11 +296,11 @@ export const MEMOJI_AVATAR_OPTIONS: MemojiAvatar[] = [
 
   // 7. Rapaz com Topete Ruivo & Óculos Aviador Verde Neon
   {
-    id: 'memoji-07',
-    name: 'Rapaz Topete Ruivo & Óculos Aviador',
-    description: 'Cabelo castanho-acobreado penteado, óculos aviador verde neon e sorriso aberto',
-    genderHint: 'masculino',
-    bgHex: '#f0fdfa',
+    id: "memoji-07",
+    name: "Rapaz Topete Ruivo & Óculos Aviador",
+    description: "Cabelo castanho-acobreado penteado, óculos aviador verde neon e sorriso aberto",
+    genderHint: "masculino",
+    bgHex: "#f0fdfa",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140">
         <circle cx="70" cy="70" r="66" fill="#f0fdfa"/>
@@ -326,11 +326,11 @@ export const MEMOJI_AVATAR_OPTIONS: MemojiAvatar[] = [
 
   // 8. Menina de Chapéu Fedora Branco & Cabelo Chanel Preto
   {
-    id: 'memoji-08',
-    name: 'Menina de Chapéu Branco & Chanel',
-    description: 'Chapéu fedora claro com fita preta, cabelo chanel e olhar sereno',
-    genderHint: 'feminino',
-    bgHex: '#f8fafc',
+    id: "memoji-08",
+    name: "Menina de Chapéu Branco & Chanel",
+    description: "Chapéu fedora claro com fita preta, cabelo chanel e olhar sereno",
+    genderHint: "feminino",
+    bgHex: "#f8fafc",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140">
         <circle cx="70" cy="70" r="66" fill="#f8fafc"/>
@@ -356,11 +356,11 @@ export const MEMOJI_AVATAR_OPTIONS: MemojiAvatar[] = [
 
   // 9. Rapaz de Gorro Vermelho, Óculos & Piscadela (Wink)
   {
-    id: 'memoji-09',
-    name: 'Rapaz de Gorro Vermelho & Piscadela',
-    description: 'Gorro vermelho de inverno, armação grossa e expressão de piscadela',
-    genderHint: 'masculino',
-    bgHex: '#fff7ed',
+    id: "memoji-09",
+    name: "Rapaz de Gorro Vermelho & Piscadela",
+    description: "Gorro vermelho de inverno, armação grossa e expressão de piscadela",
+    genderHint: "masculino",
+    bgHex: "#fff7ed",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140">
         <circle cx="70" cy="70" r="66" fill="#fff7ed"/>
@@ -388,11 +388,11 @@ export const MEMOJI_AVATAR_OPTIONS: MemojiAvatar[] = [
 
   // 10. Mulher de Cabelo Rosa em Coque Alto & Óculos Rosados
   {
-    id: 'memoji-10',
-    name: 'Mulher Cabelo Rosa & Coque Alto',
-    description: 'Cabelo rosa chiclete preso em coque alto com mechas e óculos elegantes',
-    genderHint: 'feminino',
-    bgHex: '#fdf2f8',
+    id: "memoji-10",
+    name: "Mulher Cabelo Rosa & Coque Alto",
+    description: "Cabelo rosa chiclete preso em coque alto com mechas e óculos elegantes",
+    genderHint: "feminino",
+    bgHex: "#fdf2f8",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140">
         <circle cx="70" cy="70" r="66" fill="#fdf2f8"/>
@@ -422,11 +422,11 @@ export const MEMOJI_AVATAR_OPTIONS: MemojiAvatar[] = [
 
   // 11. Mulher Negra com Cachos Volumosos & Óculos Redondos
   {
-    id: 'memoji-11',
-    name: 'Mulher Negra Cachos Afro & Óculos Dourados',
-    description: 'Cachos volumosos pretos, óculos redondos estilo retrô e sorriso radiante',
-    genderHint: 'feminino',
-    bgHex: '#fefce8',
+    id: "memoji-11",
+    name: "Mulher Negra Cachos Afro & Óculos Dourados",
+    description: "Cachos volumosos pretos, óculos redondos estilo retrô e sorriso radiante",
+    genderHint: "feminino",
+    bgHex: "#fefce8",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140">
         <defs>
@@ -465,11 +465,12 @@ export const MEMOJI_AVATAR_OPTIONS: MemojiAvatar[] = [
 
   // 12. Homem Sikh com Turbante Amarelo Mostarda & Barba
   {
-    id: 'memoji-12',
-    name: 'Homem Sikh Turbante Dourado & Barba',
-    description: 'Turbante tradicional amarelo mostarda/dourado, barba preta desenhada e olhar caloroso',
-    genderHint: 'masculino',
-    bgHex: '#fefce8',
+    id: "memoji-12",
+    name: "Homem Sikh Turbante Dourado & Barba",
+    description:
+      "Turbante tradicional amarelo mostarda/dourado, barba preta desenhada e olhar caloroso",
+    genderHint: "masculino",
+    bgHex: "#fefce8",
     url: encodeSvg(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140">
         <defs>

@@ -1,7 +1,7 @@
 // @ts-nocheck
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
-export type AppTheme = 'emerald' | 'dark' | 'ocean' | 'kinetic' | 'purple' | 'light';
+export type AppTheme = "emerald" | "dark" | "ocean" | "kinetic" | "purple" | "light";
 
 interface ThemeContextType {
   theme: AppTheme;
@@ -20,15 +20,15 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Tema único e padronizado em ROXO (Creative Purple)
-  const theme: AppTheme = 'purple';
+  const theme: AppTheme = "purple";
 
   useEffect(() => {
-    localStorage.setItem('bmq_theme', 'purple');
+    localStorage.setItem("bmq_theme", "purple");
     const root = document.documentElement;
-    root.classList.remove('light', 'kinetic', 'ocean', 'emerald');
-    root.classList.add('purple', 'dark');
-    document.body.style.backgroundColor = '#13072b';
-    document.body.style.color = '#f5f3ff';
+    root.classList.remove("light", "kinetic", "ocean", "emerald");
+    root.classList.add("purple", "dark");
+    document.body.style.backgroundColor = "#13072b";
+    document.body.style.color = "#f5f3ff";
   }, []);
 
   const toggleTheme = () => {
@@ -69,7 +69,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 };
 
 const defaultThemeValue: ThemeContextType = {
-  theme: 'purple',
+  theme: "purple",
   setTheme: () => {},
   toggleTheme: () => {},
   isDark: true,
@@ -88,4 +88,3 @@ export const useTheme = () => {
   }
   return context;
 };
-
